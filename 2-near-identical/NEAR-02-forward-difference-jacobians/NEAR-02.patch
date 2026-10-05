@@ -15,10 +15,10 @@ and BIT-01 to BIT-17 (the other near-identical changes are not needed):
 or use tools/build-msx.sh, which applies the series in order.
 
 diff --git a/src/solver/msxutils.c b/src/solver/msxutils.c
-index fd62b31..badd270 100644
+index 85493a8..56dc6f6 100644
 --- a/src/solver/msxutils.c
 +++ b/src/solver/msxutils.c
-@@ -545,3 +545,57 @@ int jacobian(double *x, int n, double *f, double *w, double **a,
+@@ -538,3 +538,57 @@ int jacobian(double *x, int n, double *f, double *w, double **a,
  */
  
  }

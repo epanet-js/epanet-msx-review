@@ -1,0 +1,44 @@
+[TITLE]
+KY8: chlorine bulk and wall decay with dispersion (MSX manual, Listing 5.2)
+
+[OPTIONS]
+  AREA_UNITS      FT2
+  RATE_UNITS      DAY
+  SOLVER          EUL
+  TIMESTEP        60
+  RTOL            0.001
+  ATOL            0.001
+
+[SPECIES]
+  BULK  CL2  MG  0.01  0.001
+
+[COEFFICIENTS]
+  PARAMETER  Kb   0.3
+  PARAMETER  Kw   1.0
+  CONSTANT   Sc   846.15
+
+[TERMS]
+  SHt     0.0149*Re^0.88*Sc^0.3333
+  Interm  D*Re*Sc/LEN
+  SHl     3.65 + 0.0668 * Interm / (1.0 + 0.04 * Interm^0.6667)
+  SH      STEP(Re-2300)*SHt+STEP(2300-RE)*SHl
+  Kf      SH*0.00112/D
+
+[PIPES]
+  RATE CL2 -Kb*CL2-(4/D)*Kw*Kf/(Kw+Kf)*CL2
+
+[TANKS]
+  RATE CL2 -Kb*CL2
+
+[QUALITY]
+  GLOBAL  CL2  0.5
+  NODE    R-1  CL2  0.8
+  NODE    R-2  CL2  0.8
+
+[DIFFUSIVITY]
+  CL2 1.0
+
+[REPORT]
+  NODES   J-1 J-171 J-352 J-532
+  LINKS   P-1 P-355
+  SPECIES CL2 YES

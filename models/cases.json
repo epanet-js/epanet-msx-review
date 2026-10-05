@@ -1,0 +1,118 @@
+{
+ "_comment": "Benchmark cases: an EPANET network (inp/) and an MSX reaction file (msx/). reps repeats a short run inside one process so that it can be timed reliably. Sorted by size of network. Cases in group \"output\" report every node, link and species every 5 minutes; tools/bench.py runs them with --cases output. Cases in group \"real\" are larger real-world networks with three types of reactions each; tools/bench.py runs them with --cases real.",
+ "cases": [
+  {
+   "id": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-twosource.msx",
+   "reps": 1
+  },
+  {
+   "id": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "inp": "inp/net6-12h.inp",
+   "msx": "msx/net6-chlorine.msx",
+   "reps": 1
+  },
+  {
+   "id": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "inp": "inp/ky8-4h.inp",
+   "msx": "msx/ky8-dispersion.msx",
+   "reps": 1
+  },
+  {
+   "id": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "inp": "inp/richmond-12h.inp",
+   "msx": "msx/richmond-bacteria.msx",
+   "reps": 1
+  },
+  {
+   "id": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "inp": "inp/Net3.inp",
+   "msx": "msx/net3-chloramine.msx",
+   "reps": 1
+  },
+  {
+   "id": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "inp": "inp/Net3.inp",
+   "msx": "msx/net3-arsenic.msx",
+   "reps": 2
+  },
+  {
+   "id": "example",
+   "name": "MSX example (4 nodes)",
+   "inp": "inp/example.inp",
+   "msx": "msx/example.msx",
+   "reps": 10
+  },
+  {
+   "id": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "inp": "inp/bwsn2-6h-r5.inp",
+   "msx": "msx/bwsn2-output.msx",
+   "reps": 1,
+   "group": "output"
+  },
+  {
+   "id": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "inp": "inp/Net3-r5.inp",
+   "msx": "msx/net3-chloramine-all.msx",
+   "reps": 1,
+   "group": "output"
+  },
+  {
+   "id": "ltown-cl2",
+   "name": "L-Town 24 h, chlorine bulk + wall (Euler)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-chlorine.msx",
+   "reps": 1,
+   "group": "real"
+  },
+  {
+   "id": "ltown-bact",
+   "name": "L-Town 24 h, bacterial regrowth (RK5)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-bacteria.msx",
+   "reps": 1,
+   "group": "real"
+  },
+  {
+   "id": "ltown-chlm",
+   "name": "L-Town 24 h, chloramine decay (ROS2)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-chloramine.msx",
+   "reps": 1,
+   "group": "real"
+  },
+  {
+   "id": "nw-cl2",
+   "name": "NW Model 12 h, chlorine bulk + wall (Euler)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-chlorine.msx",
+   "reps": 1,
+   "group": "real"
+  },
+  {
+   "id": "nw-bact",
+   "name": "NW Model 12 h, bacterial regrowth (RK5)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-bacteria.msx",
+   "reps": 1,
+   "group": "real"
+  },
+  {
+   "id": "nw-chlm",
+   "name": "NW Model 12 h, chloramine decay (ROS2)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-chloramine.msx",
+   "reps": 1,
+   "group": "real"
+  }
+ ]
+}

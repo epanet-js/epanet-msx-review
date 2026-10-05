@@ -1,0 +1,54 @@
+[TITLE]
+Net3: mass-transfer limited arsenic oxidation/adsorption (MSX manual, Listing 5.3)
+
+[OPTIONS]
+  AREA_UNITS      FT2
+  RATE_UNITS      HR
+  SOLVER          RK5
+  TIMESTEP        180
+
+[SPECIES]
+  BULK A3    UG                                 ;Dissolved arsenite
+  BULK A5    UG                                 ;Dissolved arsenate
+  BULK A5w   UG                                 ;Dissolved arsenate at wall
+  WALL A5s   UG                                 ;Adsorbed arsenate
+  BULK NH2CL MG                                 ;Monochloramine
+
+[COEFFICIENTS]
+  CONSTANT Ka   10.0                            ;Arsenite oxidation rate coeff.
+  CONSTANT Kb   0.50                            ;Monochloramine decay rate coeff.
+  CONSTANT Smax 50                              ;Arsenate adsorption coeff.
+  CONSTANT K1   5.0                             ;Arsenate adsorption rate coeff.
+  CONSTANT K2   1.0                             ;Arsenate desorption rate coeff.
+
+[TERMS]
+  Kf     6.67e-4*Re^0.88/D                      ;Mass transfer coefficient (Ft/Hr)
+  Ks     K1/K2                                  ;Arsenate equil. adsorption coeff.
+  LPERCF 28.316                                 ;Liters/Cu. Ft. (conversion for Kf)
+
+[PIPES]
+  RATE A3    -Ka*A3*NH2CL                       ;Arsenite oxidation
+  RATE A5    Ka*A3*NH2CL - LPERCF*Kf*Av*(A5 - A5w)
+  RATE A5w   LPERCF*Kf*Av*(A5 - A5w) - Av*(K1*(Smax-A5s)*A5w - K2*A5s)
+  RATE NH2CL -Kb*NH2CL                          ;Monochloramine oxidation
+  EQUIL A5s  Smax*Ks*A5w/(1.0 + Ks*A5w) - A5s   ;Arsenate adsorption
+
+[TANKS]
+  RATE A3    -Ka*A3*NH2CL
+  RATE A5    Ka*A3*NH2CL
+  RATE A5w   0
+  RATE NH2CL -Kb*NH2CL
+
+[QUALITY]
+  NODE   River  A3    10.0
+  NODE   River  NH2CL 2.5
+  NODE   Lake   A3    10.0
+  NODE   Lake   NH2CL 2.5
+
+[REPORT]
+  NODES   10 121 255 1
+  LINKS   20 101
+  SPECIES A3    YES
+  SPECIES A5    YES
+  SPECIES A5s   YES
+  SPECIES NH2CL YES

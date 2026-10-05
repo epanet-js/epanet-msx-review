@@ -1,0 +1,62 @@
+converged.patch: the converged reference, for measuring how far results are from converged
+
+Not a change to propose. tools/build-msx.sh applies it after the series for the
+@conv flavour (bit@conv): integrator tolerances scaled by MSX_CONV_SCALE (default
+1e-3), Newton to MSX_CONV_NUMSIG significant digits (default 8), Euler replaced by
+RK5. Segments are still merged with each species' own aTol.
+
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index a8e0a6e..1c8a5cf 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -48,6 +48,7 @@ static int    *TankEquilSpecies;       // Species governed by tank equilibria
+ static int    LastIndex[MAX_OBJECTS];  // Last index of given type of variable
+ static double *Atol;                   // Absolute concentration tolerances
+ static double *Rtol;                   // Relative concentration tolerances
++static double ConvScale = 1.0;         // Converged reference: tolerance scale
+ static char   *PipeRateUnused;         // 1 for each pipe rate species (by its
+                                        // position in PipeRateSpecies) on
+                                        // which no pipe rate depends (only
+@@ -250,6 +251,20 @@ int  MSXchem_open()
+     int numPipeExpr;
+     int errcode = 0;
+ 
++// --- converged reference (tools/converged.patch, for measurements only):
++//     the integrators' tolerances are scaled by MSX_CONV_SCALE (default
++//     1e-3), Newton's by MSX_CONV_NUMSIG significant digits (default 8),
++//     and Euler, which has no error control, is replaced by RK5; segments
++//     are still merged with the species' own aTol (MSXqual_isSame)
++
++    {
++        char *s = getenv("MSX_CONV_SCALE");
++        ConvScale = s ? atof(s) : 1.0e-3;
++        s = getenv("MSX_CONV_NUMSIG");
++        NUMSIG = s ? atoi(s) : 8;
++        if ( MSX.Solver == EUL ) MSX.Solver = RK5;
++    }
++
+     memset(&PipeExprs, 0, sizeof(ChemExprs));
+     memset(&TankExprs, 0, sizeof(ChemExprs));
+     NumInvDeps = 0;
+@@ -509,8 +524,8 @@ int MSXchem_react(double dt)
+     for (k=1; k<=NumPipeRateSpecies; k++)
+     {
+         m = PipeRateSpecies[k];
+-        Atol[k] = MSX.Species[m].aTol;
+-        Rtol[k] = MSX.Species[m].rTol;
++        Atol[k] = MSX.Species[m].aTol * ConvScale;
++        Rtol[k] = MSX.Species[m].rTol * ConvScale;
+     }
+ 
+ // --- examine each link
+@@ -555,8 +570,8 @@ int MSXchem_react(double dt)
+     for (k=1; k<=NumTankRateSpecies; k++)
+     {
+         m = TankRateSpecies[k];
+-        Atol[k] = MSX.Species[m].aTol;
+-        Rtol[k] = MSX.Species[m].rTol;
++        Atol[k] = MSX.Species[m].aTol * ConvScale;
++        Rtol[k] = MSX.Species[m].rTol * ConvScale;
+     }
+ 
+ // --- examine each tank
