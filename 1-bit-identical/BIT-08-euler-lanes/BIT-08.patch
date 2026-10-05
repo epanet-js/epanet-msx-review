@@ -1,9 +1,10 @@
 BIT-08: Evaluate Euler rates for eight segments at once
 
 With the Euler integrator a segment's reaction is one evaluation of a
-short rate program, and the cost was the overhead around it. Evaluate the
-program for eight segments at a time, one operation across all eight, in a
-loop the compiler can vectorise. Each segment's arithmetic is unchanged.
+short rate program, and the cost was the overhead around it. For Euler
+models without equilibrium or formula species, evaluate the program for
+eight segments at a time, one operation across all eight, in a loop the
+compiler can vectorise. Each segment's arithmetic is unchanged.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

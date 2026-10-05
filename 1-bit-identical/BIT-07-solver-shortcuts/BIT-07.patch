@@ -2,8 +2,8 @@ BIT-07: Skip solver work whose result is known
 
 newton_solve() computed pow(10, -numsig) on every call; compute it once.
 ROS2's Jacobian evaluated the rates twice for every species, including
-species that no rate expression uses, whose column is all zeros; skip those
-columns.
+species that no rate expression uses, whose column is all zeros; without
+full coupling, skip those columns.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

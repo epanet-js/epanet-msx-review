@@ -2,8 +2,8 @@ BIT-06: React a pipe's identical segments once
 
 Every pipe starts as 100 identical segments, and many stay identical:
 same water, same pipe, same reactions. Each was integrated on its own every
-step. Integrate a run of segments with equal concentrations once and copy
-the result to the others.
+step. Integrate a run of segments whose concentrations and integration step
+are equal bit for bit once, and copy the result to the others.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

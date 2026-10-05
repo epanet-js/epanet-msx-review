@@ -16,9 +16,9 @@
 --cases takes groups (main, output, real, public = all three, private) and case IDs,
 joined with commas. For each case, mode and thread count, every build is first run once
 with -check (a hash of every node and link concentration of every species after every
-step), then --reps times without it, builds interleaved; the fastest run is kept. With
---reps 0 the checked run is the timed run (reading the values for the hash is not
-timed). Results go to .build/results/<tag>.json and a summary to .build/results/<tag>.md.
+step), then --reps times without it, builds interleaved; the fastest of all these runs is
+kept (reading the values for the hash is not timed). With --reps 0 the checked run is the
+only run. Results go to .build/results/<tag>.json and a summary to .build/results/<tag>.md.
 
 Private models are labelled "Private model 1, 2, ..." in file-name order (--private-label
 to change it) and described only by their size and settings, rounded; their file names,
@@ -277,7 +277,8 @@ def measure(builds, dirs, cases, modes, threads, reps, metric="total", timeout=N
                 line = [case["id"], mode, f"{th}t"]
                 for b in builds:
                     d = rec["builds"][b]
-                    pool = d["times"] if reps else [d["check"]]
+                    # the checked run is timed like the others (reading values for the hash is not timed)
+                    pool = d["times"] + [d["check"]]
                     ok = [t for t in pool if t.get("rc") == 0]
                     d["best"] = min(t[metric] for t in ok) if ok else None
                     d["best_Q"] = min(t["Q"] for t in ok) if ok else None

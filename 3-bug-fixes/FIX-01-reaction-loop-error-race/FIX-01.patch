@@ -1,11 +1,14 @@
-FIX-01: Keep one pipe's integration error from being lost to the next pipe's success
+FIX-01: Keep one pipe's reaction error from being lost to the next pipe's success
 
 MSXchem_react() reacts the pipes in an OpenMP loop, and every pipe's
 call wrote its return code into one shared errcode. An integration error
 (513) or equilibrium error (514) in one pipe was overwritten by the next
 pipe's 0, with one thread as with many, so the run carried on with
-concentrations that were never solved. Each thread now keeps its own code,
-and the largest code found is returned, whatever the number of threads.
+concentrations that were never solved. With several threads it was also a
+data race. MSX 1.1 returned at the first error; when 2.0 made the loop
+parallel, that return was commented out. Each thread now keeps its own
+code, and the largest code found is returned, whatever the number of
+threads.
 
 A model that appears to run today can stop with error 513 or 514 once this
 is applied. The error is real: it was there before, and was being lost.

@@ -71,8 +71,9 @@ def need_numpy():
     raise SystemExit('numpy is needed: pip install numpy')
 
 
-need_numpy()
-import compare  # noqa: E402
+if not os.environ.get('YARDSTICK_FORMAT_ONLY'):    # tools/update-docs.py only formats tables
+    need_numpy()
+    import compare  # noqa: E402
 import bench    # noqa: E402
 
 FLAVOURS = ('@nofma', '@fmafast', '@x86', '@clang', '@native')

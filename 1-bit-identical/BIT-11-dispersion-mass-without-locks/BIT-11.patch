@@ -3,9 +3,10 @@ BIT-11: Sum dispersed mass per link without locks, in link order
 segqual_update() added each link's dispersed mass to one shared total
 inside two `omp critical` sections per link; at 8 threads the main thread
 spent most of the function waiting for the lock. Store each link's mass and
-sum it afterwards in link order. The sum no longer depends on the thread
-schedule, so the dispersion mass balance is the same at any thread count.
-Concentrations are unchanged.
+sum it afterwards in link order, the order one thread used. The sum no
+longer depends on the thread schedule, so the dispersed mass in the mass
+balance is the same at any thread count (before, its last bits changed
+from run to run). Concentrations are unchanged.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

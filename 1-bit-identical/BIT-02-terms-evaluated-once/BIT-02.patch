@@ -10,8 +10,10 @@ are never used, and evaluate every term and formula once per rate
 evaluation into an array that expressions read directly. The same
 operations are done in the same order.
 
-Also: a cycle of formula species, which recursed until the stack overflowed,
-is now reported as error 506 when the file is opened.
+Also: with interpreted chemistry, a cycle of formula species (or of terms
+that the input check misses), which recursed until the stack overflowed, is
+now reported as error 506 by MSXopen. With the COMPILER option, such term
+cycles still overflow the stack.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

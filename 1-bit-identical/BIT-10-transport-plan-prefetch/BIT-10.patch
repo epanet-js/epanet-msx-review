@@ -1,9 +1,18 @@
 BIT-10: List each node's links once per hydraulic step and prefetch their segments
 
-Every quality step walked each node's adjacency list twice and rebuilt its
-outflow, although flows change only at hydraulic steps. Build the list of
-each node's inflow and outflow links once per hydraulic step, and prefetch
-the end segments of the nodes two ahead in topological order.
+Every quality step, topological_transport() walked each node's adjacency
+list twice and added up its outflow rate again, although flows, demands
+and flow directions change only when a hydraulic solution is read.
+
+1. buildTransportPlan() lists, once per hydraulic step and for each node
+   in topological order, the links with flow into it, the links with flow
+   out of it (each in adjacency-list order) and its outflow rate, summed
+   in the same order as before. The node loop streams through these
+   arrays. A redundant clear of SourceIn is removed.
+2. Before each node, the loop prefetches the leading segment of each
+   inflow link and the last segment of each outflow link of the node two
+   places ahead in topological order (__builtin_prefetch; a no-op on
+   compilers without it).
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

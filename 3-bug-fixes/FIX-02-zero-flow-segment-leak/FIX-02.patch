@@ -4,8 +4,9 @@ advectSegs() took a new segment from the pool for every link at every
 quality step. For a link with no flow, evalnodeoutflow() returns before
 using it and never gives it back, and the next step overwrites the pointer:
 one segment and its concentration arrays leaked per zero-flow link per step
-(about 70 MB per simulated week on Net6). Links without flow now take no
-segment. Results are unchanged.
+(about 70 MB per simulated week on Net6). MSX 1.1's release() gave the
+segment back; the topological routing of 2.0 dropped that. Links without
+flow now take no segment. Results are unchanged.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

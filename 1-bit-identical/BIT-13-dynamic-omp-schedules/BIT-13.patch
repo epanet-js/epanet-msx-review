@@ -1,10 +1,11 @@
 BIT-13: Hand pipes to threads dynamically in the reaction and dispersion loops
 
 The reaction loop and the two dispersion loops gave each thread an equal
-block of pipes, but a pipe's work is proportional to its number of
-segments (1 to over 300), and two of an M1 Pro's cores are slower. Use a
-dynamic schedule, a few pipes at a time. Each pipe's arithmetic is
-unchanged, so results do not depend on which thread does it.
+block of pipes, but a pipe's work grows with its number of segments (1 to
+over 300), and two of an M1 Pro's cores are slower. Use a dynamic
+schedule, a few pipes at a time. Each pipe's arithmetic is unchanged, and
+after FIX-01 and BIT-11 nothing is summed across pipes inside these loops,
+so results do not depend on which thread does which pipe.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

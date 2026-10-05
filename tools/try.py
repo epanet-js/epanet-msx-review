@@ -324,6 +324,8 @@ def main():
         use_cache = (a.quick or big) and not a.retime
         for mode in modes:
             for th in (threads if mode != "solve" else [1]):
+                if case.get("threads") and str(th) not in [str(x) for x in case["threads"]]:
+                    continue
                 records.append(measure_case(case, mode, th, allt, baseline, reps, use_cache, say))
     end = {"time": time.strftime("%Y-%m-%d %H:%M"), "load": bench.loadavg()}
 

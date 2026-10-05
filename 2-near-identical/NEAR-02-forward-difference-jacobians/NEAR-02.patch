@@ -2,9 +2,12 @@ NEAR-02: Jacobians by forward differences in ROS2 and Newton
 
 ROS2 and the Newton equilibrium solver compute their Jacobians by central
 differences, two evaluations per column. Use forward differences from the
-values each already has at y: one evaluation per column, through one shared
-helper with one step size. Newton keeps central differences for a single
-equation. Results change at the level of rounding.
+function values at the current point (which ROS2's first stage needs
+anyway, and which Newton now evaluates once per iteration): one evaluation
+per column, through one shared helper with the same step size. Newton keeps
+central differences for a single equation, and its update still uses the
+function values at x + eps e_n, as before (a known bug, left for a fix of
+its own). Results change at the level of rounding.
 
 Requires: none
 Results: near (concentrations move at the level of rounding; see 2-near-identical/README.md)

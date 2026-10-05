@@ -2,8 +2,10 @@ BIT-04: Cache terms that depend only on hydraulics, parameters and constants
 
 Terms such as Re^0.88 or (4/D)*Kw*Kf/(Kw+Kf) depend only on a pipe's
 hydraulics, parameters and constants, yet were recomputed for every segment
-at every step. Find those terms and leading sub-expressions when the file is
-read, and evaluate them once per pipe when its hydraulics change.
+at every step. Find those terms, and the largest sub-expressions of other
+expressions that depend only on the same inputs, when the file is opened.
+Evaluate them once per pipe, and again only when one of those inputs
+changes, bit for bit.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

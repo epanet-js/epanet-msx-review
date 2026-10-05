@@ -1,4 +1,4 @@
-BIT-14: Write the report and copy the output file in blocks; format numbers without printf
+BIT-14: Read the report's results and copy the output file in blocks; format numbers without printf
 
 MSXsaveoutfile() copied the output file one byte at a time; the report
 read every value back from the output file with its own seek and 4-byte

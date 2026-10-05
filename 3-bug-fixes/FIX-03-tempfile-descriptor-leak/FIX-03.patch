@@ -4,7 +4,8 @@ On systems other than Windows, MSXutils_getTempName() makes a temporary
 file name with mkstemp(), which also opens the file and returns a
 descriptor that was never closed (the file is opened again by name later).
 Every MSXopen leaked two descriptors and every MSXsolveH one, so a program
-running about 100 scenarios in one process ran out of descriptors on macOS.
+running scenarios one after another in one process ran out of descriptors
+after about 80 of them at macOS's default limit of 256 open files.
 Close the descriptor. Results are unchanged.
 
 Upstream dev fixed the same leak another way (PR #21), so this patch no

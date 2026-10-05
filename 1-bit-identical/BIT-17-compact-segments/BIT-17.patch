@@ -1,10 +1,18 @@
 BIT-17: Copy every pipe's segments into contiguous memory (more memory)
 
 Segments come from a last-in first-out free list, so a pipe's chain ends
-up scattered, and every step walks every chain. Once per hydraulic step,
-copy each pipe's segments into one contiguous block, in order. Peak memory
-grows by 30-80 % on the larger cases. Optional: the patches before it leave
-memory use unchanged or lower.
+up scattered across memory, and every step walks every chain. Once per
+hydraulic step (not at time 0), compactSegs() copies each pipe's and
+tank's segments, in order, into a second memory pool and swaps the pools.
+Contents are copied bit for bit; only addresses change.
+
+It copies a segment with one memcpy, which is correct only because BIT-09
+allocates a segment and its concentration arrays as one block: do not
+apply it without BIT-09.
+
+Optional: peak memory grows by 30-80 % on the larger cases, while the
+patches before it change peak memory by at most a few megabytes. It is
+last in the series so that it can be left out.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

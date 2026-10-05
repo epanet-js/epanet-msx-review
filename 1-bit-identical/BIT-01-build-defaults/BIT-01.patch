@@ -6,7 +6,8 @@ ignore --config: about 1.8 times slower. Make Release the default build
 type for single-configuration generators. On macOS, Apple's compiler has no
 OpenMP and CMake does not find Homebrew's keg-only libomp, so the library
 was built without threads; look for libomp where Homebrew installs it.
-Only CMakeLists.txt files change.
+Only CMakeLists.txt files change. The two parts are independent; the
+second runs `brew` at configure time and can be left out.
 
 Requires: none
 Results: identical (every concentration, the output file and the report are unchanged)

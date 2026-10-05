@@ -1,11 +1,19 @@
-BIT-09: Linear wall shift, new segments only when added, one allocation each
+BIT-09: Wall-species shift in one pass, new segments only when added, one allocation each
 
-shiftSegWallQual() restarted its inner loop from the pipe's upstream end
-for every segment, O(n^2) in the segments of a pipe; make it one pass.
-advectSegs() took and zeroed a new segment for every link at every step,
-though the inflow usually merges into the last segment; take one only when
-a segment is added. Allocate a segment and its two concentration arrays in
-one block.
+Three steps, all in msxqual.c:
+
+1. shiftSegWallQual() restarted its search from the pipe's upstream end
+   for every segment, O(n^2) in the segments of a pipe (pipes start with
+   100). Each search now starts where the one before stopped; the same
+   segments contribute, with the same prefix sums, in the same order.
+2. advectSegs() took and zeroed a new segment for every link with flow at
+   every step, though the inflow is usually merged into the pipe's last
+   segment and the new one put straight back. It now prepares one only
+   for pipes with flow when there are wall species, and evalnodeoutflow()
+   takes one from the pool only when it adds a segment. This rewrites the
+   zero-flow test of FIX-02, so the patch needs FIX-02.
+3. A segment and its c[] and lastc[] arrays are one allocation. BIT-17
+   relies on this to copy a segment with one memcpy.
 
 Requires: FIX-02
 Results: identical (every concentration, the output file and the report are unchanged)

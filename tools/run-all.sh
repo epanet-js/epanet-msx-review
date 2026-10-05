@@ -5,6 +5,9 @@
 #   tools/run-all.sh series near     only these steps
 #   tools/run-all.sh --list          list the steps
 #   SKIP_DONE=1 tools/run-all.sh     skip steps whose results are already in .build/results/
+#   QUICK=1 tools/run-all.sh         one timed run per build instead of the best of 5 (or 3),
+#                                    and no waiting for a quiet machine: about 2.5 hours,
+#                                    noisier, enough to fill every table
 #
 # Steps run one after another, never two at once, and every build is compiled
 # first, so that no compilation overlaps a timing run. Results are written to
@@ -21,9 +24,11 @@ NEAR=bit,only:NEAR-01,only:NEAR-02,only:NEAR-03,near
 SAMPLES=base,base@nofma,base@fmafast
 if [ "$(uname)" = Darwin ]; then SAMPLES="$SAMPLES,base@x86"; else SAMPLES="$SAMPLES,base@clang,base@native"; fi
 LIST() { echo "$1" | tr , ' '; }
+R5=5; R3=3
+[ "${QUICK:-0}" = 1 ] && { R5=1; R3=1; }
 
-STEPS="builds series near output-groups headline-step headline-solve output-headline flavours scaling
-       verify-solve verify-noomp yardstick threads real yardstick-real private"
+STEPS="builds series yardstick threads near output-groups headline-step headline-solve output-headline
+       flavours scaling verify-solve verify-noomp real yardstick-real private"
 
 step() {
     case "$1" in
@@ -36,24 +41,24 @@ step() {
             tools/build-msx.sh "$b@noomp" > /dev/null || return 1
         done ;;
     series)    # each group against the series before it: 1 and 8 threads, step mode, best of 5
-        tools/bench.py --builds "$SERIES" --threads 1,8 --reps 5 --tag series ;;
+        tools/bench.py --builds "$SERIES" --threads 1,8 --reps $R5 --tag series ;;
     near)      # each near-identical change alone on bit, and all of them
-        tools/bench.py --builds "$NEAR" --threads 1,8 --reps 5 --tag near-series ;;
+        tools/bench.py --builds "$NEAR" --threads 1,8 --reps $R5 --tag near-series ;;
     output-groups)   # the output groups on the output-heavy cases
         tools/bench.py --builds base,BIT-13,BIT-14,BIT-15,BIT-16 --cases output --modes solve,read \
-            --threads 1,8 --reps 5 --tag output-groups ;;
+            --threads 1,8 --reps $R5 --tag output-groups ;;
     headline-step)
-        tools/bench.py --builds base,bit,near --threads 1,8,default --reps 5 --tag headline-step ;;
+        tools/bench.py --builds base,bit,near --threads 1,8,default --reps $R5 --tag headline-step ;;
     headline-solve)
-        tools/bench.py --builds base,bit,near --modes solve --threads 1,8,default --reps 5 --tag headline-solve ;;
+        tools/bench.py --builds base,bit,near --modes solve --threads 1,8,default --reps $R5 --tag headline-solve ;;
     output-headline)
-        tools/bench.py --builds base,bit,near --cases output --modes solve,read --threads 1,8 --reps 5 \
+        tools/bench.py --builds base,bit,near --cases output --modes solve,read --threads 1,8 --reps $R5 \
             --tag output-headline ;;
     flavours)  # build options: no optimisation (BIT-01), no OpenMP
-        tools/bench.py --builds base,base@O0,base@noomp,bit@noomp,bit,near@noomp,near --threads 1 --reps 3 \
+        tools/bench.py --builds base,base@O0,base@noomp,bit@noomp,bit,near@noomp,near --threads 1 --reps $R3 \
             --tag flavours ;;
     scaling)
-        tools/bench.py --builds base,bit,near --threads 1,2,4,6,8,10 --reps 3 --tag scaling ;;
+        tools/bench.py --builds base,bit,near --threads 1,2,4,6,8,10 --reps $R3 --tag scaling ;;
     verify-solve)    # result checks not covered by the timing runs (one checked run each)
         tools/bench.py --builds "$SERIES,$NEAR" --cases main,output --modes solve --threads 1,8 --reps 0 \
             --tag verify-solve &&
@@ -86,13 +91,13 @@ step() {
     esac
 }
 
-# Wait, up to QUIET_WAIT minutes (default 20), for the one-minute load average to fall
-# below QUIET_LOAD (default: 60 % of the cores). Nothing is closed or stopped; the wait
+# Wait, up to QUIET_WAIT minutes (default 30), for the one-minute load average to fall
+# below QUIET_LOAD (default: the number of cores). Nothing is closed or stopped; the wait
 # only avoids starting a timing run in the middle of someone else's burst of work.
 quiet() {
-    limit=${QUIET_LOAD:-$(python3 -c 'import os; print(max(2, int(0.6 * os.cpu_count())))')}
+    limit=${QUIET_LOAD:-$(python3 -c 'import os; print(os.cpu_count())')}
     waited=0
-    while [ "$waited" -lt "$(( ${QUIET_WAIT:-20} * 60 ))" ]; do
+    while [ "$waited" -lt "$(( ${QUIET_WAIT:-30} * 60 ))" ]; do
         load=$(python3 -c 'import os; print(int(os.getloadavg()[0]))')
         [ "$load" -lt "$limit" ] && break
         sleep 30; waited=$((waited + 30))
@@ -116,7 +121,7 @@ for s in $STEPS; do
         echo "== $s: done before, skipped"
         continue
     fi
-    [ "$s" = builds ] || quiet
+    [ "$s" = builds ] || [ "${QUICK:-0}" = 1 ] || quiet
     echo "== $s: started $(date '+%Y-%m-%d %H:%M'), load $(uptime | sed 's/.*load averages*: //')"
     if step "$s"; then
         echo "== $s: finished $(date '+%Y-%m-%d %H:%M')"
