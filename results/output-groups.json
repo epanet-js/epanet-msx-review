@@ -1,0 +1,1590 @@
+{
+ "builds": [
+  "base",
+  "BIT-13",
+  "BIT-14",
+  "BIT-15",
+  "BIT-16"
+ ],
+ "threads": [
+  1,
+  8
+ ],
+ "modes": [
+  "solve",
+  "read"
+ ],
+ "reps": 1,
+ "metric": "total",
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-05",
+ "start": {
+  "load": [
+   10.5,
+   17.06,
+   18.85
+  ],
+  "time": "2026-10-05 16:25"
+ },
+ "end": {
+  "load": [
+   8.87,
+   13.09,
+   16.7
+  ],
+  "time": "2026-10-05 16:30"
+ },
+ "build_info": {
+  "base": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "BIT-13": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "BIT-14": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "BIT-15": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "BIT-16": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n"
+ },
+ "results": [
+  {
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "mode": "solve",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 10.35238,
+      "open": 0.018839,
+      "H": 0.846561,
+      "Q": 2.601015,
+      "report": 6.879346,
+      "close": 0.006619,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198512,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 10.941294,
+       "open": 0.018473,
+       "H": 0.908712,
+       "Q": 2.90542,
+       "report": 7.098411,
+       "close": 0.010278,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 197536
+      }
+     ],
+     "best": 10.35238,
+     "best_Q": 2.601015,
+     "rss_kb": 198512,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 14.032183,
+      "open": 0.020521,
+      "H": 1.056007,
+      "Q": 1.596344,
+      "report": 11.333969,
+      "close": 0.025342,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198240,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 10.754365,
+       "open": 0.020925,
+       "H": 1.003355,
+       "Q": 1.800594,
+       "report": 7.921169,
+       "close": 0.008322,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 193216
+      }
+     ],
+     "best": 10.754365,
+     "best_Q": 1.596344,
+     "rss_kb": 198240,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9626212240332181
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 3.892654,
+      "open": 0.061899,
+      "H": 1.42295,
+      "Q": 2.106296,
+      "report": 0.290852,
+      "close": 0.010657,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 204480,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.908041,
+       "open": 0.019958,
+       "H": 0.853756,
+       "Q": 1.695616,
+       "report": 0.330181,
+       "close": 0.00853,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 205344
+      }
+     ],
+     "best": 2.908041,
+     "best_Q": 1.695616,
+     "rss_kb": 205344,
+     "rc": 0,
+     "identical": true,
+     "speedup": 3.559915420724811
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 2.591048,
+      "open": 0.019209,
+      "H": 1.073368,
+      "Q": 1.200322,
+      "report": 0.290114,
+      "close": 0.008035,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 206064,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.377743,
+       "open": 0.01833,
+       "H": 0.872435,
+       "Q": 1.149285,
+       "report": 0.330427,
+       "close": 0.007266,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 205472
+      }
+     ],
+     "best": 2.377743,
+     "best_Q": 1.149285,
+     "rss_kb": 206064,
+     "rc": 0,
+     "identical": true,
+     "speedup": 4.353868353308158
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 1.505148,
+      "open": 0.01914,
+      "H": 0.116803,
+      "Q": 1.075183,
+      "report": 0.286504,
+      "close": 0.007518,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 205952,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.636002,
+       "open": 0.018966,
+       "H": 0.11782,
+       "Q": 1.07529,
+       "report": 0.416827,
+       "close": 0.007099,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 205504
+      }
+     ],
+     "best": 1.505148,
+     "best_Q": 1.075183,
+     "rss_kb": 205952,
+     "rc": 0,
+     "identical": true,
+     "speedup": 6.8779814343838614
+    }
+   },
+   "load_start": [
+    10.5,
+    17.06,
+    18.85
+   ],
+   "load_end": [
+    18.46,
+    18.21,
+    19.14
+   ]
+  },
+  {
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "mode": "solve",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 10.102661,
+      "open": 0.018461,
+      "H": 0.862218,
+      "Q": 1.483781,
+      "report": 7.730356,
+      "close": 0.007845,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198368,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 9.66776,
+       "open": 0.049718,
+       "H": 1.030805,
+       "Q": 1.530342,
+       "report": 7.049599,
+       "close": 0.007296,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 193504
+      }
+     ],
+     "best": 9.66776,
+     "best_Q": 1.483781,
+     "rss_kb": 198368,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 9.414606,
+      "open": 0.032106,
+      "H": 1.128449,
+      "Q": 1.134541,
+      "report": 7.108791,
+      "close": 0.010719,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 194160,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 8.419059,
+       "open": 0.020056,
+       "H": 0.85129,
+       "Q": 0.914116,
+       "report": 6.627406,
+       "close": 0.006191,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198784
+      }
+     ],
+     "best": 8.419059,
+     "best_Q": 0.914116,
+     "rss_kb": 198784,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.1483183571940758
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 2.497605,
+      "open": 0.03291,
+      "H": 0.912741,
+      "Q": 1.264146,
+      "report": 0.279205,
+      "close": 0.008603,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 205904,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.055186,
+       "open": 0.018223,
+       "H": 0.867955,
+       "Q": 0.873791,
+       "report": 0.289178,
+       "close": 0.006039,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 207200
+      }
+     ],
+     "best": 2.055186,
+     "best_Q": 0.873791,
+     "rss_kb": 207200,
+     "rc": 0,
+     "identical": true,
+     "speedup": 4.7040803119523
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 1.922505,
+      "open": 0.018788,
+      "H": 0.942455,
+      "Q": 0.653636,
+      "report": 0.297342,
+      "close": 0.010284,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 206096,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.542586,
+       "open": 0.017961,
+       "H": 0.849531,
+       "Q": 0.376001,
+       "report": 0.293138,
+       "close": 0.005955,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 207488
+      }
+     ],
+     "best": 1.542586,
+     "best_Q": 0.376001,
+     "rss_kb": 207488,
+     "rc": 0,
+     "identical": true,
+     "speedup": 6.267242150518674
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 0.97255,
+      "open": 0.018517,
+      "H": 0.121572,
+      "Q": 0.520915,
+      "report": 0.304082,
+      "close": 0.007464,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 206384,
+      "out_md5": "f1ce50113f2f",
+      "rpt_md5": "6538ba14f801"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.847063,
+       "open": 0.018487,
+       "H": 0.11158,
+       "Q": 0.405977,
+       "report": 0.30489,
+       "close": 0.006129,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 207600
+      }
+     ],
+     "best": 0.847063,
+     "best_Q": 0.405977,
+     "rss_kb": 207600,
+     "rc": 0,
+     "identical": true,
+     "speedup": 11.413271504008556
+    }
+   },
+   "load_start": [
+    18.46,
+    18.21,
+    19.14
+   ],
+   "load_end": [
+    11.43,
+    16.4,
+    18.41
+   ]
+  },
+  {
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "mode": "read",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.917261,
+      "open": 0.017577,
+      "H": 0.837083,
+      "Q": 3.056641,
+      "report": 0.0,
+      "close": 0.00596,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198272
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 4.072973,
+       "open": 0.018926,
+       "H": 0.844766,
+       "Q": 3.203259,
+       "report": 1e-06,
+       "close": 0.006021,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198032
+      }
+     ],
+     "best": 3.917261,
+     "best_Q": 3.056641,
+     "rss_kb": 198272,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 2.576962,
+      "open": 0.019136,
+      "H": 0.839051,
+      "Q": 1.713373,
+      "report": 0.0,
+      "close": 0.005402,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198560
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.630328,
+       "open": 0.017858,
+       "H": 0.837664,
+       "Q": 1.769139,
+       "report": 0.0,
+       "close": 0.005667,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198528
+      }
+     ],
+     "best": 2.576962,
+     "best_Q": 1.713373,
+     "rss_kb": 198560,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.5201081738884779
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 3.313727,
+      "open": 0.01742,
+      "H": 1.352268,
+      "Q": 1.935835,
+      "report": 0.0,
+      "close": 0.008204,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 196960
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.699161,
+       "open": 0.017682,
+       "H": 0.850154,
+       "Q": 1.825765,
+       "report": 0.0,
+       "close": 0.00556,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198672
+      }
+     ],
+     "best": 2.699161,
+     "best_Q": 1.825765,
+     "rss_kb": 198672,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.4512883818342068
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 2.202889,
+      "open": 0.019068,
+      "H": 0.862041,
+      "Q": 1.315618,
+      "report": 0.0,
+      "close": 0.006162,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 199168
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.132332,
+       "open": 0.018559,
+       "H": 0.840451,
+       "Q": 1.267691,
+       "report": 0.0,
+       "close": 0.005631,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 199184
+      }
+     ],
+     "best": 2.132332,
+     "best_Q": 1.267691,
+     "rss_kb": 199184,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.8370783724110504
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 1.491143,
+      "open": 0.019294,
+      "H": 0.11178,
+      "Q": 1.354392,
+      "report": 0.0,
+      "close": 0.005677,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 201184
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.420334,
+       "open": 0.018323,
+       "H": 0.110133,
+       "Q": 1.286289,
+       "report": 0.0,
+       "close": 0.005589,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 199648
+      }
+     ],
+     "best": 1.420334,
+     "best_Q": 1.286289,
+     "rss_kb": 201184,
+     "rc": 0,
+     "identical": true,
+     "speedup": 2.7579857977067364
+    }
+   },
+   "load_start": [
+    11.43,
+    16.4,
+    18.41
+   ],
+   "load_end": [
+    11.74,
+    16.07,
+    18.23
+   ]
+  },
+  {
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "mode": "read",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 2.612927,
+      "open": 0.018581,
+      "H": 0.866669,
+      "Q": 1.721738,
+      "report": 0.0,
+      "close": 0.005939,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198688
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.712964,
+       "open": 0.019024,
+       "H": 0.938554,
+       "Q": 1.74928,
+       "report": 0.0,
+       "close": 0.006106,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198608
+      }
+     ],
+     "best": 2.612927,
+     "best_Q": 1.721738,
+     "rss_kb": 198688,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 2.276473,
+      "open": 0.017838,
+      "H": 0.858255,
+      "Q": 1.394161,
+      "report": 0.0,
+      "close": 0.006219,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198528
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.392406,
+       "open": 0.019834,
+       "H": 0.89111,
+       "Q": 1.475149,
+       "report": 1e-06,
+       "close": 0.006312,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198544
+      }
+     ],
+     "best": 2.276473,
+     "best_Q": 1.394161,
+     "rss_kb": 198544,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.1477961741694278
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 2.47562,
+      "open": 0.018933,
+      "H": 0.835118,
+      "Q": 1.614993,
+      "report": 0.0,
+      "close": 0.006576,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 198800
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.601065,
+       "open": 0.018707,
+       "H": 1.007466,
+       "Q": 1.553429,
+       "report": 0.0,
+       "close": 0.021463,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198336
+      }
+     ],
+     "best": 2.47562,
+     "best_Q": 1.553429,
+     "rss_kb": 198800,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0554636818251588
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 1.603581,
+      "open": 0.018343,
+      "H": 0.870862,
+      "Q": 0.708608,
+      "report": 0.0,
+      "close": 0.005768,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 199552
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.643945,
+       "open": 0.019029,
+       "H": 0.848403,
+       "Q": 0.769702,
+       "report": 0.0,
+       "close": 0.006811,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 199216
+      }
+     ],
+     "best": 1.603581,
+     "best_Q": 0.708608,
+     "rss_kb": 199552,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.6294325013828426
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 0.847161,
+      "open": 0.018897,
+      "H": 0.112175,
+      "Q": 0.71007,
+      "report": 0.0,
+      "close": 0.006019,
+      "steps": 72,
+      "hash": "aa71dd289b698710",
+      "rss_kb": 199744
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.821809,
+       "open": 0.018584,
+       "H": 0.115672,
+       "Q": 0.682126,
+       "report": 0.0,
+       "close": 0.005427,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 199936
+      }
+     ],
+     "best": 0.821809,
+     "best_Q": 0.682126,
+     "rss_kb": 199936,
+     "rc": 0,
+     "identical": true,
+     "speedup": 3.1794820937711803
+    }
+   },
+   "load_start": [
+    11.74,
+    16.07,
+    18.23
+   ],
+   "load_end": [
+    9.27,
+    15.15,
+    17.84
+   ]
+  },
+  {
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "mode": "solve",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 13.171292,
+      "open": 0.003197,
+      "H": 0.027872,
+      "Q": 11.72989,
+      "report": 1.409442,
+      "close": 0.000891,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 8096,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 13.677238,
+       "open": 0.002717,
+       "H": 0.027769,
+       "Q": 12.218477,
+       "report": 1.427023,
+       "close": 0.001252,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 6944
+      }
+     ],
+     "best": 13.171292,
+     "best_Q": 11.72989,
+     "rss_kb": 8096,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 2.857249,
+      "open": 0.002997,
+      "H": 0.027775,
+      "Q": 1.375346,
+      "report": 1.449874,
+      "close": 0.001257,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 8816,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.871711,
+       "open": 0.003143,
+       "H": 0.027779,
+       "Q": 1.347101,
+       "report": 1.492555,
+       "close": 0.001133,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 8240
+      }
+     ],
+     "best": 2.857249,
+     "best_Q": 1.347101,
+     "rss_kb": 8816,
+     "rc": 0,
+     "identical": true,
+     "speedup": 4.609780946637832
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 1.420655,
+      "open": 0.002742,
+      "H": 0.02896,
+      "Q": 1.355043,
+      "report": 0.032813,
+      "close": 0.001097,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 10784,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.426929,
+       "open": 0.002332,
+       "H": 0.02779,
+       "Q": 1.361317,
+       "report": 0.034695,
+       "close": 0.000795,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 10768
+      }
+     ],
+     "best": 1.420655,
+     "best_Q": 1.355043,
+     "rss_kb": 10784,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.271281204796379
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 1.357727,
+      "open": 0.005385,
+      "H": 0.033836,
+      "Q": 1.282637,
+      "report": 0.03481,
+      "close": 0.001059,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 10832,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.347028,
+       "open": 0.002471,
+       "H": 0.027609,
+       "Q": 1.276731,
+       "report": 0.038901,
+       "close": 0.001316,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 8896
+      }
+     ],
+     "best": 1.347028,
+     "best_Q": 1.276731,
+     "rss_kb": 10832,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.778038763856431
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 1.340792,
+      "open": 0.003294,
+      "H": 0.004933,
+      "Q": 1.297351,
+      "report": 0.034081,
+      "close": 0.001133,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 10864,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.456077,
+       "open": 0.002657,
+       "H": 0.005031,
+       "Q": 1.316856,
+       "report": 0.130334,
+       "close": 0.001199,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 8976
+      }
+     ],
+     "best": 1.340792,
+     "best_Q": 1.297351,
+     "rss_kb": 10864,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.823516250096958
+    }
+   },
+   "load_start": [
+    9.27,
+    15.15,
+    17.84
+   ],
+   "load_end": [
+    7.23,
+    13.9,
+    17.26
+   ]
+  },
+  {
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "mode": "solve",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 4.488726,
+      "open": 0.002574,
+      "H": 0.03166,
+      "Q": 2.989317,
+      "report": 1.463783,
+      "close": 0.001392,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 8128,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 4.497571,
+       "open": 0.002827,
+       "H": 0.028076,
+       "Q": 2.943073,
+       "report": 1.522174,
+       "close": 0.001421,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 7632
+      }
+     ],
+     "best": 4.488726,
+     "best_Q": 2.943073,
+     "rss_kb": 8128,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 1.824619,
+      "open": 0.002947,
+      "H": 0.029359,
+      "Q": 0.352463,
+      "report": 1.438491,
+      "close": 0.001359,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 9232,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.964749,
+       "open": 0.002347,
+       "H": 0.027259,
+       "Q": 0.354344,
+       "report": 1.578796,
+       "close": 0.002003,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 7312
+      }
+     ],
+     "best": 1.824619,
+     "best_Q": 0.352463,
+     "rss_kb": 9232,
+     "rc": 0,
+     "identical": true,
+     "speedup": 2.460089476213938
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 0.449616,
+      "open": 0.003542,
+      "H": 0.030431,
+      "Q": 0.370918,
+      "report": 0.043324,
+      "close": 0.001401,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 11168,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.433668,
+       "open": 0.002462,
+       "H": 0.027725,
+       "Q": 0.357736,
+       "report": 0.044343,
+       "close": 0.001402,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 11168
+      }
+     ],
+     "best": 0.433668,
+     "best_Q": 0.357736,
+     "rss_kb": 11168,
+     "rc": 0,
+     "identical": true,
+     "speedup": 10.35060460997814
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 0.367174,
+      "open": 0.00305,
+      "H": 0.029282,
+      "Q": 0.291609,
+      "report": 0.041918,
+      "close": 0.001315,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 11232,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.368129,
+       "open": 0.002878,
+       "H": 0.028328,
+       "Q": 0.289218,
+       "report": 0.046414,
+       "close": 0.001291,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 11200
+      }
+     ],
+     "best": 0.367174,
+     "best_Q": 0.289218,
+     "rss_kb": 11232,
+     "rc": 0,
+     "identical": true,
+     "speedup": 12.225064955579644
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 0.374587,
+      "open": 0.002763,
+      "H": 0.004974,
+      "Q": 0.32462,
+      "report": 0.040951,
+      "close": 0.001279,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 11296,
+      "out_md5": "c712257651c0",
+      "rpt_md5": "48fccdfd3919"
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.341181,
+       "open": 0.002871,
+       "H": 0.005067,
+       "Q": 0.289646,
+       "report": 0.042193,
+       "close": 0.001404,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 11312
+      }
+     ],
+     "best": 0.341181,
+     "best_Q": 0.289646,
+     "rss_kb": 11312,
+     "rc": 0,
+     "identical": true,
+     "speedup": 13.156436026625162
+    }
+   },
+   "load_start": [
+    7.23,
+    13.9,
+    17.26
+   ],
+   "load_end": [
+    7.33,
+    13.61,
+    17.09
+   ]
+  },
+  {
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "mode": "read",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 11.62366,
+      "open": 0.00235,
+      "H": 0.027473,
+      "Q": 11.593022,
+      "report": 0.0,
+      "close": 0.000815,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 6864
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 11.763039,
+       "open": 0.002159,
+       "H": 0.028292,
+       "Q": 11.731274,
+       "report": 0.0,
+       "close": 0.001314,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 6768
+      }
+     ],
+     "best": 11.62366,
+     "best_Q": 11.593022,
+     "rss_kb": 6864,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 1.418522,
+      "open": 0.002806,
+      "H": 0.028297,
+      "Q": 1.386515,
+      "report": 0.0,
+      "close": 0.000904,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 8816
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.493061,
+       "open": 0.002968,
+       "H": 0.028073,
+       "Q": 1.461033,
+       "report": 1e-06,
+       "close": 0.000986,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 6928
+      }
+     ],
+     "best": 1.418522,
+     "best_Q": 1.386515,
+     "rss_kb": 8816,
+     "rc": 0,
+     "identical": true,
+     "speedup": 8.194204954170608
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 1.465407,
+      "open": 0.003359,
+      "H": 0.029162,
+      "Q": 1.42953,
+      "report": 0.0,
+      "close": 0.003356,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 8880
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.70692,
+       "open": 0.002888,
+       "H": 0.028684,
+       "Q": 1.674076,
+       "report": 0.0,
+       "close": 0.001272,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 7216
+      }
+     ],
+     "best": 1.465407,
+     "best_Q": 1.42953,
+     "rss_kb": 8880,
+     "rc": 0,
+     "identical": true,
+     "speedup": 7.932035263923265
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 1.31507,
+      "open": 0.004138,
+      "H": 0.031682,
+      "Q": 1.278373,
+      "report": 0.0,
+      "close": 0.000877,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 8912
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.379017,
+       "open": 0.003739,
+       "H": 0.031276,
+       "Q": 1.343071,
+       "report": 0.0,
+       "close": 0.000931,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 8896
+      }
+     ],
+     "best": 1.31507,
+     "best_Q": 1.278373,
+     "rss_kb": 8912,
+     "rc": 0,
+     "identical": true,
+     "speedup": 8.838814663858198
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 1.302136,
+      "open": 0.002632,
+      "H": 0.005246,
+      "Q": 1.293141,
+      "report": 0.0,
+      "close": 0.001117,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 8896
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.295436,
+       "open": 0.002981,
+       "H": 0.004986,
+       "Q": 1.286595,
+       "report": 0.0,
+       "close": 0.000874,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 8928
+      }
+     ],
+     "best": 1.295436,
+     "best_Q": 1.286595,
+     "rss_kb": 8928,
+     "rc": 0,
+     "identical": true,
+     "speedup": 8.97277827696621
+    }
+   },
+   "load_start": [
+    7.33,
+    13.61,
+    17.09
+   ],
+   "load_end": [
+    8.34,
+    13.23,
+    16.82
+   ]
+  },
+  {
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "mode": "read",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.42268,
+      "open": 0.00228,
+      "H": 0.027382,
+      "Q": 3.391583,
+      "report": 0.0,
+      "close": 0.001435,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 7248
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 3.962351,
+       "open": 0.002836,
+       "H": 0.032428,
+       "Q": 3.9257,
+       "report": 0.0,
+       "close": 0.001387,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 8016
+      }
+     ],
+     "best": 3.42268,
+     "best_Q": 3.391583,
+     "rss_kb": 8016,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "BIT-13": {
+     "check": {
+      "rc": 0,
+      "total": 0.491845,
+      "open": 0.00463,
+      "H": 0.031409,
+      "Q": 0.454515,
+      "report": 0.0,
+      "close": 0.001291,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 9152
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.476691,
+       "open": 0.002743,
+       "H": 0.028283,
+       "Q": 0.444315,
+       "report": 0.0,
+       "close": 0.00135,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9184
+      }
+     ],
+     "best": 0.476691,
+     "best_Q": 0.444315,
+     "rss_kb": 9184,
+     "rc": 0,
+     "identical": true,
+     "speedup": 7.1800810168431966
+    },
+    "BIT-14": {
+     "check": {
+      "rc": 0,
+      "total": 0.489931,
+      "open": 0.003521,
+      "H": 0.030352,
+      "Q": 0.455115,
+      "report": 0.0,
+      "close": 0.000943,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 9232
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.476685,
+       "open": 0.003351,
+       "H": 0.027925,
+       "Q": 0.4441,
+       "report": 0.0,
+       "close": 0.001309,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9232
+      }
+     ],
+     "best": 0.476685,
+     "best_Q": 0.4441,
+     "rss_kb": 9232,
+     "rc": 0,
+     "identical": true,
+     "speedup": 7.180171392009398
+    },
+    "BIT-15": {
+     "check": {
+      "rc": 0,
+      "total": 0.36188,
+      "open": 0.002747,
+      "H": 0.028313,
+      "Q": 0.329523,
+      "report": 0.0,
+      "close": 0.001297,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 9216
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.406534,
+       "open": 0.003136,
+       "H": 0.029174,
+       "Q": 0.370844,
+       "report": 0.0,
+       "close": 0.00338,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9296
+      }
+     ],
+     "best": 0.36188,
+     "best_Q": 0.329523,
+     "rss_kb": 9296,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.458052393058473
+    },
+    "BIT-16": {
+     "check": {
+      "rc": 0,
+      "total": 0.362789,
+      "open": 0.002511,
+      "H": 0.006139,
+      "Q": 0.35312,
+      "report": 0.0,
+      "close": 0.001019,
+      "steps": 288,
+      "hash": "3811aa7ba7aec132",
+      "rss_kb": 9264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.369406,
+       "open": 0.003007,
+       "H": 0.005701,
+       "Q": 0.359028,
+       "report": 0.0,
+       "close": 0.00167,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9296
+      }
+     ],
+     "best": 0.362789,
+     "best_Q": 0.35312,
+     "rss_kb": 9296,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.43435440435074
+    }
+   },
+   "load_start": [
+    8.34,
+    13.23,
+    16.82
+   ],
+   "load_end": [
+    8.87,
+    13.09,
+    16.7
+   ]
+  }
+ ]
+}

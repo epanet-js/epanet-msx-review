@@ -1,0 +1,828 @@
+{
+ "builds": [
+  "only:NEAR-01",
+  "only:NEAR-02",
+  "only:NEAR-03",
+  "near",
+  "bit"
+ ],
+ "threads": [
+  "1",
+  "8",
+  "10"
+ ],
+ "date": "2026-10-05",
+ "all_same": true,
+ "rows": [
+  {
+   "build": "only:NEAR-01",
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "852b1128bd42a85f",
+    "only:NEAR-01 8t": "852b1128bd42a85f",
+    "only:NEAR-01 10t": "852b1128bd42a85f",
+    "only:NEAR-01@noomp 1t": "852b1128bd42a85f"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "91a2c2b5e078f973",
+    "only:NEAR-01 8t": "91a2c2b5e078f973",
+    "only:NEAR-01 10t": "91a2c2b5e078f973",
+    "only:NEAR-01@noomp 1t": "91a2c2b5e078f973"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "caa510bbe21d6420",
+    "only:NEAR-01 8t": "caa510bbe21d6420",
+    "only:NEAR-01 10t": "caa510bbe21d6420",
+    "only:NEAR-01@noomp 1t": "caa510bbe21d6420"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "fb551f7530329c7f",
+    "only:NEAR-01 8t": "fb551f7530329c7f",
+    "only:NEAR-01 10t": "fb551f7530329c7f",
+    "only:NEAR-01@noomp 1t": "fb551f7530329c7f"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "15810c74e40f4bc6",
+    "only:NEAR-01 8t": "15810c74e40f4bc6",
+    "only:NEAR-01 10t": "15810c74e40f4bc6",
+    "only:NEAR-01@noomp 1t": "15810c74e40f4bc6"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "790ac79cf88f38ac",
+    "only:NEAR-01 8t": "790ac79cf88f38ac",
+    "only:NEAR-01 10t": "790ac79cf88f38ac",
+    "only:NEAR-01@noomp 1t": "790ac79cf88f38ac"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "c6676134b11a20f6",
+    "only:NEAR-01 8t": "c6676134b11a20f6",
+    "only:NEAR-01 10t": "c6676134b11a20f6",
+    "only:NEAR-01@noomp 1t": "c6676134b11a20f6"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "aa71dd289b698710",
+    "only:NEAR-01 8t": "aa71dd289b698710",
+    "only:NEAR-01 10t": "aa71dd289b698710",
+    "only:NEAR-01@noomp 1t": "aa71dd289b698710"
+   }
+  },
+  {
+   "build": "only:NEAR-01",
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "only:NEAR-01 10t",
+    "only:NEAR-01 1t",
+    "only:NEAR-01 8t",
+    "only:NEAR-01@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-01 1t": "3811aa7ba7aec132",
+    "only:NEAR-01 8t": "3811aa7ba7aec132",
+    "only:NEAR-01 10t": "3811aa7ba7aec132",
+    "only:NEAR-01@noomp 1t": "3811aa7ba7aec132"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "36ec687bab915854",
+    "only:NEAR-02 8t": "36ec687bab915854",
+    "only:NEAR-02 10t": "36ec687bab915854",
+    "only:NEAR-02@noomp 1t": "36ec687bab915854"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "c6d735de9abd7794",
+    "only:NEAR-02 8t": "c6d735de9abd7794",
+    "only:NEAR-02 10t": "c6d735de9abd7794",
+    "only:NEAR-02@noomp 1t": "c6d735de9abd7794"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "1a103df57418ff59",
+    "only:NEAR-02 8t": "1a103df57418ff59",
+    "only:NEAR-02 10t": "1a103df57418ff59",
+    "only:NEAR-02@noomp 1t": "1a103df57418ff59"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "cff1a29bd5dce4f9",
+    "only:NEAR-02 8t": "cff1a29bd5dce4f9",
+    "only:NEAR-02 10t": "cff1a29bd5dce4f9",
+    "only:NEAR-02@noomp 1t": "cff1a29bd5dce4f9"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "4811b18eb7bd7eb9",
+    "only:NEAR-02 8t": "4811b18eb7bd7eb9",
+    "only:NEAR-02 10t": "4811b18eb7bd7eb9",
+    "only:NEAR-02@noomp 1t": "4811b18eb7bd7eb9"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "8c1bc2a7c84f3937",
+    "only:NEAR-02 8t": "8c1bc2a7c84f3937",
+    "only:NEAR-02 10t": "8c1bc2a7c84f3937",
+    "only:NEAR-02@noomp 1t": "8c1bc2a7c84f3937"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "2d27ebbc1fe41c83",
+    "only:NEAR-02 8t": "2d27ebbc1fe41c83",
+    "only:NEAR-02 10t": "2d27ebbc1fe41c83",
+    "only:NEAR-02@noomp 1t": "2d27ebbc1fe41c83"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "aa71dd289b698710",
+    "only:NEAR-02 8t": "aa71dd289b698710",
+    "only:NEAR-02 10t": "aa71dd289b698710",
+    "only:NEAR-02@noomp 1t": "aa71dd289b698710"
+   }
+  },
+  {
+   "build": "only:NEAR-02",
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "only:NEAR-02 10t",
+    "only:NEAR-02 1t",
+    "only:NEAR-02 8t",
+    "only:NEAR-02@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-02 1t": "34ae954a21f3ee4a",
+    "only:NEAR-02 8t": "34ae954a21f3ee4a",
+    "only:NEAR-02 10t": "34ae954a21f3ee4a",
+    "only:NEAR-02@noomp 1t": "34ae954a21f3ee4a"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "36ec687bab915854",
+    "only:NEAR-03 8t": "36ec687bab915854",
+    "only:NEAR-03 10t": "36ec687bab915854",
+    "only:NEAR-03@noomp 1t": "36ec687bab915854"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "c6d735de9abd7794",
+    "only:NEAR-03 8t": "c6d735de9abd7794",
+    "only:NEAR-03 10t": "c6d735de9abd7794",
+    "only:NEAR-03@noomp 1t": "c6d735de9abd7794"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "0a8bcdc02d043171",
+    "only:NEAR-03 8t": "0a8bcdc02d043171",
+    "only:NEAR-03 10t": "0a8bcdc02d043171",
+    "only:NEAR-03@noomp 1t": "0a8bcdc02d043171"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "cff1a29bd5dce4f9",
+    "only:NEAR-03 8t": "cff1a29bd5dce4f9",
+    "only:NEAR-03 10t": "cff1a29bd5dce4f9",
+    "only:NEAR-03@noomp 1t": "cff1a29bd5dce4f9"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "15810c74e40f4bc6",
+    "only:NEAR-03 8t": "15810c74e40f4bc6",
+    "only:NEAR-03 10t": "15810c74e40f4bc6",
+    "only:NEAR-03@noomp 1t": "15810c74e40f4bc6"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "8c1bc2a7c84f3937",
+    "only:NEAR-03 8t": "8c1bc2a7c84f3937",
+    "only:NEAR-03 10t": "8c1bc2a7c84f3937",
+    "only:NEAR-03@noomp 1t": "8c1bc2a7c84f3937"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "2d27ebbc1fe41c83",
+    "only:NEAR-03 8t": "2d27ebbc1fe41c83",
+    "only:NEAR-03 10t": "2d27ebbc1fe41c83",
+    "only:NEAR-03@noomp 1t": "2d27ebbc1fe41c83"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "aa71dd289b698710",
+    "only:NEAR-03 8t": "aa71dd289b698710",
+    "only:NEAR-03 10t": "aa71dd289b698710",
+    "only:NEAR-03@noomp 1t": "aa71dd289b698710"
+   }
+  },
+  {
+   "build": "only:NEAR-03",
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "only:NEAR-03 10t",
+    "only:NEAR-03 1t",
+    "only:NEAR-03 8t",
+    "only:NEAR-03@noomp 1t"
+   ],
+   "hashes": {
+    "only:NEAR-03 1t": "3811aa7ba7aec132",
+    "only:NEAR-03 8t": "3811aa7ba7aec132",
+    "only:NEAR-03 10t": "3811aa7ba7aec132",
+    "only:NEAR-03@noomp 1t": "3811aa7ba7aec132"
+   }
+  },
+  {
+   "build": "near",
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "852b1128bd42a85f",
+    "near 8t": "852b1128bd42a85f",
+    "near 10t": "852b1128bd42a85f",
+    "near@noomp 1t": "852b1128bd42a85f"
+   }
+  },
+  {
+   "build": "near",
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "91a2c2b5e078f973",
+    "near 8t": "91a2c2b5e078f973",
+    "near 10t": "91a2c2b5e078f973",
+    "near@noomp 1t": "91a2c2b5e078f973"
+   }
+  },
+  {
+   "build": "near",
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "790a8075116acad9",
+    "near 8t": "790a8075116acad9",
+    "near 10t": "790a8075116acad9",
+    "near@noomp 1t": "790a8075116acad9"
+   }
+  },
+  {
+   "build": "near",
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "fb551f7530329c7f",
+    "near 8t": "fb551f7530329c7f",
+    "near 10t": "fb551f7530329c7f",
+    "near@noomp 1t": "fb551f7530329c7f"
+   }
+  },
+  {
+   "build": "near",
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "4811b18eb7bd7eb9",
+    "near 8t": "4811b18eb7bd7eb9",
+    "near 10t": "4811b18eb7bd7eb9",
+    "near@noomp 1t": "4811b18eb7bd7eb9"
+   }
+  },
+  {
+   "build": "near",
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "790ac79cf88f38ac",
+    "near 8t": "790ac79cf88f38ac",
+    "near 10t": "790ac79cf88f38ac",
+    "near@noomp 1t": "790ac79cf88f38ac"
+   }
+  },
+  {
+   "build": "near",
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "c6676134b11a20f6",
+    "near 8t": "c6676134b11a20f6",
+    "near 10t": "c6676134b11a20f6",
+    "near@noomp 1t": "c6676134b11a20f6"
+   }
+  },
+  {
+   "build": "near",
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "aa71dd289b698710",
+    "near 8t": "aa71dd289b698710",
+    "near 10t": "aa71dd289b698710",
+    "near@noomp 1t": "aa71dd289b698710"
+   }
+  },
+  {
+   "build": "near",
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "near 10t",
+    "near 1t",
+    "near 8t",
+    "near@noomp 1t"
+   ],
+   "hashes": {
+    "near 1t": "34ae954a21f3ee4a",
+    "near 8t": "34ae954a21f3ee4a",
+    "near 10t": "34ae954a21f3ee4a",
+    "near@noomp 1t": "34ae954a21f3ee4a"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "36ec687bab915854",
+    "bit 8t": "36ec687bab915854",
+    "bit 10t": "36ec687bab915854",
+    "bit@noomp 1t": "36ec687bab915854"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "c6d735de9abd7794",
+    "bit 8t": "c6d735de9abd7794",
+    "bit 10t": "c6d735de9abd7794",
+    "bit@noomp 1t": "c6d735de9abd7794"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "1a103df57418ff59",
+    "bit 8t": "1a103df57418ff59",
+    "bit 10t": "1a103df57418ff59",
+    "bit@noomp 1t": "1a103df57418ff59"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "cff1a29bd5dce4f9",
+    "bit 8t": "cff1a29bd5dce4f9",
+    "bit 10t": "cff1a29bd5dce4f9",
+    "bit@noomp 1t": "cff1a29bd5dce4f9"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "15810c74e40f4bc6",
+    "bit 8t": "15810c74e40f4bc6",
+    "bit 10t": "15810c74e40f4bc6",
+    "bit@noomp 1t": "15810c74e40f4bc6"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "8c1bc2a7c84f3937",
+    "bit 8t": "8c1bc2a7c84f3937",
+    "bit 10t": "8c1bc2a7c84f3937",
+    "bit@noomp 1t": "8c1bc2a7c84f3937"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "2d27ebbc1fe41c83",
+    "bit 8t": "2d27ebbc1fe41c83",
+    "bit 10t": "2d27ebbc1fe41c83",
+    "bit@noomp 1t": "2d27ebbc1fe41c83"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "bwsn2-out",
+   "name": "BWSN2, 2 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "aa71dd289b698710",
+    "bit 8t": "aa71dd289b698710",
+    "bit 10t": "aa71dd289b698710",
+    "bit@noomp 1t": "aa71dd289b698710"
+   }
+  },
+  {
+   "build": "bit",
+   "case": "net3-chlm-out",
+   "name": "Net3 chloramine, 14 species, every node and link every 5 min",
+   "same": true,
+   "runs": [
+    "bit 10t",
+    "bit 1t",
+    "bit 8t",
+    "bit@noomp 1t"
+   ],
+   "hashes": {
+    "bit 1t": "3811aa7ba7aec132",
+    "bit 8t": "3811aa7ba7aec132",
+    "bit 10t": "3811aa7ba7aec132",
+    "bit@noomp 1t": "3811aa7ba7aec132"
+   }
+  }
+ ]
+}

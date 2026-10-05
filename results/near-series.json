@@ -1,0 +1,2677 @@
+{
+ "builds": [
+  "bit",
+  "only:NEAR-01",
+  "only:NEAR-02",
+  "only:NEAR-03",
+  "near"
+ ],
+ "threads": [
+  1,
+  8
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 1,
+ "metric": "total",
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-05",
+ "start": {
+  "load": [
+   17.53,
+   19.76,
+   19.89
+  ],
+  "time": "2026-10-05 16:24"
+ },
+ "end": {
+  "load": [
+   11.32,
+   17.33,
+   18.95
+  ],
+  "time": "2026-10-05 16:25"
+ },
+ "build_info": {
+  "bit": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "only:NEAR-01": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "only:NEAR-02": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "only:NEAR-03": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "near": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n"
+ },
+ "results": [
+  {
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.813244,
+      "open": 0.020391,
+      "H": 0.032803,
+      "Q": 0.75375,
+      "report": 0.0,
+      "close": 0.0063,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 271920
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.777067,
+       "open": 0.0171,
+       "H": 0.03176,
+       "Q": 0.722257,
+       "report": 0.0,
+       "close": 0.00595,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 271552
+      }
+     ],
+     "best": 0.777067,
+     "best_Q": 0.722257,
+     "rss_kb": 271920,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.808039,
+      "open": 0.0223,
+      "H": 0.036508,
+      "Q": 0.743172,
+      "report": 1e-06,
+      "close": 0.006058,
+      "steps": 72,
+      "hash": "852b1128bd42a85f",
+      "rss_kb": 273376
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.7478,
+       "open": 0.01836,
+       "H": 0.033537,
+       "Q": 0.690295,
+       "report": 0.0,
+       "close": 0.005608,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 272800
+      }
+     ],
+     "best": 0.7478,
+     "best_Q": 0.690295,
+     "rss_kb": 273376,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.039137469911741
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.796444,
+      "open": 0.019234,
+      "H": 0.033412,
+      "Q": 0.737493,
+      "report": 0.0,
+      "close": 0.006305,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 271920
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.762037,
+       "open": 0.017783,
+       "H": 0.032148,
+       "Q": 0.706163,
+       "report": 0.0,
+       "close": 0.005943,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 272048
+      }
+     ],
+     "best": 0.762037,
+     "best_Q": 0.706163,
+     "rss_kb": 272048,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.019723451748406
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.795346,
+      "open": 0.019556,
+      "H": 0.034231,
+      "Q": 0.73495,
+      "report": 0.0,
+      "close": 0.006609,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 271440
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.777709,
+       "open": 0.018539,
+       "H": 0.035319,
+       "Q": 0.718402,
+       "report": 0.0,
+       "close": 0.005449,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 271232
+      }
+     ],
+     "best": 0.777709,
+     "best_Q": 0.718402,
+     "rss_kb": 271440,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9991744984306469
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.757871,
+      "open": 0.018743,
+      "H": 0.032286,
+      "Q": 0.700617,
+      "report": 0.0,
+      "close": 0.006225,
+      "steps": 72,
+      "hash": "852b1128bd42a85f",
+      "rss_kb": 273040
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.763619,
+       "open": 0.016983,
+       "H": 0.031585,
+       "Q": 0.70943,
+       "report": 0.0,
+       "close": 0.005621,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 272720
+      }
+     ],
+     "best": 0.757871,
+     "best_Q": 0.700617,
+     "rss_kb": 273040,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0253288488410297
+    }
+   },
+   "load_start": [
+    17.53,
+    19.76,
+    19.89
+   ],
+   "load_end": [
+    15.83,
+    19.32,
+    19.73
+   ]
+  },
+  {
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.383508,
+      "open": 0.019101,
+      "H": 0.034204,
+      "Q": 0.322181,
+      "report": 0.0,
+      "close": 0.008022,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 272256
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.341387,
+       "open": 0.017738,
+       "H": 0.032063,
+       "Q": 0.285881,
+       "report": 0.0,
+       "close": 0.005705,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 272016
+      }
+     ],
+     "best": 0.341387,
+     "best_Q": 0.285881,
+     "rss_kb": 272256,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.400154,
+      "open": 0.019635,
+      "H": 0.040042,
+      "Q": 0.334338,
+      "report": 0.0,
+      "close": 0.006139,
+      "steps": 72,
+      "hash": "852b1128bd42a85f",
+      "rss_kb": 273856
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.359382,
+       "open": 0.017833,
+       "H": 0.032697,
+       "Q": 0.302903,
+       "report": 0.0,
+       "close": 0.005949,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 273360
+      }
+     ],
+     "best": 0.359382,
+     "best_Q": 0.302903,
+     "rss_kb": 273856,
+     "rc": 0,
+     "identical": false,
+     "speedup": 0.9499279318385451
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.346265,
+      "open": 0.017659,
+      "H": 0.032091,
+      "Q": 0.290655,
+      "report": 0.0,
+      "close": 0.00586,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 271840
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.348872,
+       "open": 0.017636,
+       "H": 0.032507,
+       "Q": 0.293133,
+       "report": 0.0,
+       "close": 0.005596,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 271840
+      }
+     ],
+     "best": 0.346265,
+     "best_Q": 0.290655,
+     "rss_kb": 271840,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9859125236451851
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.398971,
+      "open": 0.018839,
+      "H": 0.034374,
+      "Q": 0.34004,
+      "report": 0.0,
+      "close": 0.005718,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 271936
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.339284,
+       "open": 0.017456,
+       "H": 0.032655,
+       "Q": 0.283303,
+       "report": 0.0,
+       "close": 0.00587,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 273024
+      }
+     ],
+     "best": 0.339284,
+     "best_Q": 0.283303,
+     "rss_kb": 273024,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.006198347107438
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.406001,
+      "open": 0.017718,
+      "H": 0.032797,
+      "Q": 0.349674,
+      "report": 0.0,
+      "close": 0.005812,
+      "steps": 72,
+      "hash": "852b1128bd42a85f",
+      "rss_kb": 273584
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.328619,
+       "open": 0.01761,
+       "H": 0.032336,
+       "Q": 0.272888,
+       "report": 0.0,
+       "close": 0.005785,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 273168
+      }
+     ],
+     "best": 0.328619,
+     "best_Q": 0.272888,
+     "rss_kb": 273584,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.038853505122954
+    }
+   },
+   "load_start": [
+    15.83,
+    19.32,
+    19.73
+   ],
+   "load_end": [
+    15.28,
+    19.15,
+    19.67
+   ]
+  },
+  {
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.528461,
+      "open": 0.006799,
+      "H": 0.071078,
+      "Q": 0.44776,
+      "report": 0.0,
+      "close": 0.002824,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89408
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.552805,
+       "open": 0.005905,
+       "H": 0.071674,
+       "Q": 0.472565,
+       "report": 0.0,
+       "close": 0.002661,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89360
+      }
+     ],
+     "best": 0.528461,
+     "best_Q": 0.44776,
+     "rss_kb": 89408,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.511493,
+      "open": 0.005548,
+      "H": 0.069414,
+      "Q": 0.433884,
+      "report": 0.0,
+      "close": 0.002647,
+      "steps": 720,
+      "hash": "91a2c2b5e078f973",
+      "rss_kb": 89264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.521901,
+       "open": 0.006456,
+       "H": 0.069885,
+       "Q": 0.442488,
+       "report": 0.0,
+       "close": 0.003072,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89200
+      }
+     ],
+     "best": 0.511493,
+     "best_Q": 0.433884,
+     "rss_kb": 89264,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0331734745148027
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.513457,
+      "open": 0.005541,
+      "H": 0.068472,
+      "Q": 0.436854,
+      "report": 0.0,
+      "close": 0.00259,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89456
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.517456,
+       "open": 0.006183,
+       "H": 0.07035,
+       "Q": 0.437963,
+       "report": 0.0,
+       "close": 0.00296,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89376
+      }
+     ],
+     "best": 0.513457,
+     "best_Q": 0.436854,
+     "rss_kb": 89456,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0292215316959354
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.567181,
+      "open": 0.006262,
+      "H": 0.071088,
+      "Q": 0.486987,
+      "report": 0.0,
+      "close": 0.002844,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89312
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.525658,
+       "open": 0.005898,
+       "H": 0.069064,
+       "Q": 0.447968,
+       "report": 0.0,
+       "close": 0.002728,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89184
+      }
+     ],
+     "best": 0.525658,
+     "best_Q": 0.447968,
+     "rss_kb": 89312,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0053323643890133
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.5484,
+      "open": 0.006059,
+      "H": 0.087905,
+      "Q": 0.45171,
+      "report": 0.0,
+      "close": 0.002726,
+      "steps": 720,
+      "hash": "91a2c2b5e078f973",
+      "rss_kb": 89264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.501684,
+       "open": 0.007425,
+       "H": 0.071337,
+       "Q": 0.419776,
+       "report": 0.0,
+       "close": 0.003146,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89120
+      }
+     ],
+     "best": 0.501684,
+     "best_Q": 0.419776,
+     "rss_kb": 89264,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0533742355745848
+    }
+   },
+   "load_start": [
+    15.28,
+    19.15,
+    19.67
+   ],
+   "load_end": [
+    14.62,
+    18.95,
+    19.59
+   ]
+  },
+  {
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.398166,
+      "open": 0.00608,
+      "H": 0.072385,
+      "Q": 0.316263,
+      "report": 0.0,
+      "close": 0.003438,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89760
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.386928,
+       "open": 0.005909,
+       "H": 0.070536,
+       "Q": 0.307123,
+       "report": 0.0,
+       "close": 0.00336,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89664
+      }
+     ],
+     "best": 0.386928,
+     "best_Q": 0.307123,
+     "rss_kb": 89760,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.407871,
+      "open": 0.005785,
+      "H": 0.068906,
+      "Q": 0.32987,
+      "report": 0.0,
+      "close": 0.00331,
+      "steps": 720,
+      "hash": "91a2c2b5e078f973",
+      "rss_kb": 89648
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.38687,
+       "open": 0.006106,
+       "H": 0.073996,
+       "Q": 0.303705,
+       "report": 0.0,
+       "close": 0.003063,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89744
+      }
+     ],
+     "best": 0.38687,
+     "best_Q": 0.303705,
+     "rss_kb": 89744,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0001499211621474
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.377465,
+      "open": 0.006184,
+      "H": 0.074297,
+      "Q": 0.293742,
+      "report": 0.0,
+      "close": 0.003242,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89712
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.415338,
+       "open": 0.005946,
+       "H": 0.07169,
+       "Q": 0.335397,
+       "report": 0.0,
+       "close": 0.002305,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89776
+      }
+     ],
+     "best": 0.377465,
+     "best_Q": 0.293742,
+     "rss_kb": 89776,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0250698740280555
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.369063,
+      "open": 0.005771,
+      "H": 0.06942,
+      "Q": 0.290674,
+      "report": 0.0,
+      "close": 0.003198,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89680
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.401287,
+       "open": 0.006097,
+       "H": 0.074777,
+       "Q": 0.317771,
+       "report": 0.0,
+       "close": 0.002642,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89584
+      }
+     ],
+     "best": 0.369063,
+     "best_Q": 0.290674,
+     "rss_kb": 89680,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0484063696442072
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.454826,
+      "open": 0.005975,
+      "H": 0.068221,
+      "Q": 0.371075,
+      "report": 0.0,
+      "close": 0.009555,
+      "steps": 720,
+      "hash": "91a2c2b5e078f973",
+      "rss_kb": 89616
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.399807,
+       "open": 0.005664,
+       "H": 0.068926,
+       "Q": 0.32255,
+       "report": 0.0,
+       "close": 0.002667,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89504
+      }
+     ],
+     "best": 0.399807,
+     "best_Q": 0.32255,
+     "rss_kb": 89616,
+     "rc": 0,
+     "identical": false,
+     "speedup": 0.9677869572068523
+    }
+   },
+   "load_start": [
+    14.62,
+    18.95,
+    19.59
+   ],
+   "load_end": [
+    13.77,
+    18.7,
+    19.5
+   ]
+  },
+  {
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.527198,
+      "open": 0.008527,
+      "H": 0.005006,
+      "Q": 0.512178,
+      "report": 0.0,
+      "close": 0.001487,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 36416
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.532631,
+       "open": 0.007314,
+       "H": 0.00509,
+       "Q": 0.518626,
+       "report": 0.0,
+       "close": 0.001601,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36416
+      }
+     ],
+     "best": 0.527198,
+     "best_Q": 0.512178,
+     "rss_kb": 36416,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.500727,
+      "open": 0.007185,
+      "H": 0.004957,
+      "Q": 0.487097,
+      "report": 0.0,
+      "close": 0.001488,
+      "steps": 240,
+      "hash": "caa510bbe21d6420",
+      "rss_kb": 36368
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.497053,
+       "open": 0.007282,
+       "H": 0.005001,
+       "Q": 0.483611,
+       "report": 0.0,
+       "close": 0.001159,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36288
+      }
+     ],
+     "best": 0.497053,
+     "best_Q": 0.483611,
+     "rss_kb": 36368,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0606474561062906
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.546224,
+      "open": 0.007253,
+      "H": 0.005072,
+      "Q": 0.532749,
+      "report": 0.0,
+      "close": 0.00115,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 36464
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.540437,
+       "open": 0.007189,
+       "H": 0.005013,
+       "Q": 0.526644,
+       "report": 0.0,
+       "close": 0.001591,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36400
+      }
+     ],
+     "best": 0.540437,
+     "best_Q": 0.526644,
+     "rss_kb": 36464,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9755031576298442
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.430076,
+      "open": 0.007856,
+      "H": 0.005192,
+      "Q": 0.415794,
+      "report": 0.0,
+      "close": 0.001234,
+      "steps": 240,
+      "hash": "0a8bcdc02d043171",
+      "rss_kb": 36272
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.393827,
+       "open": 0.007458,
+       "H": 0.004959,
+       "Q": 0.379821,
+       "report": 0.0,
+       "close": 0.001589,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36288
+      }
+     ],
+     "best": 0.393827,
+     "best_Q": 0.379821,
+     "rss_kb": 36288,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.3386537743730118
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.380332,
+      "open": 0.007752,
+      "H": 0.00527,
+      "Q": 0.365821,
+      "report": 0.0,
+      "close": 0.001489,
+      "steps": 240,
+      "hash": "790a8075116acad9",
+      "rss_kb": 36464
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.381297,
+       "open": 0.007492,
+       "H": 0.005036,
+       "Q": 0.367195,
+       "report": 0.0,
+       "close": 0.001574,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36288
+      }
+     ],
+     "best": 0.380332,
+     "best_Q": 0.365821,
+     "rss_kb": 36464,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.3861520986927212
+    }
+   },
+   "load_start": [
+    13.77,
+    18.7,
+    19.5
+   ],
+   "load_end": [
+    13.15,
+    18.49,
+    19.42
+   ]
+  },
+  {
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.211392,
+      "open": 0.007369,
+      "H": 0.0051,
+      "Q": 0.19718,
+      "report": 0.0,
+      "close": 0.001743,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 37744
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.196631,
+       "open": 0.007466,
+       "H": 0.005108,
+       "Q": 0.18277,
+       "report": 0.0,
+       "close": 0.001287,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 37696
+      }
+     ],
+     "best": 0.196631,
+     "best_Q": 0.18277,
+     "rss_kb": 37744,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.18839,
+      "open": 0.007376,
+      "H": 0.004977,
+      "Q": 0.17427,
+      "report": 0.0,
+      "close": 0.001767,
+      "steps": 240,
+      "hash": "caa510bbe21d6420",
+      "rss_kb": 37696
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.23793,
+       "open": 0.00782,
+       "H": 0.005148,
+       "Q": 0.22376,
+       "report": 0.0,
+       "close": 0.001202,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 37632
+      }
+     ],
+     "best": 0.18839,
+     "best_Q": 0.17427,
+     "rss_kb": 37696,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0437443601040395
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.223786,
+      "open": 0.007466,
+      "H": 0.00512,
+      "Q": 0.209533,
+      "report": 0.0,
+      "close": 0.001667,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 37728
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.210906,
+       "open": 0.00803,
+       "H": 0.00531,
+       "Q": 0.195797,
+       "report": 0.0,
+       "close": 0.001769,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 37664
+      }
+     ],
+     "best": 0.210906,
+     "best_Q": 0.195797,
+     "rss_kb": 37728,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9323158184214768
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.219778,
+      "open": 0.007425,
+      "H": 0.004989,
+      "Q": 0.205766,
+      "report": 0.0,
+      "close": 0.001598,
+      "steps": 240,
+      "hash": "0a8bcdc02d043171",
+      "rss_kb": 36944
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.205355,
+       "open": 0.007506,
+       "H": 0.005006,
+       "Q": 0.191249,
+       "report": 0.0,
+       "close": 0.001594,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 37056
+      }
+     ],
+     "best": 0.205355,
+     "best_Q": 0.191249,
+     "rss_kb": 37056,
+     "rc": 0,
+     "identical": false,
+     "speedup": 0.9575174697475104
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.186797,
+      "open": 0.007812,
+      "H": 0.005261,
+      "Q": 0.172042,
+      "report": 0.0,
+      "close": 0.001682,
+      "steps": 240,
+      "hash": "790a8075116acad9",
+      "rss_kb": 37056
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.176661,
+       "open": 0.007425,
+       "H": 0.005118,
+       "Q": 0.162494,
+       "report": 0.0,
+       "close": 0.001624,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 37040
+      }
+     ],
+     "best": 0.176661,
+     "best_Q": 0.162494,
+     "rss_kb": 37056,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.1130413617040547
+    }
+   },
+   "load_start": [
+    13.15,
+    18.49,
+    19.42
+   ],
+   "load_end": [
+    13.15,
+    18.49,
+    19.42
+   ]
+  },
+  {
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.6983,
+      "open": 0.005521,
+      "H": 0.008991,
+      "Q": 0.682285,
+      "report": 0.0,
+      "close": 0.001503,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31104
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.703941,
+       "open": 0.004551,
+       "H": 0.009501,
+       "Q": 0.688814,
+       "report": 0.0,
+       "close": 0.001075,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31024
+      }
+     ],
+     "best": 0.6983,
+     "best_Q": 0.682285,
+     "rss_kb": 31104,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.614435,
+      "open": 0.004329,
+      "H": 0.00896,
+      "Q": 0.599696,
+      "report": 0.0,
+      "close": 0.00145,
+      "steps": 144,
+      "hash": "fb551f7530329c7f",
+      "rss_kb": 31152
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.64797,
+       "open": 0.004816,
+       "H": 0.009657,
+       "Q": 0.63203,
+       "report": 0.0,
+       "close": 0.001467,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31056
+      }
+     ],
+     "best": 0.614435,
+     "best_Q": 0.599696,
+     "rss_kb": 31152,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.1364912480571583
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.695014,
+      "open": 0.004599,
+      "H": 0.009514,
+      "Q": 0.679832,
+      "report": 0.0,
+      "close": 0.001069,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31136
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.698624,
+       "open": 0.004406,
+       "H": 0.008956,
+       "Q": 0.684055,
+       "report": 0.0,
+       "close": 0.001207,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31040
+      }
+     ],
+     "best": 0.695014,
+     "best_Q": 0.679832,
+     "rss_kb": 31136,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0047279623144283
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.70459,
+      "open": 0.004671,
+      "H": 0.00929,
+      "Q": 0.689486,
+      "report": 0.0,
+      "close": 0.001143,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31200
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.70374,
+       "open": 0.004524,
+       "H": 0.008992,
+       "Q": 0.689123,
+       "report": 0.0,
+       "close": 0.001101,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31040
+      }
+     ],
+     "best": 0.70374,
+     "best_Q": 0.689123,
+     "rss_kb": 31200,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9922698723960554
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.59167,
+      "open": 0.00449,
+      "H": 0.009028,
+      "Q": 0.577074,
+      "report": 0.0,
+      "close": 0.001078,
+      "steps": 144,
+      "hash": "fb551f7530329c7f",
+      "rss_kb": 31104
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.603383,
+       "open": 0.004361,
+       "H": 0.009282,
+       "Q": 0.588315,
+       "report": 0.0,
+       "close": 0.001425,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31120
+      }
+     ],
+     "best": 0.59167,
+     "best_Q": 0.577074,
+     "rss_kb": 31120,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.1802187029932225
+    }
+   },
+   "load_start": [
+    13.15,
+    18.49,
+    19.42
+   ],
+   "load_end": [
+    12.37,
+    18.14,
+    19.29
+   ]
+  },
+  {
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.170838,
+      "open": 0.004591,
+      "H": 0.009079,
+      "Q": 0.155548,
+      "report": 0.0,
+      "close": 0.00162,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31504
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.177961,
+       "open": 0.004557,
+       "H": 0.008988,
+       "Q": 0.162822,
+       "report": 0.0,
+       "close": 0.001594,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31440
+      }
+     ],
+     "best": 0.170838,
+     "best_Q": 0.155548,
+     "rss_kb": 31504,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.16163,
+      "open": 0.004571,
+      "H": 0.009148,
+      "Q": 0.146802,
+      "report": 0.0,
+      "close": 0.001109,
+      "steps": 144,
+      "hash": "fb551f7530329c7f",
+      "rss_kb": 31520
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.163532,
+       "open": 0.004487,
+       "H": 0.008983,
+       "Q": 0.148524,
+       "report": 0.0,
+       "close": 0.001538,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31344
+      }
+     ],
+     "best": 0.16163,
+     "best_Q": 0.146802,
+     "rss_kb": 31520,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0569696219761182
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.185423,
+      "open": 0.004673,
+      "H": 0.009036,
+      "Q": 0.17012,
+      "report": 0.0,
+      "close": 0.001594,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31552
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.19728,
+       "open": 0.004958,
+       "H": 0.009557,
+       "Q": 0.181229,
+       "report": 1e-06,
+       "close": 0.001535,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31488
+      }
+     ],
+     "best": 0.185423,
+     "best_Q": 0.17012,
+     "rss_kb": 31552,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9213420125874351
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.185501,
+      "open": 0.004529,
+      "H": 0.009013,
+      "Q": 0.170457,
+      "report": 0.0,
+      "close": 0.001502,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31472
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.175955,
+       "open": 0.004998,
+       "H": 0.009635,
+       "Q": 0.16016,
+       "report": 0.0,
+       "close": 0.001162,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31408
+      }
+     ],
+     "best": 0.175955,
+     "best_Q": 0.16016,
+     "rss_kb": 31472,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9709187008041829
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.160358,
+      "open": 0.00443,
+      "H": 0.009019,
+      "Q": 0.14538,
+      "report": 0.0,
+      "close": 0.001529,
+      "steps": 144,
+      "hash": "fb551f7530329c7f",
+      "rss_kb": 31632
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.195966,
+       "open": 0.004611,
+       "H": 0.009021,
+       "Q": 0.180316,
+       "report": 0.0,
+       "close": 0.002018,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31504
+      }
+     ],
+     "best": 0.160358,
+     "best_Q": 0.14538,
+     "rss_kb": 31632,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0653537709375271
+    }
+   },
+   "load_start": [
+    12.37,
+    18.14,
+    19.29
+   ],
+   "load_end": [
+    12.37,
+    18.14,
+    19.29
+   ]
+  },
+  {
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.240644,
+      "open": 0.002373,
+      "H": 0.000902,
+      "Q": 1.236295,
+      "report": 0.0,
+      "close": 0.001074,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9680
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.240357,
+       "open": 0.001809,
+       "H": 0.000896,
+       "Q": 1.236573,
+       "report": 0.0,
+       "close": 0.001079,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9648
+      }
+     ],
+     "best": 1.240357,
+     "best_Q": 1.236295,
+     "rss_kb": 9680,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 1.306589,
+      "open": 0.001848,
+      "H": 0.000859,
+      "Q": 1.303177,
+      "report": 0.0,
+      "close": 0.000705,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9536
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.291126,
+       "open": 0.001932,
+       "H": 0.000887,
+       "Q": 1.28753,
+       "report": 0.0,
+       "close": 0.000777,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9552
+      }
+     ],
+     "best": 1.291126,
+     "best_Q": 1.28753,
+     "rss_kb": 9552,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9606785085266658
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.865888,
+      "open": 0.00181,
+      "H": 0.000924,
+      "Q": 0.862371,
+      "report": 0.0,
+      "close": 0.000783,
+      "steps": 288,
+      "hash": "4811b18eb7bd7eb9",
+      "rss_kb": 9632
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.8755,
+       "open": 0.001947,
+       "H": 0.000956,
+       "Q": 0.871495,
+       "report": 0.0,
+       "close": 0.001102,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9616
+      }
+     ],
+     "best": 0.865888,
+     "best_Q": 0.862371,
+     "rss_kb": 9632,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.43246817140323
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 1.256972,
+      "open": 0.002122,
+      "H": 0.000944,
+      "Q": 1.252734,
+      "report": 0.0,
+      "close": 0.001172,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9664
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.252426,
+       "open": 0.001814,
+       "H": 0.000871,
+       "Q": 1.248682,
+       "report": 0.0,
+       "close": 0.001059,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9616
+      }
+     ],
+     "best": 1.252426,
+     "best_Q": 1.248682,
+     "rss_kb": 9664,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9903635025143201
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.873104,
+      "open": 0.001837,
+      "H": 0.000875,
+      "Q": 0.869299,
+      "report": 0.0,
+      "close": 0.001093,
+      "steps": 288,
+      "hash": "4811b18eb7bd7eb9",
+      "rss_kb": 9600
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.877199,
+       "open": 0.001812,
+       "H": 0.000967,
+       "Q": 0.873377,
+       "report": 0.0,
+       "close": 0.001043,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9568
+      }
+     ],
+     "best": 0.873104,
+     "best_Q": 0.869299,
+     "rss_kb": 9600,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.4206291575803112
+    }
+   },
+   "load_start": [
+    12.37,
+    18.14,
+    19.29
+   ],
+   "load_end": [
+    11.64,
+    17.79,
+    19.15
+   ]
+  },
+  {
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.269971,
+      "open": 0.002114,
+      "H": 0.000946,
+      "Q": 0.266096,
+      "report": 0.0,
+      "close": 0.000815,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 10048
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.299564,
+       "open": 0.002211,
+       "H": 0.001015,
+       "Q": 0.295505,
+       "report": 1e-06,
+       "close": 0.000832,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9968
+      }
+     ],
+     "best": 0.269971,
+     "best_Q": 0.266096,
+     "rss_kb": 10048,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.287151,
+      "open": 0.002301,
+      "H": 0.000984,
+      "Q": 0.282662,
+      "report": 0.0,
+      "close": 0.001204,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9920
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.273081,
+       "open": 0.001944,
+       "H": 0.000942,
+       "Q": 0.26936,
+       "report": 0.0,
+       "close": 0.000835,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9904
+      }
+     ],
+     "best": 0.273081,
+     "best_Q": 0.26936,
+     "rss_kb": 9920,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9886114376320578
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.197354,
+      "open": 0.001946,
+      "H": 0.000905,
+      "Q": 0.193682,
+      "report": 0.0,
+      "close": 0.000821,
+      "steps": 288,
+      "hash": "4811b18eb7bd7eb9",
+      "rss_kb": 9936
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.196179,
+       "open": 0.001922,
+       "H": 0.001036,
+       "Q": 0.192121,
+       "report": 0.0,
+       "close": 0.0011,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9968
+      }
+     ],
+     "best": 0.196179,
+     "best_Q": 0.192121,
+     "rss_kb": 9968,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.3761462745757702
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.269039,
+      "open": 0.001974,
+      "H": 0.000901,
+      "Q": 0.265449,
+      "report": 0.0,
+      "close": 0.000715,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 10000
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.282863,
+       "open": 0.001967,
+       "H": 0.000967,
+       "Q": 0.279154,
+       "report": 0.0,
+       "close": 0.000775,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9984
+      }
+     ],
+     "best": 0.269039,
+     "best_Q": 0.265449,
+     "rss_kb": 10000,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.003464181772903
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.212456,
+      "open": 0.002536,
+      "H": 0.00114,
+      "Q": 0.207623,
+      "report": 0.0,
+      "close": 0.001157,
+      "steps": 288,
+      "hash": "4811b18eb7bd7eb9",
+      "rss_kb": 10096
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.201307,
+       "open": 0.001917,
+       "H": 0.000989,
+       "Q": 0.197191,
+       "report": 0.0,
+       "close": 0.00121,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9920
+      }
+     ],
+     "best": 0.201307,
+     "best_Q": 0.197191,
+     "rss_kb": 10096,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.341090970507732
+    }
+   },
+   "load_start": [
+    11.64,
+    17.79,
+    19.15
+   ],
+   "load_end": [
+    12.15,
+    17.8,
+    19.14
+   ]
+  },
+  {
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.433776,
+      "open": 0.001949,
+      "H": 0.000929,
+      "Q": 0.430188,
+      "report": 0.0,
+      "close": 0.00071,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7600
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.440121,
+       "open": 0.001093,
+       "H": 0.000881,
+       "Q": 0.437049,
+       "report": 0.0,
+       "close": 0.000724,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7760
+      }
+     ],
+     "best": 0.433776,
+     "best_Q": 0.430188,
+     "rss_kb": 7760,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.439797,
+      "open": 0.001749,
+      "H": 0.000904,
+      "Q": 0.436454,
+      "report": 0.0,
+      "close": 0.00069,
+      "steps": 480,
+      "hash": "790ac79cf88f38ac",
+      "rss_kb": 7520
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.431474,
+       "open": 0.000996,
+       "H": 0.000955,
+       "Q": 0.427386,
+       "report": 0.0,
+       "close": 0.000903,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 9824
+      }
+     ],
+     "best": 0.431474,
+     "best_Q": 0.427386,
+     "rss_kb": 9824,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0053351998034643
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.446388,
+      "open": 0.00169,
+      "H": 0.00093,
+      "Q": 0.442667,
+      "report": 0.0,
+      "close": 0.001101,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7648
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.434263,
+       "open": 0.000876,
+       "H": 0.000881,
+       "Q": 0.431006,
+       "report": 0.0,
+       "close": 0.000658,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8160
+      }
+     ],
+     "best": 0.434263,
+     "best_Q": 0.431006,
+     "rss_kb": 8160,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9988785597667772
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.444806,
+      "open": 0.001823,
+      "H": 0.000951,
+      "Q": 0.441349,
+      "report": 0.0,
+      "close": 0.000683,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7632
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.441102,
+       "open": 0.000887,
+       "H": 0.000877,
+       "Q": 0.437397,
+       "report": 0.0,
+       "close": 0.00089,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7648
+      }
+     ],
+     "best": 0.441102,
+     "best_Q": 0.437397,
+     "rss_kb": 7648,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9833915965014894
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.416337,
+      "open": 0.001882,
+      "H": 0.000939,
+      "Q": 0.412837,
+      "report": 0.0,
+      "close": 0.000679,
+      "steps": 480,
+      "hash": "790ac79cf88f38ac",
+      "rss_kb": 7600
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.411303,
+       "open": 0.000911,
+       "H": 0.000859,
+       "Q": 0.40788,
+       "report": 0.0,
+       "close": 0.000663,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 10064
+      }
+     ],
+     "best": 0.411303,
+     "best_Q": 0.40788,
+     "rss_kb": 10064,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0546385511411296
+    }
+   },
+   "load_start": [
+    12.15,
+    17.8,
+    19.14
+   ],
+   "load_end": [
+    11.9,
+    17.65,
+    19.08
+   ]
+  },
+  {
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.165151,
+      "open": 0.002398,
+      "H": 0.002225,
+      "Q": 0.159407,
+      "report": 0.0,
+      "close": 0.001121,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 8016
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.14541,
+       "open": 0.001075,
+       "H": 0.000902,
+       "Q": 0.141364,
+       "report": 0.0,
+       "close": 0.000932,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8096
+      }
+     ],
+     "best": 0.14541,
+     "best_Q": 0.141364,
+     "rss_kb": 8096,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.143389,
+      "open": 0.001935,
+      "H": 0.000975,
+      "Q": 0.139792,
+      "report": 0.0,
+      "close": 0.000687,
+      "steps": 480,
+      "hash": "790ac79cf88f38ac",
+      "rss_kb": 7920
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.139705,
+       "open": 0.00101,
+       "H": 0.000889,
+       "Q": 0.136119,
+       "report": 0.0,
+       "close": 0.000677,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 12176
+      }
+     ],
+     "best": 0.139705,
+     "best_Q": 0.136119,
+     "rss_kb": 12176,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0408360473855625
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.146857,
+      "open": 0.001929,
+      "H": 0.000971,
+      "Q": 0.142866,
+      "report": 0.0,
+      "close": 0.001091,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7920
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.151699,
+       "open": 0.001141,
+       "H": 0.000909,
+       "Q": 0.148734,
+       "report": 0.0,
+       "close": 0.000915,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 9536
+      }
+     ],
+     "best": 0.146857,
+     "best_Q": 0.142866,
+     "rss_kb": 9536,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9901468775747838
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.162682,
+      "open": 0.001883,
+      "H": 0.000912,
+      "Q": 0.158684,
+      "report": 0.0,
+      "close": 0.001203,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7904
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.153245,
+       "open": 0.001003,
+       "H": 0.000945,
+       "Q": 0.149641,
+       "report": 0.0,
+       "close": 0.000763,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 10112
+      }
+     ],
+     "best": 0.153245,
+     "best_Q": 0.149641,
+     "rss_kb": 10112,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9488727201540019
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.171241,
+      "open": 0.00211,
+      "H": 0.000994,
+      "Q": 0.167311,
+      "report": 0.0,
+      "close": 0.000826,
+      "steps": 480,
+      "hash": "790ac79cf88f38ac",
+      "rss_kb": 7920
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.140695,
+       "open": 0.001145,
+       "H": 0.000944,
+       "Q": 0.13763,
+       "report": 0.0,
+       "close": 0.000976,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8512
+      }
+     ],
+     "best": 0.140695,
+     "best_Q": 0.13763,
+     "rss_kb": 8512,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0335122072568323
+    }
+   },
+   "load_start": [
+    11.9,
+    17.65,
+    19.08
+   ],
+   "load_end": [
+    11.26,
+    17.42,
+    18.99
+   ]
+  },
+  {
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.064097,
+      "open": 0.001772,
+      "H": 0.000449,
+      "Q": 0.061362,
+      "report": 0.0,
+      "close": 0.000514,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 4928
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.062764,
+       "open": 0.000463,
+       "H": 0.000411,
+       "Q": 0.061242,
+       "report": 0.0,
+       "close": 0.000361,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 5552
+      }
+     ],
+     "best": 0.062764,
+     "best_Q": 0.061242,
+     "rss_kb": 5552,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.064217,
+      "open": 0.001327,
+      "H": 0.000455,
+      "Q": 0.061568,
+      "report": 0.0,
+      "close": 0.000867,
+      "steps": 480,
+      "hash": "c6676134b11a20f6",
+      "rss_kb": 4880
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.063861,
+       "open": 0.000527,
+       "H": 0.000441,
+       "Q": 0.061957,
+       "report": 0.0,
+       "close": 0.00042,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7792
+      }
+     ],
+     "best": 0.063861,
+     "best_Q": 0.061568,
+     "rss_kb": 7792,
+     "rc": 0,
+     "identical": false,
+     "speedup": 0.9828220666760621
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.064254,
+      "open": 0.001309,
+      "H": 0.000441,
+      "Q": 0.061608,
+      "report": 0.0,
+      "close": 0.000896,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 4944
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.063167,
+       "open": 0.00047,
+       "H": 0.00042,
+       "Q": 0.061758,
+       "report": 0.0,
+       "close": 0.000371,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7680
+      }
+     ],
+     "best": 0.063167,
+     "best_Q": 0.061608,
+     "rss_kb": 7680,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9936200864375386
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.064704,
+      "open": 0.00151,
+      "H": 0.000491,
+      "Q": 0.061827,
+      "report": 0.0,
+      "close": 0.000876,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 4944
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.063503,
+       "open": 0.000486,
+       "H": 0.000417,
+       "Q": 0.061832,
+       "report": 0.0,
+       "close": 0.000455,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7712
+      }
+     ],
+     "best": 0.063503,
+     "best_Q": 0.061827,
+     "rss_kb": 7712,
+     "rc": 0,
+     "identical": true,
+     "speedup": 0.9883627545155347
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.064391,
+      "open": 0.002071,
+      "H": 0.000466,
+      "Q": 0.060909,
+      "report": 0.0,
+      "close": 0.000945,
+      "steps": 480,
+      "hash": "c6676134b11a20f6",
+      "rss_kb": 4912
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.062533,
+       "open": 0.000479,
+       "H": 0.000422,
+       "Q": 0.060976,
+       "report": 0.0,
+       "close": 0.00035,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 5696
+      }
+     ],
+     "best": 0.062533,
+     "best_Q": 0.060909,
+     "rss_kb": 5696,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0036940495418418
+    }
+   },
+   "load_start": [
+    11.26,
+    17.42,
+    18.99
+   ],
+   "load_end": [
+    11.26,
+    17.42,
+    18.99
+   ]
+  },
+  {
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.068031,
+      "open": 0.001704,
+      "H": 0.000479,
+      "Q": 0.065064,
+      "report": 0.0,
+      "close": 0.000784,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 5264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.067477,
+       "open": 0.00058,
+       "H": 0.000455,
+       "Q": 0.064328,
+       "report": 0.0,
+       "close": 0.000464,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7856
+      }
+     ],
+     "best": 0.067477,
+     "best_Q": 0.064328,
+     "rss_kb": 7856,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "only:NEAR-01": {
+     "check": {
+      "rc": 0,
+      "total": 0.067593,
+      "open": 0.001957,
+      "H": 0.000476,
+      "Q": 0.06441,
+      "report": 0.0,
+      "close": 0.00075,
+      "steps": 480,
+      "hash": "c6676134b11a20f6",
+      "rss_kb": 5264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.068366,
+       "open": 0.000602,
+       "H": 0.000436,
+       "Q": 0.065242,
+       "report": 0.0,
+       "close": 0.000816,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 6000
+      }
+     ],
+     "best": 0.067593,
+     "best_Q": 0.06441,
+     "rss_kb": 6000,
+     "rc": 0,
+     "identical": false,
+     "speedup": 0.9982838459603804
+    },
+    "only:NEAR-02": {
+     "check": {
+      "rc": 0,
+      "total": 0.067337,
+      "open": 0.001547,
+      "H": 0.00052,
+      "Q": 0.064268,
+      "report": 0.0,
+      "close": 0.001002,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 5328
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.067501,
+       "open": 0.000574,
+       "H": 0.00045,
+       "Q": 0.06444,
+       "report": 0.0,
+       "close": 0.000484,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 6848
+      }
+     ],
+     "best": 0.067337,
+     "best_Q": 0.064268,
+     "rss_kb": 6848,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0020790947027638
+    },
+    "only:NEAR-03": {
+     "check": {
+      "rc": 0,
+      "total": 0.068265,
+      "open": 0.001408,
+      "H": 0.00049,
+      "Q": 0.065357,
+      "report": 0.0,
+      "close": 0.00101,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 5280
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.067348,
+       "open": 0.000636,
+       "H": 0.000444,
+       "Q": 0.064267,
+       "report": 0.0,
+       "close": 0.000821,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 6000
+      }
+     ],
+     "best": 0.067348,
+     "best_Q": 0.064267,
+     "rss_kb": 6000,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.00191542436301
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.067189,
+      "open": 0.001554,
+      "H": 0.000656,
+      "Q": 0.063976,
+      "report": 0.0,
+      "close": 0.001003,
+      "steps": 480,
+      "hash": "c6676134b11a20f6",
+      "rss_kb": 5248
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.063062,
+       "open": 0.000608,
+       "H": 0.000456,
+       "Q": 0.060409,
+       "report": 0.0,
+       "close": 0.000689,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 5968
+      }
+     ],
+     "best": 0.063062,
+     "best_Q": 0.060409,
+     "rss_kb": 5968,
+     "rc": 0,
+     "identical": false,
+     "speedup": 1.0700104658907106
+    }
+   },
+   "load_start": [
+    11.26,
+    17.42,
+    18.99
+   ],
+   "load_end": [
+    11.32,
+    17.33,
+    18.95
+   ]
+  }
+ ]
+}

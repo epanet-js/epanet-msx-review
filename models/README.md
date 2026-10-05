@@ -31,8 +31,8 @@ The pipe counts include only pipes; MSX also routes water through pumps and valv
 
 | Case | Network | Pipes | Duration | Unpatched, 1 thread |
 |---|---|---:|---|---:|
-| L-Town 24 h, chlorine, bacteria, chloramine | L-Town, the BattLeDIM 2020 network (5-minute demand patterns) | 905 | 24 h | 3-51 s |
-| NW Model 12 h, chlorine, bacteria, chloramine | The Northwest System (pumps and rules) | 9,979 | 12 h | 66-665 s |
+| L-Town 24 h, chlorine, bacteria, chloramine | L-Town, the BattLeDIM 2020 network (5-minute demand patterns) | 905 | 24 h | about 3-50 s |
+| NW Model 12 h, chlorine, bacteria, chloramine | The Northwest System (pumps and rules) | 9,979 | 12 h | about 65-690 s |
 
 ## Where the files come from
 

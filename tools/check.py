@@ -115,7 +115,7 @@ def main():
     prevf = os.path.join(HERE, "results", "status.json")
     prev = json.load(open(prevf)) if os.path.exists(prevf) else None
     cur = {"date": time.strftime("%Y-%m-%d"), "ref": ref, "sha": sha, "epanet": ep, "patches": allst, "fixes_alone": alone,
-           "prs": prs, "try": m.group(1) + ".json" if m else None}
+           "prs": prs, "try": os.path.relpath(m.group(1) + ".json", HERE) if m else None}
 
     # ---- write status.md
     L = ["# Status against the latest EPANET-MSX", "", "[All changes](README.md)", ""]
@@ -125,6 +125,9 @@ def main():
     if tr:
         L[-1] += (f" {tr['machine']}; {'one checked run per build' if tr.get('quick') else 'best of several interleaved runs'} "
                   f"on the 7 main cases; load average {tr['start']['load'][0]} at the start and {tr['end']['load'][0]} at the end.")
+        if tr["start"]["load"][0] > (os.cpu_count() or 8):
+            L[-1] += (" The machine was busy (a load average above its core count), so treat the speed-ups as rough; "
+                      "`tools/check.py --reps 3` measures them again more carefully.")
     L += ["", f"## Upstream changes since 85a303d", ""]
     if upstream:
         L += [f"- `{u.split(' ', 2)[0]}` {u.split(' ', 2)[1]}: {u.split(' ', 2)[2]}" for u in upstream]
@@ -155,10 +158,11 @@ def main():
         if s in counts:
             ids = counts[s]
             L.append(f"- {s[0].upper() + s[1:]}: {len(ids)}" + (f" ({', '.join(ids)})" if len(ids) <= 4 else ""))
-    L += ["", "Each fix on its own:", "", "| Fix | On this version |", "| --- | --- |"]
+    L += ["", "Each fix on its own (a fix that no longer applies may be fixed upstream another way; its README says "
+          "what is known, and its test, once added, will tell):", "", "| Fix | On this version |", "| --- | --- |"]
     for f, s in alone.items():
-        L.append(f"| [{f}]({next((d for d in os.listdir(os.path.join(HERE, '3-bug-fixes')) if d.startswith(f)), '')}) | {s} |"
-                 .replace("](", "](3-bug-fixes/", 1))
+        d = next((d for d in os.listdir(os.path.join(HERE, "3-bug-fixes")) if d.startswith(f)), "")
+        L.append(f"| [{f}](3-bug-fixes/{d}/) | {s.replace(' (a fix; skipped)', '')} |")
     if tr:
         v = tr["verdict"]
         own = tr["own_base"]

@@ -4,7 +4,7 @@ Oct 5, 2026 · @Luke
 
 ## Summary
 
-On seven test cases built from the reaction systems in the EPANET-MSX manual, the 17 groups of bit-identical changes here make the median case **<!-- hl:bit1 -->15.7x<!-- /hl:bit1 --> faster with one thread and <!-- hl:bit8 -->9.1x<!-- /hl:bit8 --> faster with eight**, and every concentration at every step, the binary output file and the report are **bit-for-bit the same** as before. Three near-identical changes take the median to **<!-- hl:near1 -->17.0x<!-- /hl:near1 --> and <!-- hl:near8 -->10.7x<!-- /hl:near8 -->**; they move results by less than the unpatched code already varies between platforms. On eight threads, the patched code is <!-- hl:cross -->40.3x<!-- /hl:cross --> faster than the unpatched code on one thread in the median case (<!-- hl:crossrange -->3.2-93x<!-- /hl:crossrange -->; <!-- hl:crossbit -->38.4x<!-- /hl:crossbit --> with the bit-identical changes alone). Three bug fixes found on the way come first in the series; they leave every benchmark result unchanged.
+On seven test cases built from the reaction systems in the EPANET-MSX manual, the 17 groups of bit-identical changes here make the median case **<!-- hl:bit1 -->15.7x<!-- /hl:bit1 --> faster with one thread and <!-- hl:bit8 -->9.1x<!-- /hl:bit8 --> faster with eight**, and every concentration at every step, the binary output file and the report are **bit-for-bit the same** as before. Three near-identical changes take the median to **<!-- hl:near1 -->17.0x<!-- /hl:near1 --> and <!-- hl:near8 -->10.7x<!-- /hl:near8 -->**; they move results by less than the unpatched code already varies between platforms. Even on one thread, the patched code with every change is <!-- hl:near1v8 -->4.5x<!-- /hl:near1v8 --> faster in the median case than the unpatched code on eight threads (<!-- hl:near1v8range -->1.7-6.3x<!-- /hl:near1v8range -->; <!-- hl:bit1v8 -->4.2x<!-- /hl:bit1v8 --> with the bit-identical changes alone). Three bug fixes found on the way come first in the series; they leave every benchmark result unchanged.
 
 The numerical methods are unchanged: the same Lagrangian transport, the same integrators (Euler, RK5, ROS2), the same Newton solver for equilibria, the same dispersion model. The time was going into the work around the math:
 
@@ -47,19 +47,19 @@ The figures are the median speed-up per case over the seven main cases, each bui
 
 **These tables come from one quick pass** (`QUICK=1 tools/run-all.sh`: one timed run per build, on a machine in use, with the load average recorded), so single values can be a few per cent off at one thread and more at eight. `tools/run-all.sh` remakes every table as the best of a checked run and 5 timed runs, interleaved (about 6 hours), and `tools/update-docs.py` writes them into these pages. One value in this pass is not noise: in solve mode with all 10 cores, while the machine was busy (load average about 18), the unpatched KY8 dispersion case took 30-35 s instead of about 2.4 s at 8 threads. Its dispersion code takes a lock twice per pipe ([BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/)), and the likely cause is that when the system takes a core away from the thread holding the lock, every other thread waits for it; the patched builds, which take no lock there, ran normally in the same minutes. That is the top of the range in the last row.
 
-Per case, step mode:
+Per case, step mode, seconds: each build on one and on eight threads, then the patched code with every change against the unpatched code on eight threads, first with the patched code on one thread and then on eight. The headline table above compares builds at the same thread count.
 
 <!-- permodel -->
-| Case | Unpatched, 1 thread (s) | Bit-identical | Speed-up | Plus near-identical | Speed-up | Unpatched, 8 threads | Plus near-identical | Speed-up | Plus near-identical, 8 threads, against unpatched, 1 thread |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| BWSN2, two-source chlorine | 13.1 | 0.831 | 15.72x | 0.770 | 16.98x | 3.46 | 0.324 | 10.65x | 40.27x |
-| Net6, chlorine bulk + wall | 10.9 | 0.510 | 21.42x | 0.498 | 21.93x | 2.90 | 0.377 | 7.69x | 28.94x |
-| KY8, chlorine + dispersion | 10.1 | 0.520 | 19.52x | 0.378 | 26.83x | 2.40 | 0.192 | 12.45x | 52.76x |
-| Richmond, bacterial regrowth | 15.5 | 0.728 | 21.32x | 0.607 | 25.55x | 3.27 | 0.167 | 19.65x | 93.10x |
-| Net3, chloramine decay | 11.5 | 1.25 | 9.17x | 0.878 | 13.05x | 2.89 | 0.199 | 14.54x | 57.68x |
-| Net3, arsenic adsorption | 2.58 | 0.438 | 5.90x | 0.411 | 6.28x | 0.678 | 0.139 | 4.88x | 18.56x |
-| MSX example (4 nodes) | 0.214 | 63.2 ms | 3.38x | 63.0 ms | 3.39x | 0.137 | 66.2 ms | 2.07x | 3.23x |
-| **Median** | | | **15.72x** | | **16.98x** | | | **10.65x** | **40.27x** |
+| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| BWSN2, two-source chlorine | 13.1 | 3.46 | 0.831 | 0.335 | 0.770 | 0.324 | 4.49x | 10.65x |
+| Net6, chlorine bulk + wall | 10.9 | 2.90 | 0.510 | 0.372 | 0.498 | 0.377 | 5.83x | 7.69x |
+| KY8, chlorine + dispersion | 10.1 | 2.40 | 0.520 | 0.264 | 0.378 | 0.192 | 6.33x | 12.45x |
+| Richmond, bacterial regrowth | 15.5 | 3.27 | 0.728 | 0.196 | 0.607 | 0.167 | 5.39x | 19.65x |
+| Net3, chloramine decay | 11.5 | 2.89 | 1.25 | 0.277 | 0.878 | 0.199 | 3.29x | 14.54x |
+| Net3, arsenic adsorption | 2.58 | 0.678 | 0.438 | 0.148 | 0.411 | 0.139 | 1.65x | 4.88x |
+| MSX example (4 nodes) | 0.214 | 0.137 | 63.2 ms | 66.3 ms | 63.0 ms | 66.2 ms | 2.17x | 2.07x |
+| **Median** | | | | | | | **4.49x** | **10.65x** |
 <!-- /permodel -->
 
 <!-- hl:extremes -->At one thread the bit-identical gain is smallest on MSX example (4 nodes) (3.38x) and Net3, arsenic adsorption (5.90x), and largest on Net6, chlorine bulk + wall (21.42x) and Richmond, bacterial regrowth (21.32x).<!-- /hl:extremes -->
@@ -233,17 +233,39 @@ Most of the gain in solve mode on BWSN2 is [BIT-14](1-bit-identical/BIT-14-repor
 
 ## Larger networks
 
-Two public networks with three kinds of reactions each: L-Town (the BattLeDIM 2020 network, 905 pipes, 24 hours of its 5-minute demand patterns) and the NW Model (a 9,979-pipe system with pumps and rules, 12 hours), each with the manual's chlorine bulk and wall decay (Euler), bacterial regrowth (RK5) and chloramine decomposition (ROS2), with sources at the networks' reservoirs (`--cases real`). Whole runs, step mode, one checked run each.
+Two public networks with three kinds of reactions each, in the same layout as the per-case table above: L-Town (the BattLeDIM 2020 network, 905 pipes, 24 hours of its 5-minute demand patterns) and the NW Model (a 9,979-pipe system with pumps and rules, 12 hours), each with the manual's chlorine bulk and wall decay (Euler), bacterial regrowth (RK5) and chloramine decomposition (ROS2), with sources at the networks' reservoirs (`--cases real`). Whole runs, step mode, one checked run each.
 
 <!-- real -->
+| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 | Bit-identical results |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| L-Town 24 h, chlorine bulk + wall (Euler) | 3.54 | 1.35 | 0.258 | 0.281 | 0.223 | 0.294 | 6.06x | 4.59x | identical |
+| L-Town 24 h, bacterial regrowth (RK5) | 5.77 | 1.65 | 0.911 | 0.260 | 0.768 | 0.262 | 2.15x | 6.31x | identical |
+| L-Town 24 h, chloramine decay (ROS2) | 51.0 | 10.6 | 5.56 | 1.07 | 3.93 | 0.807 | 2.70x | 13.16x | identical |
+| NW Model 12 h, chlorine bulk + wall (Euler) | 65.4 | 14.0 | 1.93 | 0.964 | 1.86 | 0.952 | 7.52x | 14.71x | identical |
+| NW Model 12 h, bacterial regrowth (RK5) | 134 | 26.6 | 13.7 | 2.90 | 11.7 | 2.81 | 2.28x | 9.49x | identical |
+| NW Model 12 h, chloramine decay (ROS2) | 690 | 118 | 21.5 | 5.31 | 15.5 | 3.92 | 7.62x | 30.12x | identical |
+| **Median** | | | | | | | **4.38x** | **11.32x** | |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 6.0 at the start and 9.8 at the end; measured 2026-10-05.
 <!-- /real -->
 
 **Two utility models** that cannot be published were run the same way, each with the same three kinds of reactions: Utility model 1 and Utility model 2, each with several thousand pipes, run for 24 hours. They are not in the repository; the tables below come from `tools/bench.py --cases private`, which labels them without names.
 
 <!-- private -->
+| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 | Bit-identical results |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Utility model 1, bacterial regrowth (RK5) | 108 | 41.1 | 8.61 | 2.39 | 7.41 | 2.28 | 5.55x | 17.99x | identical |
+| Utility model 1, chloramine (ROS2) | 525 | 180 | 7.72 | 3.08 | 6.01 | 2.64 | 30.01x | 68.31x | identical |
+| Utility model 1, chlorine (Euler) | 50.8 | 22.8 | 2.12 | 1.50 | 2.15 | 1.51 | 10.62x | 15.13x | identical |
+| Utility model 2, bacterial regrowth (RK5) | 117 | 44.3 | 8.68 | 3.46 | 6.76 | 3.01 | 6.56x | 14.73x | identical |
+| Utility model 2, chloramine (ROS2) | 699 | 155 | 26.0 | 3.69 | 14.8 | 2.83 | 10.44x | 54.64x | identical |
+| Utility model 2, chlorine (Euler) | 57.7 | 16.7 | 1.35 | 0.625 | 1.34 | 0.638 | 12.45x | 26.14x | identical |
+| **Median** | | | | | | | **10.53x** | **22.07x** | |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 25.0 at the start and 7.6 at the end; measured 2026-10-05.
 <!-- /private -->
 
-TBD: utility sentence.
+<!-- hl:private -->The bit-identical builds gave the unpatched results bit for bit in every run. Even on one thread, the code with every change was 10.5x faster than the unpatched code on eight threads (median over the six cases), and 22.1x faster with both on eight threads.<!-- /hl:private --> The chloramine files used here set pH and alkalinity where water enters the network, as `tools/private-reactions.py` now does; an earlier file for one of the models did not, the equilibria had no solution in the water entering there, and with [FIX-01](3-bug-fixes/FIX-01-reaction-loop-error-race/) that run stopped with error 514, an error the unpatched code had been losing.
 
 ## Your own models
 
@@ -258,7 +280,21 @@ It times 85a303d and the patched builds on your models, checks whether the resul
 
 ## Newer versions of EPANET-MSX
 
-TBD from status.md.
+[status.md](status.md) records the last comparison with upstream EPANET-MSX. On 5 October 2026, against `dev` at [f11bf1d](https://github.com/USEPA/EPANETMSX/commit/f11bf1d0310c74f64ccbe2c4984edbf59459833c) (five commits after 85a303d: CMake changes for MSVC, a fix in `msxout.c`, and a new temporary-file routine from PR [#21](https://github.com/USEPA/EPANETMSX/pull/21)):
+
+- every patch applies except [FIX-03](3-bug-fixes/FIX-03-tempfile-descriptor-leak/), whose leak `dev` fixed another way in PR #21; [BIT-15](1-bit-identical/BIT-15-link-averages-once/) applies after an automatic three-way merge;
+- with the bit-identical patches, `dev`'s results are unchanged in all 21 runs (the 7 main cases, step mode at 1 and 8 threads and solve mode), and `dev`'s own results are the same as 85a303d's;
+- `dev` by itself runs at the same speed as 85a303d, so the gains above carry over.
+
+Of the two open pull requests, every patch applies on top of [#28](https://github.com/USEPA/EPANETMSX/pull/28) (reactions with no rate species), and the series stops at BIT-02 on [#29](https://github.com/USEPA/EPANETMSX/pull/29) (cross-compiler compatibility: `f()` to `f(void)`, functions made `static`, in 19 files), which touches the same lines; if #29 is merged, the series needs rebasing on it.
+
+To check again, or to check a pull request before it is merged:
+
+```sh
+tools/check.py              # the dev branch as it is on GitHub now
+tools/check.py pull/28      # a pull request
+tools/check.py --prs        # also: how far the series applies to each open pull request
+```
 
 ## How the results were checked
 

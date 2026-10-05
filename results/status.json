@@ -1,0 +1,308 @@
+{
+ "date": "2026-10-05",
+ "ref": "dev",
+ "sha": "f11bf1d0310c74f64ccbe2c4984edbf59459833c",
+ "epanet": "1e2fc3d909c0df654ead95e6e98c3307ce1375b1",
+ "patches": [
+  [
+   "FIX-01",
+   "applied"
+  ],
+  [
+   "FIX-02",
+   "applied"
+  ],
+  [
+   "FIX-03",
+   "does not apply (a fix; skipped)"
+  ],
+  [
+   "BIT-01",
+   "applied"
+  ],
+  [
+   "BIT-02",
+   "applied"
+  ],
+  [
+   "BIT-03",
+   "applied"
+  ],
+  [
+   "BIT-04",
+   "applied"
+  ],
+  [
+   "BIT-05",
+   "applied"
+  ],
+  [
+   "BIT-06",
+   "applied"
+  ],
+  [
+   "BIT-07",
+   "applied"
+  ],
+  [
+   "BIT-08",
+   "applied"
+  ],
+  [
+   "BIT-09",
+   "applied"
+  ],
+  [
+   "BIT-10",
+   "applied"
+  ],
+  [
+   "BIT-11",
+   "applied"
+  ],
+  [
+   "BIT-12",
+   "applied"
+  ],
+  [
+   "BIT-13",
+   "applied"
+  ],
+  [
+   "BIT-14",
+   "applied"
+  ],
+  [
+   "BIT-15",
+   "applied (3-way merge)"
+  ],
+  [
+   "BIT-16",
+   "applied"
+  ],
+  [
+   "BIT-17",
+   "applied"
+  ],
+  [
+   "NEAR-01",
+   "applied"
+  ],
+  [
+   "NEAR-02",
+   "applied"
+  ],
+  [
+   "NEAR-03",
+   "applied"
+  ]
+ ],
+ "fixes_alone": {
+  "FIX-01": "applied",
+  "FIX-02": "applied",
+  "FIX-03": "does not apply (a fix; skipped)"
+ },
+ "prs": [
+  {
+   "number": 29,
+   "title": "Fix cross-compiler compatibility issues",
+   "updated": "2026-09-30",
+   "sha": "702585cd5fc71704cb12dbc72295f7e71a81ec5c",
+   "states": [
+    [
+     "FIX-01",
+     "applied"
+    ],
+    [
+     "FIX-02",
+     "applied"
+    ],
+    [
+     "FIX-03",
+     "does not apply (a fix; skipped)"
+    ],
+    [
+     "BIT-01",
+     "applied"
+    ],
+    [
+     "BIT-02",
+     "does not apply"
+    ],
+    [
+     "BIT-03",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-04",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-05",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-06",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-07",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-08",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-09",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-10",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-11",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-12",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-13",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-14",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-15",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-16",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "BIT-17",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "NEAR-01",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "NEAR-02",
+     "not applied (series stopped at BIT-02)"
+    ],
+    [
+     "NEAR-03",
+     "not applied (series stopped at BIT-02)"
+    ]
+   ]
+  },
+  {
+   "number": 28,
+   "title": "Fix reactions with no rate species",
+   "updated": "2026-09-30",
+   "sha": "20d1c769ac6cc6eff5f36f02a52ea3fff8524c30",
+   "states": [
+    [
+     "FIX-01",
+     "applied"
+    ],
+    [
+     "FIX-02",
+     "applied"
+    ],
+    [
+     "FIX-03",
+     "applied"
+    ],
+    [
+     "BIT-01",
+     "applied"
+    ],
+    [
+     "BIT-02",
+     "applied"
+    ],
+    [
+     "BIT-03",
+     "applied"
+    ],
+    [
+     "BIT-04",
+     "applied"
+    ],
+    [
+     "BIT-05",
+     "applied"
+    ],
+    [
+     "BIT-06",
+     "applied"
+    ],
+    [
+     "BIT-07",
+     "applied"
+    ],
+    [
+     "BIT-08",
+     "applied"
+    ],
+    [
+     "BIT-09",
+     "applied"
+    ],
+    [
+     "BIT-10",
+     "applied"
+    ],
+    [
+     "BIT-11",
+     "applied"
+    ],
+    [
+     "BIT-12",
+     "applied"
+    ],
+    [
+     "BIT-13",
+     "applied"
+    ],
+    [
+     "BIT-14",
+     "applied"
+    ],
+    [
+     "BIT-15",
+     "applied"
+    ],
+    [
+     "BIT-16",
+     "applied"
+    ],
+    [
+     "BIT-17",
+     "applied"
+    ],
+    [
+     "NEAR-01",
+     "applied"
+    ],
+    [
+     "NEAR-02",
+     "applied"
+    ],
+    [
+     "NEAR-03",
+     "applied"
+    ]
+   ]
+  }
+ ],
+ "try": ".build/results/try-20261005-1811-bit-near-f11bf1d-f11bf1d-bit-f11bf1d-near.json"
+}

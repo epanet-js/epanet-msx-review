@@ -1,0 +1,1013 @@
+{
+ "builds": [
+  "base",
+  "bit",
+  "near"
+ ],
+ "threads": [
+  1,
+  8
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 0,
+ "metric": "total",
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-05",
+ "start": {
+  "load": [
+   6.01,
+   6.04,
+   6.96
+  ],
+  "time": "2026-10-05 17:42"
+ },
+ "end": {
+  "load": [
+   9.81,
+   12.24,
+   11.17
+  ],
+  "time": "2026-10-05 18:04"
+ },
+ "build_info": {
+  "base": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "bit": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "near": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n"
+ },
+ "results": [
+  {
+   "case": "ltown-cl2",
+   "name": "L-Town 24 h, chlorine bulk + wall (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.541451,
+      "open": 0.00625,
+      "H": 0.224253,
+      "Q": 3.309281,
+      "report": 0.0,
+      "close": 0.001667,
+      "steps": 1440,
+      "hash": "c781ca89d260c5c1",
+      "rss_kb": 15632
+     },
+     "times": [],
+     "best": 3.541451,
+     "best_Q": 3.309281,
+     "rss_kb": 15632,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.257697,
+      "open": 0.006015,
+      "H": 0.033587,
+      "Q": 0.216495,
+      "report": 0.0,
+      "close": 0.0016,
+      "steps": 1440,
+      "hash": "c781ca89d260c5c1",
+      "rss_kb": 20480
+     },
+     "times": [],
+     "best": 0.257697,
+     "best_Q": 0.216495,
+     "rss_kb": 20480,
+     "rc": 0,
+     "identical": true,
+     "speedup": 13.742693939005886
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.222655,
+      "open": 0.005669,
+      "H": 0.032062,
+      "Q": 0.183267,
+      "report": 0.0,
+      "close": 0.001657,
+      "steps": 1440,
+      "hash": "2e97a919cb2be128",
+      "rss_kb": 20336
+     },
+     "times": [],
+     "best": 0.222655,
+     "best_Q": 0.183267,
+     "rss_kb": 20336,
+     "rc": 0,
+     "identical": false,
+     "speedup": 15.905553434685949
+    }
+   },
+   "load_start": [
+    6.01,
+    6.04,
+    6.96
+   ],
+   "load_end": [
+    6.25,
+    6.09,
+    6.97
+   ]
+  },
+  {
+   "case": "ltown-cl2",
+   "name": "L-Town 24 h, chlorine bulk + wall (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 1.349955,
+      "open": 0.005622,
+      "H": 0.237398,
+      "Q": 1.104869,
+      "report": 0.0,
+      "close": 0.002066,
+      "steps": 1440,
+      "hash": "c781ca89d260c5c1",
+      "rss_kb": 16224
+     },
+     "times": [],
+     "best": 1.349955,
+     "best_Q": 1.104869,
+     "rss_kb": 16224,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.28148,
+      "open": 0.00528,
+      "H": 0.034179,
+      "Q": 0.24038,
+      "report": 0.0,
+      "close": 0.001641,
+      "steps": 1440,
+      "hash": "c781ca89d260c5c1",
+      "rss_kb": 20736
+     },
+     "times": [],
+     "best": 0.28148,
+     "best_Q": 0.24038,
+     "rss_kb": 20736,
+     "rc": 0,
+     "identical": true,
+     "speedup": 4.795918004831604
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.293963,
+      "open": 0.005093,
+      "H": 0.035082,
+      "Q": 0.251787,
+      "report": 0.0,
+      "close": 0.002001,
+      "steps": 1440,
+      "hash": "2e97a919cb2be128",
+      "rss_kb": 20704
+     },
+     "times": [],
+     "best": 0.293963,
+     "best_Q": 0.251787,
+     "rss_kb": 20704,
+     "rc": 0,
+     "identical": false,
+     "speedup": 4.592261611155146
+    }
+   },
+   "load_start": [
+    6.25,
+    6.09,
+    6.97
+   ],
+   "load_end": [
+    6.25,
+    6.09,
+    6.97
+   ]
+  },
+  {
+   "case": "ltown-bact",
+   "name": "L-Town 24 h, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 5.765435,
+      "open": 0.005525,
+      "H": 0.22291,
+      "Q": 5.535115,
+      "report": 1e-06,
+      "close": 0.001884,
+      "steps": 288,
+      "hash": "6cf030cc41a40bf4",
+      "rss_kb": 22448
+     },
+     "times": [],
+     "best": 5.765435,
+     "best_Q": 5.535115,
+     "rss_kb": 22448,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.91118,
+      "open": 0.00569,
+      "H": 0.032413,
+      "Q": 0.871287,
+      "report": 0.0,
+      "close": 0.00179,
+      "steps": 288,
+      "hash": "6cf030cc41a40bf4",
+      "rss_kb": 31824
+     },
+     "times": [],
+     "best": 0.91118,
+     "best_Q": 0.871287,
+     "rss_kb": 31824,
+     "rc": 0,
+     "identical": true,
+     "speedup": 6.32743804736715
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.767654,
+      "open": 0.005468,
+      "H": 0.033907,
+      "Q": 0.726236,
+      "report": 0.0,
+      "close": 0.002043,
+      "steps": 288,
+      "hash": "30dd6641c859298e",
+      "rss_kb": 31872
+     },
+     "times": [],
+     "best": 0.767654,
+     "best_Q": 0.726236,
+     "rss_kb": 31872,
+     "rc": 0,
+     "identical": false,
+     "speedup": 7.51046044181363
+    }
+   },
+   "load_start": [
+    6.25,
+    6.09,
+    6.97
+   ],
+   "load_end": [
+    6.15,
+    6.07,
+    6.96
+   ]
+  },
+  {
+   "case": "ltown-bact",
+   "name": "L-Town 24 h, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 1.650179,
+      "open": 0.005559,
+      "H": 0.20988,
+      "Q": 1.432596,
+      "report": 0.0,
+      "close": 0.002144,
+      "steps": 288,
+      "hash": "6cf030cc41a40bf4",
+      "rss_kb": 23648
+     },
+     "times": [],
+     "best": 1.650179,
+     "best_Q": 1.432596,
+     "rss_kb": 23648,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.259724,
+      "open": 0.005126,
+      "H": 0.031003,
+      "Q": 0.221089,
+      "report": 0.0,
+      "close": 0.002506,
+      "steps": 288,
+      "hash": "6cf030cc41a40bf4",
+      "rss_kb": 32224
+     },
+     "times": [],
+     "best": 0.259724,
+     "best_Q": 0.221089,
+     "rss_kb": 32224,
+     "rc": 0,
+     "identical": true,
+     "speedup": 6.353586884538972
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.26154,
+      "open": 0.006847,
+      "H": 0.030685,
+      "Q": 0.222051,
+      "report": 0.0,
+      "close": 0.001957,
+      "steps": 288,
+      "hash": "30dd6641c859298e",
+      "rss_kb": 32240
+     },
+     "times": [],
+     "best": 0.26154,
+     "best_Q": 0.222051,
+     "rss_kb": 32240,
+     "rc": 0,
+     "identical": false,
+     "speedup": 6.309470826642197
+    }
+   },
+   "load_start": [
+    6.15,
+    6.07,
+    6.96
+   ],
+   "load_end": [
+    6.14,
+    6.07,
+    6.95
+   ]
+  },
+  {
+   "case": "ltown-chlm",
+   "name": "L-Town 24 h, chloramine decay (ROS2)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 50.953219,
+      "open": 0.00852,
+      "H": 0.221492,
+      "Q": 50.721651,
+      "report": 0.0,
+      "close": 0.001556,
+      "steps": 288,
+      "hash": "201811de36468784",
+      "rss_kb": 33184
+     },
+     "times": [],
+     "best": 50.953219,
+     "best_Q": 50.721651,
+     "rss_kb": 33184,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 5.563409,
+      "open": 0.006559,
+      "H": 0.03275,
+      "Q": 5.521861,
+      "report": 0.0,
+      "close": 0.002239,
+      "steps": 288,
+      "hash": "201811de36468784",
+      "rss_kb": 49008
+     },
+     "times": [],
+     "best": 5.563409,
+     "best_Q": 5.521861,
+     "rss_kb": 49008,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.158632593792762
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 3.930388,
+      "open": 0.005745,
+      "H": 0.030671,
+      "Q": 3.892124,
+      "report": 0.0,
+      "close": 0.001848,
+      "steps": 288,
+      "hash": "6571867e0ac20483",
+      "rss_kb": 48976
+     },
+     "times": [],
+     "best": 3.930388,
+     "best_Q": 3.892124,
+     "rss_kb": 48976,
+     "rc": 0,
+     "identical": false,
+     "speedup": 12.963915776254149
+    }
+   },
+   "load_start": [
+    6.14,
+    6.07,
+    6.95
+   ],
+   "load_end": [
+    4.54,
+    5.65,
+    6.74
+   ]
+  },
+  {
+   "case": "ltown-chlm",
+   "name": "L-Town 24 h, chloramine decay (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 10.624291,
+      "open": 0.005788,
+      "H": 0.209506,
+      "Q": 10.406928,
+      "report": 0.0,
+      "close": 0.002069,
+      "steps": 288,
+      "hash": "201811de36468784",
+      "rss_kb": 34016
+     },
+     "times": [],
+     "best": 10.624291,
+     "best_Q": 10.406928,
+     "rss_kb": 34016,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.066086,
+      "open": 0.006636,
+      "H": 0.030752,
+      "Q": 1.026707,
+      "report": 0.0,
+      "close": 0.001991,
+      "steps": 288,
+      "hash": "201811de36468784",
+      "rss_kb": 49328
+     },
+     "times": [],
+     "best": 1.066086,
+     "best_Q": 1.026707,
+     "rss_kb": 49328,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.96569788928848
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.807226,
+      "open": 0.00605,
+      "H": 0.030628,
+      "Q": 0.768498,
+      "report": 0.0,
+      "close": 0.00205,
+      "steps": 288,
+      "hash": "6571867e0ac20483",
+      "rss_kb": 49328
+     },
+     "times": [],
+     "best": 0.807226,
+     "best_Q": 0.768498,
+     "rss_kb": 49328,
+     "rc": 0,
+     "identical": false,
+     "speedup": 13.161482657892584
+    }
+   },
+   "load_start": [
+    4.54,
+    5.65,
+    6.74
+   ],
+   "load_end": [
+    5.27,
+    5.75,
+    6.75
+   ]
+  },
+  {
+   "case": "nw-cl2",
+   "name": "NW Model 12 h, chlorine bulk + wall (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 65.393411,
+      "open": 0.095016,
+      "H": 0.106506,
+      "Q": 65.186543,
+      "report": 0.0,
+      "close": 0.005346,
+      "steps": 720,
+      "hash": "25962e1e1f2524b5",
+      "rss_kb": 121840
+     },
+     "times": [],
+     "best": 65.393411,
+     "best_Q": 65.186543,
+     "rss_kb": 121840,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.931094,
+      "open": 0.092776,
+      "H": 0.020563,
+      "Q": 1.812281,
+      "report": 0.0,
+      "close": 0.005474,
+      "steps": 720,
+      "hash": "25962e1e1f2524b5",
+      "rss_kb": 162176
+     },
+     "times": [],
+     "best": 1.931094,
+     "best_Q": 1.812281,
+     "rss_kb": 162176,
+     "rc": 0,
+     "identical": true,
+     "speedup": 33.86340126373962
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 1.861066,
+      "open": 0.090851,
+      "H": 0.020591,
+      "Q": 1.743428,
+      "report": 0.0,
+      "close": 0.006196,
+      "steps": 720,
+      "hash": "f5b19144ff829239",
+      "rss_kb": 162512
+     },
+     "times": [],
+     "best": 1.861066,
+     "best_Q": 1.743428,
+     "rss_kb": 162512,
+     "rc": 0,
+     "identical": false,
+     "speedup": 35.13760984296097
+    }
+   },
+   "load_start": [
+    5.27,
+    5.75,
+    6.75
+   ],
+   "load_end": [
+    7.5,
+    6.16,
+    6.82
+   ]
+  },
+  {
+   "case": "nw-cl2",
+   "name": "NW Model 12 h, chlorine bulk + wall (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 13.996533,
+      "open": 0.097247,
+      "H": 0.113108,
+      "Q": 13.780257,
+      "report": 0.0,
+      "close": 0.005921,
+      "steps": 720,
+      "hash": "25962e1e1f2524b5",
+      "rss_kb": 123472
+     },
+     "times": [],
+     "best": 13.996533,
+     "best_Q": 13.780257,
+     "rss_kb": 123472,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.963568,
+      "open": 0.097681,
+      "H": 0.023231,
+      "Q": 0.837772,
+      "report": 0.0,
+      "close": 0.004884,
+      "steps": 720,
+      "hash": "25962e1e1f2524b5",
+      "rss_kb": 163088
+     },
+     "times": [],
+     "best": 0.963568,
+     "best_Q": 0.837772,
+     "rss_kb": 163088,
+     "rc": 0,
+     "identical": true,
+     "speedup": 14.525734561546253
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.951513,
+      "open": 0.094625,
+      "H": 0.021913,
+      "Q": 0.830116,
+      "report": 0.0,
+      "close": 0.004859,
+      "steps": 720,
+      "hash": "f5b19144ff829239",
+      "rss_kb": 162912
+     },
+     "times": [],
+     "best": 0.951513,
+     "best_Q": 0.830116,
+     "rss_kb": 162912,
+     "rc": 0,
+     "identical": false,
+     "speedup": 14.709765394692452
+    }
+   },
+   "load_start": [
+    7.5,
+    6.16,
+    6.82
+   ],
+   "load_end": [
+    9.96,
+    6.83,
+    7.04
+   ]
+  },
+  {
+   "case": "nw-bact",
+   "name": "NW Model 12 h, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 134.325253,
+      "open": 0.103202,
+      "H": 0.118069,
+      "Q": 134.088208,
+      "report": 0.0,
+      "close": 0.015774,
+      "steps": 144,
+      "hash": "3c419c044ba3b99d",
+      "rss_kb": 204416
+     },
+     "times": [],
+     "best": 134.325253,
+     "best_Q": 134.088208,
+     "rss_kb": 204416,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 13.706726,
+      "open": 0.099466,
+      "H": 0.021599,
+      "Q": 13.578509,
+      "report": 0.0,
+      "close": 0.007152,
+      "steps": 144,
+      "hash": "3c419c044ba3b99d",
+      "rss_kb": 285360
+     },
+     "times": [],
+     "best": 13.706726,
+     "best_Q": 13.578509,
+     "rss_kb": 285360,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.799951717135077
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 11.689541,
+      "open": 0.093698,
+      "H": 0.022041,
+      "Q": 11.56772,
+      "report": 0.0,
+      "close": 0.006082,
+      "steps": 144,
+      "hash": "1a01f6d1b2aab215",
+      "rss_kb": 285856
+     },
+     "times": [],
+     "best": 11.689541,
+     "best_Q": 11.56772,
+     "rss_kb": 285856,
+     "rc": 0,
+     "identical": false,
+     "speedup": 11.491063079380107
+    }
+   },
+   "load_start": [
+    9.96,
+    6.83,
+    7.04
+   ],
+   "load_end": [
+    7.08,
+    7.0,
+    7.08
+   ]
+  },
+  {
+   "case": "nw-bact",
+   "name": "NW Model 12 h, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 26.634162,
+      "open": 0.095108,
+      "H": 0.112689,
+      "Q": 26.419459,
+      "report": 0.0,
+      "close": 0.006906,
+      "steps": 144,
+      "hash": "3c419c044ba3b99d",
+      "rss_kb": 205104
+     },
+     "times": [],
+     "best": 26.634162,
+     "best_Q": 26.419459,
+     "rss_kb": 205104,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 2.904539,
+      "open": 0.093257,
+      "H": 0.020861,
+      "Q": 2.784947,
+      "report": 0.0,
+      "close": 0.005474,
+      "steps": 144,
+      "hash": "3c419c044ba3b99d",
+      "rss_kb": 285856
+     },
+     "times": [],
+     "best": 2.904539,
+     "best_Q": 2.784947,
+     "rss_kb": 285856,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.169841410289205
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 2.807702,
+      "open": 0.100573,
+      "H": 0.021967,
+      "Q": 2.678269,
+      "report": 0.0,
+      "close": 0.006893,
+      "steps": 144,
+      "hash": "1a01f6d1b2aab215",
+      "rss_kb": 286352
+     },
+     "times": [],
+     "best": 2.807702,
+     "best_Q": 2.678269,
+     "rss_kb": 286352,
+     "rc": 0,
+     "identical": false,
+     "speedup": 9.486107143849312
+    }
+   },
+   "load_start": [
+    7.08,
+    7.0,
+    7.08
+   ],
+   "load_end": [
+    10.33,
+    8.15,
+    7.52
+   ]
+  },
+  {
+   "case": "nw-chlm",
+   "name": "NW Model 12 h, chloramine decay (ROS2)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 689.624539,
+      "open": 0.092606,
+      "H": 0.105693,
+      "Q": 689.416802,
+      "report": 0.0,
+      "close": 0.009438,
+      "steps": 144,
+      "hash": "404f92aa73200069",
+      "rss_kb": 334096
+     },
+     "times": [],
+     "best": 689.624539,
+     "best_Q": 689.416802,
+     "rss_kb": 334096,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 21.489829,
+      "open": 0.095764,
+      "H": 0.022534,
+      "Q": 21.364743,
+      "report": 0.0,
+      "close": 0.006788,
+      "steps": 144,
+      "hash": "404f92aa73200069",
+      "rss_kb": 455152
+     },
+     "times": [],
+     "best": 21.489829,
+     "best_Q": 21.364743,
+     "rss_kb": 455152,
+     "rc": 0,
+     "identical": true,
+     "speedup": 32.0907411129237
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 15.503789,
+      "open": 0.094053,
+      "H": 0.020787,
+      "Q": 15.381797,
+      "report": 0.0,
+      "close": 0.007152,
+      "steps": 144,
+      "hash": "26c77c0f554f3692",
+      "rss_kb": 454848
+     },
+     "times": [],
+     "best": 15.503789,
+     "best_Q": 15.381797,
+     "rss_kb": 454848,
+     "rc": 0,
+     "identical": false,
+     "speedup": 44.48103228185059
+    }
+   },
+   "load_start": [
+    10.33,
+    8.15,
+    7.52
+   ],
+   "load_end": [
+    6.7,
+    13.17,
+    11.22
+   ]
+  },
+  {
+   "case": "nw-chlm",
+   "name": "NW Model 12 h, chloramine decay (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 118.17212,
+      "open": 0.09227,
+      "H": 0.106068,
+      "Q": 117.963864,
+      "report": 0.0,
+      "close": 0.009918,
+      "steps": 144,
+      "hash": "404f92aa73200069",
+      "rss_kb": 337808
+     },
+     "times": [],
+     "best": 118.17212,
+     "best_Q": 117.963864,
+     "rss_kb": 337808,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 5.311849,
+      "open": 0.097431,
+      "H": 0.02158,
+      "Q": 5.184312,
+      "report": 0.0,
+      "close": 0.008526,
+      "steps": 144,
+      "hash": "404f92aa73200069",
+      "rss_kb": 454944
+     },
+     "times": [],
+     "best": 5.311849,
+     "best_Q": 5.184312,
+     "rss_kb": 454944,
+     "rc": 0,
+     "identical": true,
+     "speedup": 22.246889924770077
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 3.923449,
+      "open": 0.094461,
+      "H": 0.021382,
+      "Q": 3.801071,
+      "report": 0.0,
+      "close": 0.006535,
+      "steps": 144,
+      "hash": "26c77c0f554f3692",
+      "rss_kb": 455296
+     },
+     "times": [],
+     "best": 3.923449,
+     "best_Q": 3.801071,
+     "rss_kb": 455296,
+     "rc": 0,
+     "identical": false,
+     "speedup": 30.119448475053453
+    }
+   },
+   "load_start": [
+    6.7,
+    13.17,
+    11.22
+   ],
+   "load_end": [
+    9.81,
+    12.24,
+    11.17
+   ]
+  }
+ ]
+}

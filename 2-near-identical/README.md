@@ -15,10 +15,10 @@ Each change was judged on its own: `only:NEAR-NN` is the bit-identical series pl
 <!-- near-verdicts -->
 | Change | Cases whose results move | Species that moved most (case) | Acceptance rule | Larger networks | Same bits at 1, 8, 10 threads and without OpenMP | Speed-up, 1 thread | 8 threads |
 | --- | ---: | --- | --- | --- | --- | ---: | ---: |
-| `only:NEAR-01` | 6 of 9 | A5s (Net3, arsenic adsorption): FAIL, max 4.9, p99 0.81 | 9 of 9 pass | not run | yes, 9 cases | 1.03x | 1.00x |
-| `only:NEAR-02` | 2 of 9 | NH4 (Net3, chloramine decay): A, max 3e-12, p99 2.8e-12 | 9 of 9 pass | not run | yes, 9 cases | 1.00x | 0.99x |
-| `only:NEAR-03` | 1 of 9 | CL2 (KY8, chlorine + dispersion): A, max 1.1e-10, p99 1.1e-13 | 9 of 9 pass | not run | yes, 9 cases | 0.99x | 1.00x |
-| `near` | 8 of 9 | A5s (Net3, arsenic adsorption): FAIL, max 4.9, p99 0.81 | 9 of 9 pass | not run | yes, 9 cases | 1.05x | 1.07x |
+| `only:NEAR-01` | 6 of 9 | A5s (Net3, arsenic adsorption): FAIL, max 4.9, p99 0.81 | 9 of 9 pass | 6 of 6 pass | yes, 9 cases | 1.03x | 1.00x |
+| `only:NEAR-02` | 2 of 9 | NH4 (Net3, chloramine decay): A, max 3e-12, p99 2.8e-12 | 9 of 9 pass | 6 of 6 pass | yes, 9 cases | 1.00x | 0.99x |
+| `only:NEAR-03` | 1 of 9 | CL2 (KY8, chlorine + dispersion): A, max 1.1e-10, p99 1.1e-13 | 9 of 9 pass | 6 of 6 pass | yes, 9 cases | 0.99x | 1.00x |
+| `near` | 8 of 9 | A5s (Net3, arsenic adsorption): FAIL, max 4.9, p99 0.81 | 9 of 9 pass | 6 of 6 pass | yes, 9 cases | 1.05x | 1.07x |
 
 Speed-ups are median over the 7 main cases, against the bit-identical series.
 <!-- /near-verdicts -->
@@ -244,6 +244,18 @@ Totals: PASS 36
 The rule was also applied on L-Town and the NW Model (`--cases real`), comparing every sixth step to keep the dumps to a manageable size. These runs are long for the unpatched code and its platform samples, so they were made once.
 
 <!-- near-real -->
+24 of 24 judgements pass. The worst verdict of any candidate on these cases is A, while at least one platform sample goes beyond tier B on 3 of the 6 cases.
+
+Reference `base`; platform samples `base@nofma`, `base@fmafast`, `base@x86`; converged reference `bit@conv`; every 6th step compared. 2026-10-05.
+
+| Case | FMA off | FMA across statements | x86-64 | `only:NEAR-01` | `only:NEAR-02` | `only:NEAR-03` | `near` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| L-Town 24 h, chlorine bulk + wall (Euler) | A: CL2 max 7.2e-05 (rel 0.004), p99 2.4e-07 | IDENTICAL | A: CL2 max 7.1e-05 (rel 0.002), p99 2.2e-07 | PASS: A: CL2 max 1.8e-15 (rel 4e-15), p99 1.1e-16 | PASS: IDENTICAL | PASS: IDENTICAL | PASS: A: CL2 max 1.8e-15 (rel 4e-15), p99 1.1e-16 |
+| L-Town 24 h, bacterial regrowth (RK5) | A: CL2 max 2.9e-05 (rel 6e-05), p99 5.2e-07 | IDENTICAL | A: CL2 max 3.9e-05 (rel 8e-05), p99 5.2e-07 | PASS: A: Nb max 4.9e-15 (rel 1e-15), p99 8.9e-16 | PASS: IDENTICAL | PASS: IDENTICAL | PASS: A: Nb max 4.9e-15 (rel 1e-15), p99 8.9e-16 |
+| L-Town 24 h, chloramine decay (ROS2) | A: NH4 max 5e-08 (rel 8e-05), p99 6.8e-10 | IDENTICAL | FAIL: NH4 max 6.2e-08 (rel 0.0003), p99 6.7e-10, beyond B 1 | PASS: IDENTICAL | PASS: A: NH4 max 2.8e-12 (rel 8e-09), p99 2.3e-12 | PASS: IDENTICAL | PASS: A: NH4 max 2.8e-12 (rel 8e-09), p99 2.3e-12 |
+| NW Model 12 h, chlorine bulk + wall (Euler) | FAIL: CL2 max 0.012 (rel 0.05), p99 7.4e-07, beyond B 3 | FAIL: CL2 max 0.012 (rel 0.05), p99 6.9e-07, beyond B 3 | FAIL: CL2 max 0.012 (rel 0.05), p99 7.7e-07, beyond B 3 | PASS: A: CL2 max 2.4e-15 (rel 6e-15), p99 1.7e-16 | PASS: IDENTICAL | PASS: IDENTICAL | PASS: A: CL2 max 2.4e-15 (rel 6e-15), p99 1.7e-16 |
+| NW Model 12 h, bacterial regrowth (RK5) | B: Nb max 0.0086 (rel 0.002), p99 3.9e-06 | A: CL2 max 0.00048 (rel 0.0008), p99 4.9e-07 | A: Nb max 0.0018 (rel 0.0004), p99 4.4e-06 | PASS: A: Nb max 2e-14 (rel 6e-15), p99 8.9e-16 | PASS: IDENTICAL | PASS: IDENTICAL | PASS: A: Nb max 2e-14 (rel 6e-15), p99 8.9e-16 |
+| NW Model 12 h, chloramine decay (ROS2) | FAIL: NH4 max 2.1e-06 (rel 0.002), p99 7.8e-10, beyond B 11 | FAIL: NH4 max 8.9e-07 (rel 0.001), p99 8.7e-10, beyond B 12 | FAIL: NH4 max 6.5e-07 (rel 0.0008), p99 8.9e-10, beyond B 10 | PASS: IDENTICAL | PASS: A: NH4 max 2.9e-12 (rel 8e-09), p99 2.2e-12 | PASS: IDENTICAL | PASS: A: NH4 max 2.9e-12 (rel 8e-09), p99 2.2e-12 |
 <!-- /near-real -->
 
 ## Limitations

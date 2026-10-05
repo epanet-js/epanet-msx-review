@@ -465,7 +465,16 @@ def near_page(text, near):
         import yardstick as Y
         m = ysr["meta"]
         names = {c["id"]: c["name"] for c in m["cases"]}
-        L = [f"Reference `{m['ref']}`; platform samples " + ", ".join(f"`{s}`" for s in m["samples"]) +
+        order = {"IDENTICAL": 0, "A": 1, "A~": 2, "B": 3, "B~": 4, "FAIL": 5}
+        allj = [x.get("judgement", ["-"])[0] for rr in ysr["results"].values() for c, x in rr.items() if c in m["candidates"]]
+        worstc = max((rr.get(c, {}).get("vs_ref", {}).get("verdict", "IDENTICAL") for rr in ysr["results"].values()
+                      for c in m["candidates"]), key=lambda v: order.get(v, 9))
+        sfail = sum(1 for rr in ysr["results"].values()
+                    if any(rr.get(s, {}).get("vs_ref", {}).get("verdict") == "FAIL" for s in m["samples"]))
+        head = (f"{sum(1 for j in allj if j == 'PASS')} of {len(allj)} judgements pass. The worst verdict of any "
+                f"candidate on these cases is {worstc}, while at least one platform sample goes beyond tier B on "
+                f"{sfail} of the {len(ysr['results'])} cases.")
+        L = [head, "", f"Reference `{m['ref']}`; platform samples " + ", ".join(f"`{s}`" for s in m["samples"]) +
              f"; converged reference `{m['conv']}`; every {m.get('dumpevery', 1)}th step compared. {m['date']}.", "",
              "| Case | " + " | ".join(sample_title(s) for s in m["samples"]) + " | " +
              " | ".join(f"`{c}`" for c in m["candidates"]) + " |",
@@ -510,20 +519,8 @@ def headline(text):
                      f"{fsp(min(x for x in xb if x))}-{fsp(max(x for x in xb if x))} | "
                      f"{fsp(min(x for x in xn if x))}-{fsp(max(x for x in xn if x))} |")
     text = replace(text, "headline", "\n".join(L))
-    P = ["| Case | Unpatched, 1 thread (s) | Bit-identical | Speed-up | Plus near-identical | Speed-up | "
-         "Unpatched, 8 threads | Plus near-identical | Speed-up | Plus near-identical, 8 threads, against unpatched, 1 thread |",
-         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
-    c1, c2, c3, c4 = [], [], [], []
-    for r in rows(hs, "step", 1):
-        r8 = rec(hs, r["case"], "step", 8)
-        b1, i1, n1 = best(r, "base"), best(r, "bit"), best(r, "near")
-        b8, n8 = best(r8, "base"), best(r8, "near")
-        x = (sp(b1, i1), sp(b1, n1), sp(b8, n8), sp(b1, n8))
-        c1.append(x[0]); c2.append(x[1]); c3.append(x[2]); c4.append(x[3])
-        P.append(f"| {r['name']} | {fmt(b1)} | {fmt(i1)} | {fsp(x[0])} | {fmt(n1)} | {fsp(x[1])} | {fmt(b8)} | "
-                 f"{fmt(n8)} | {fsp(x[2])} | {fsp(x[3])} |")
-    P.append(f"| **Median** | | | **{fsp(median(c1))}** | | **{fsp(median(c2))}** | | | **{fsp(median(c3))}** | **{fsp(median(c4))}** |")
-    text = replace(text, "permodel", "\n".join(P))
+    P = six_table([(r, rec(hs, r["case"], "step", 8)) for r in rows(hs, "step", 1)])
+    text = replace(text, "permodel", P)
     # numbers quoted in the README's prose
     r1 = {r["case"]: r for r in rows(hs, "step", 1)}
     r8 = {r["case"]: r for r in rows(hs, "step", 8)}
@@ -531,13 +528,13 @@ def headline(text):
         return [sp(best(r1[c] if a == 1 else r8[c], ab), best(r1[c] if b == 1 else r8[c], bb)) for c in r1 if c in r8]
     def rng(xs):
         xs = [x for x in xs if x]
-        return f"{min(xs):.1f}-{max(xs):.0f}x" if xs else "-"
+        return f"{min(xs):.1f}-{max(xs):.1f}x" if xs else "-"
     def x1(v):
         return f"{v:.1f}x" if v else "-"
     vals = {"hl:bit1": x1(median(ratio(1, "base", 1, "bit"))), "hl:bit8": x1(median(ratio(8, "base", 8, "bit"))),
             "hl:near1": x1(median(ratio(1, "base", 1, "near"))), "hl:near8": x1(median(ratio(8, "base", 8, "near"))),
-            "hl:cross": x1(median(ratio(1, "base", 8, "near"))), "hl:crossrange": rng(ratio(1, "base", 8, "near")),
-            "hl:crossbit": x1(median(ratio(1, "base", 8, "bit")))}
+            "hl:near1v8": x1(median(ratio(8, "base", 1, "near"))), "hl:near1v8range": rng(ratio(8, "base", 1, "near")),
+            "hl:bit1v8": x1(median(ratio(8, "base", 1, "bit")))}
     one = sorted([(sp(best(r, "base"), best(r, "bit")), r["name"]) for r in r1.values()], key=lambda x: x[0] or 0)
     if len(one) >= 4:
         vals["hl:extremes"] = (f"At one thread the bit-identical gain is smallest on {one[0][1]} ({fsp(one[0][0])}) and "
@@ -556,26 +553,37 @@ def headline(text):
     return text
 
 
-def simple_three(data, cases_label="Case", private=False):
-    """base, bit, near at 1 and 8 threads, one row per case"""
-    L = [f"| {cases_label} | Unpatched, 1 thread (s) | Bit-identical | Plus near-identical | Speed-up | "
-         "Unpatched, 8 threads | Plus near-identical | Speed-up | Bit-identical results |",
-         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
-    for r in rows(data, "step", 1):
-        r8 = rec(data, r["case"], "step", 8)
-        b1, i1, n1 = best(r, "base"), best(r, "bit"), best(r, "near")
-        b8, n8 = best(r8, "base"), best(r8, "near")
-        if private:
-            ident = r["builds"]["bit"].get("identical") and (not r8 or r8["builds"]["bit"].get("identical"))
-            rc = [r["builds"][b].get("rc") for b in ("base", "bit", "near")]
-        else:
-            ident = sig(r, "bit") == sig(r, "base") and (not r8 or sig(r8, "bit") == sig(r8, "base"))
-            rc = [r["builds"][b]["check"].get("rc") for b in ("base", "bit", "near")]
-        f = (lambda t: fmt(round(t, 1) if t and t >= 1 else t))
-        note = "" if not any(rc) else f" (return codes {'/'.join(str(x) for x in rc)})"
-        L.append(f"| {r['name']} | {f(b1)} | {f(i1)} | {f(n1)} | {fsp(sp(b1, n1))} | {f(b8)} | {f(n8)} | {fsp(sp(b8, n8))} | "
-                 f"{'identical' if ident else '**differ**'}{note} |")
+def six_table(pairs, private=False, ident_col=False):
+    """per case: 85a303d, bit and near at 1 and 8 threads, and two fair comparisons: near on one thread
+    against unpatched on eight, and near against unpatched both on eight"""
+    L = ["| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | "
+         "Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched "
+         "on 8 | Near-identical against unpatched, both on 8 |" + (" Bit-identical results |" if ident_col else ""),
+         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |" + (" --- |" if ident_col else "")]
+    c1, c2 = [], []
+    for r1, r8 in pairs:
+        b1, b8, i1, i8 = best(r1, "base"), best(r8, "base"), best(r1, "bit"), best(r8, "bit")
+        n1, n8 = best(r1, "near"), best(r8, "near")
+        x, y = sp(b8, n1), sp(b8, n8)
+        c1.append(x); c2.append(y)
+        f = fmt
+        cells = [f(b1), f(b8), f(i1), f(i8), f(n1), f(n8), fsp(x), fsp(y)]
+        if ident_col:
+            if private:
+                ident = r1["builds"]["bit"].get("identical") and (not r8 or r8["builds"]["bit"].get("identical"))
+                rc = [r1["builds"][b].get("rc") for b in ("base", "bit", "near")]
+            else:
+                ident = sig(r1, "bit") == sig(r1, "base") and (not r8 or sig(r8, "bit") == sig(r8, "base"))
+                rc = [r1["builds"][b]["check"].get("rc") for b in ("base", "bit", "near")]
+            note = "" if not any(rc) else f" (return codes {'/'.join(str(v) for v in rc)})"
+            cells.append(("identical" if ident else "**differ**") + note)
+        L.append(f"| {r1['name']} | " + " | ".join(cells) + " |")
+    L.append("| **Median** | | | | | | | " + f"**{fsp(median(c1))}** | **{fsp(median(c2))}** |" + (" |" if ident_col else ""))
     return "\n".join(L)
+
+
+def simple_three(data, private=False):
+    return six_table([(r, rec(data, r["case"], "step", 8)) for r in rows(data, "step", 1)], private, ident_col=True)
 
 
 def index(text):
@@ -584,6 +592,15 @@ def index(text):
         text = replace(text, "real", simple_three(real) + f"\n\n{conditions(real)}")
     if priv:
         text = replace(text, "private", simple_three(priv, private=True) + f"\n\n{conditions(priv)}")
+        pr = [(r, rec(priv, r["case"], "step", 8)) for r in rows(priv, "step", 1)]
+        a = median([sp(best(r8, "base"), best(r1, "near")) for r1, r8 in pr])
+        b = median([sp(best(r8, "base"), best(r8, "near")) for r1, r8 in pr])
+        same = all(x["builds"]["bit"].get("identical") for p in pr for x in p if x)
+        text = replace(text, "hl:private",
+                       ("The bit-identical builds gave the unpatched results bit for bit in every run. " if same else
+                        "**The bit-identical builds did not give the unpatched results in every run.** ") +
+                       f"Even on one thread, the code with every change was {a:.1f}x faster than the unpatched code on "
+                       f"eight threads (median over the six cases), and {b:.1f}x faster with both on eight threads.")
     sc = load("scaling")
     if sc:
         ths = sc["threads"]

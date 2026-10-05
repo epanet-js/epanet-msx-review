@@ -72,6 +72,12 @@ Against 85a303d unpatched, solve mode, one thread, every concentration after eve
 | MSX example (4 nodes) | A | AS5 (UG) | 8.5e-14 | 5.5e-14 | 0 | PASS: within tolerance, as every platform is |
 | BWSN2, 2 species, every node and link every 5 min | IDENTICAL | - | - | - | - | PASS |
 | Net3 chloramine, 14 species, every node and link every 5 min | IDENTICAL | - | - | - | - | PASS |
+| L-Town 24 h, chlorine bulk + wall (Euler) | A | CL2 (MG) | 1.8e-15 | 1.1e-16 | 0 | PASS: within tolerance, as every platform is |
+| L-Town 24 h, bacterial regrowth (RK5) | A | Nb (log(N)) | 4.9e-15 | 8.9e-16 | 0 | PASS: within tolerance, as every platform is |
+| L-Town 24 h, chloramine decay (ROS2) | IDENTICAL | - | - | - | - | PASS |
+| NW Model 12 h, chlorine bulk + wall (Euler) | A | CL2 (MG) | 2.4e-15 | 1.7e-16 | 0 | PASS: within tolerance where a platform is not |
+| NW Model 12 h, bacterial regrowth (RK5) | A | Nb (log(N)) | 2e-14 | 8.9e-16 | 0 | PASS: within tolerance, as every platform is |
+| NW Model 12 h, chloramine decay (ROS2) | IDENTICAL | - | - | - | - | PASS |
 <!-- /moves -->
 
 ## Measured

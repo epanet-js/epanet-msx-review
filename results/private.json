@@ -1,0 +1,503 @@
+{
+ "builds": [
+  "base",
+  "bit",
+  "near"
+ ],
+ "threads": [
+  1,
+  8
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 0,
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-05",
+ "start": {
+  "load": [
+   25.0,
+   19.63,
+   23.14
+  ],
+  "time": "2026-10-05 18:35"
+ },
+ "end": {
+  "load": [
+   7.56,
+   24.5,
+   29.41
+  ],
+  "time": "2026-10-05 19:13"
+ },
+ "results": [
+  {
+   "case": "private-1-1",
+   "name": "Utility model 1, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    25.0,
+    19.63,
+    23.14
+   ],
+   "load_end": [
+    8.64,
+    14.96,
+    20.77
+   ],
+   "builds": {
+    "base": {
+     "best": 107.835662,
+     "best_Q": 105.610845,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 8.60784,
+     "best_Q": 8.155016,
+     "rc": 0,
+     "speedup": 12.52760994628153,
+     "identical": true
+    },
+    "near": {
+     "best": 7.405352,
+     "best_Q": 6.952327,
+     "rc": 0,
+     "speedup": 14.561854993523603,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-1",
+   "name": "Utility model 1, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    8.64,
+    14.96,
+    20.77
+   ],
+   "load_end": [
+    8.76,
+    14.03,
+    20.09
+   ],
+   "builds": {
+    "base": {
+     "best": 41.075828,
+     "best_Q": 39.232725,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 2.390127,
+     "best_Q": 1.942023,
+     "rc": 0,
+     "speedup": 17.185625701061074,
+     "identical": true
+    },
+    "near": {
+     "best": 2.282994,
+     "best_Q": 1.830955,
+     "rc": 0,
+     "speedup": 17.992087583234998,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-2",
+   "name": "Utility model 1, chloramine (ROS2)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    8.76,
+    14.03,
+    20.09
+   ],
+   "load_end": [
+    22.48,
+    25.28,
+    22.68
+   ],
+   "builds": {
+    "base": {
+     "best": 524.738429,
+     "best_Q": 522.660561,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 7.722289,
+     "best_Q": 7.194995,
+     "rc": 0,
+     "speedup": 67.95115140083465,
+     "identical": true
+    },
+    "near": {
+     "best": 6.011956,
+     "best_Q": 5.468213,
+     "rc": 0,
+     "speedup": 87.28247994496301,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-2",
+   "name": "Utility model 1, chloramine (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    22.48,
+    25.28,
+    22.68
+   ],
+   "load_end": [
+    6.83,
+    16.3,
+    19.39
+   ],
+   "builds": {
+    "base": {
+     "best": 180.400066,
+     "best_Q": 178.554678,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 3.082279,
+     "best_Q": 2.609075,
+     "rc": 0,
+     "speedup": 58.528142974727466,
+     "identical": true
+    },
+    "near": {
+     "best": 2.640732,
+     "best_Q": 2.141016,
+     "rc": 0,
+     "speedup": 68.3144166087282,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-3",
+   "name": "Utility model 1, chlorine (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    6.83,
+    16.3,
+    19.39
+   ],
+   "load_end": [
+    6.72,
+    14.6,
+    18.56
+   ],
+   "builds": {
+    "base": {
+     "best": 50.831311,
+     "best_Q": 48.911682,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 2.117029,
+     "best_Q": 1.656507,
+     "rc": 0,
+     "speedup": 24.0106824233395,
+     "identical": true
+    },
+    "near": {
+     "best": 2.148579,
+     "best_Q": 1.641197,
+     "rc": 0,
+     "speedup": 23.658106590448853,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-3",
+   "name": "Utility model 1, chlorine (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    6.72,
+    14.6,
+    18.56
+   ],
+   "load_end": [
+    7.65,
+    14.08,
+    18.23
+   ],
+   "builds": {
+    "base": {
+     "best": 22.823429,
+     "best_Q": 20.883038,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 1.501426,
+     "best_Q": 1.037445,
+     "rc": 0,
+     "speedup": 15.201168089536216,
+     "identical": true
+    },
+    "near": {
+     "best": 1.508652,
+     "best_Q": 1.02272,
+     "rc": 0,
+     "speedup": 15.128358958858636,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-1",
+   "name": "Utility model 2, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    7.65,
+    14.08,
+    18.23
+   ],
+   "load_end": [
+    36.6,
+    19.41,
+    19.48
+   ],
+   "builds": {
+    "base": {
+     "best": 116.565383,
+     "best_Q": 116.455858,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 8.680961,
+     "best_Q": 8.635421,
+     "rc": 0,
+     "speedup": 13.427704951099308,
+     "identical": true
+    },
+    "near": {
+     "best": 6.755243,
+     "best_Q": 6.70596,
+     "rc": 0,
+     "speedup": 17.25554254673,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-1",
+   "name": "Utility model 2, bacterial regrowth (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    36.6,
+    19.41,
+    19.48
+   ],
+   "load_end": [
+    103.7,
+    41.02,
+    27.5
+   ],
+   "builds": {
+    "base": {
+     "best": 44.347256,
+     "best_Q": 44.220867,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 3.457109,
+     "best_Q": 3.393703,
+     "rc": 0,
+     "speedup": 12.827844305747954,
+     "identical": true
+    },
+    "near": {
+     "best": 3.011657,
+     "best_Q": 2.969137,
+     "rc": 0,
+     "speedup": 14.725201442262515,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-2",
+   "name": "Utility model 2, chloramine (ROS2)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    103.7,
+    41.02,
+    27.5
+   ],
+   "load_end": [
+    75.16,
+    47.92,
+    37.1
+   ],
+   "builds": {
+    "base": {
+     "best": 698.666092,
+     "best_Q": 698.542201,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 25.992642,
+     "best_Q": 25.948557,
+     "rc": 0,
+     "speedup": 26.8793796336671,
+     "identical": true
+    },
+    "near": {
+     "best": 14.815147,
+     "best_Q": 14.77759,
+     "rc": 0,
+     "speedup": 47.15890378947979,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-2",
+   "name": "Utility model 2, chloramine (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    75.16,
+    47.92,
+    37.1
+   ],
+   "load_end": [
+    14.16,
+    30.94,
+    32.0
+   ],
+   "builds": {
+    "base": {
+     "best": 154.670943,
+     "best_Q": 154.555204,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 3.687718,
+     "best_Q": 3.649585,
+     "rc": 0,
+     "speedup": 41.94218294348971,
+     "identical": true
+    },
+    "near": {
+     "best": 2.830697,
+     "best_Q": 2.79389,
+     "rc": 0,
+     "speedup": 54.640586046475484,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-3",
+   "name": "Utility model 2, chlorine (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    14.16,
+    30.94,
+    32.0
+   ],
+   "load_end": [
+    7.42,
+    25.65,
+    29.93
+   ],
+   "builds": {
+    "base": {
+     "best": 57.734433,
+     "best_Q": 57.629219,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 1.347643,
+     "best_Q": 1.310736,
+     "rc": 0,
+     "speedup": 42.84104395600319,
+     "identical": true
+    },
+    "near": {
+     "best": 1.34074,
+     "best_Q": 1.304703,
+     "rc": 0,
+     "speedup": 43.06161746498203,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-3",
+   "name": "Utility model 2, chlorine (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    7.42,
+    25.65,
+    29.93
+   ],
+   "load_end": [
+    7.56,
+    24.5,
+    29.41
+   ],
+   "builds": {
+    "base": {
+     "best": 16.686744,
+     "best_Q": 16.582847,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 0.624522,
+     "best_Q": 0.582327,
+     "rc": 0,
+     "speedup": 26.719225263481512,
+     "identical": true
+    },
+    "near": {
+     "best": 0.638348,
+     "best_Q": 0.602131,
+     "rc": 0,
+     "speedup": 26.140512698402752,
+     "identical": false
+    }
+   }
+  }
+ ]
+}

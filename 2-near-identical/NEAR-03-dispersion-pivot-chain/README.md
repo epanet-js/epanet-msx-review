@@ -52,6 +52,12 @@ Against 85a303d unpatched, solve mode, one thread, every concentration after eve
 | MSX example (4 nodes) | IDENTICAL | - | - | - | - | PASS |
 | BWSN2, 2 species, every node and link every 5 min | IDENTICAL | - | - | - | - | PASS |
 | Net3 chloramine, 14 species, every node and link every 5 min | IDENTICAL | - | - | - | - | PASS |
+| L-Town 24 h, chlorine bulk + wall (Euler) | IDENTICAL | - | - | - | - | PASS |
+| L-Town 24 h, bacterial regrowth (RK5) | IDENTICAL | - | - | - | - | PASS |
+| L-Town 24 h, chloramine decay (ROS2) | IDENTICAL | - | - | - | - | PASS |
+| NW Model 12 h, chlorine bulk + wall (Euler) | IDENTICAL | - | - | - | - | PASS |
+| NW Model 12 h, bacterial regrowth (RK5) | IDENTICAL | - | - | - | - | PASS |
+| NW Model 12 h, chloramine decay (ROS2) | IDENTICAL | - | - | - | - | PASS |
 <!-- /moves -->
 
 ## Measured

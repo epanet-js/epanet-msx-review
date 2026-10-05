@@ -1,0 +1,2562 @@
+{
+ "builds": [
+  "base",
+  "bit",
+  "near"
+ ],
+ "threads": [
+  1,
+  8,
+  "default"
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 1,
+ "metric": "total",
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-05",
+ "start": {
+  "load": [
+   8.87,
+   13.09,
+   16.7
+  ],
+  "time": "2026-10-05 16:30"
+ },
+ "end": {
+  "load": [
+   9.43,
+   11.0,
+   14.8
+  ],
+  "time": "2026-10-05 16:34"
+ },
+ "build_info": {
+  "base": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "bit": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "near": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n"
+ },
+ "results": [
+  {
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 13.673798,
+      "open": 0.031058,
+      "H": 0.112546,
+      "Q": 13.523227,
+      "report": 0.0,
+      "close": 0.006967,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 196144
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 13.067585,
+       "open": 0.019142,
+       "H": 0.111951,
+       "Q": 12.927664,
+       "report": 0.0,
+       "close": 0.008828,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 197904
+      }
+     ],
+     "best": 13.067585,
+     "best_Q": 12.927664,
+     "rss_kb": 197904,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.831338,
+      "open": 0.020606,
+      "H": 0.035268,
+      "Q": 0.768903,
+      "report": 0.0,
+      "close": 0.006561,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 272000
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.831035,
+       "open": 0.02046,
+       "H": 0.034446,
+       "Q": 0.769958,
+       "report": 0.0,
+       "close": 0.006171,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 271744
+      }
+     ],
+     "best": 0.831035,
+     "best_Q": 0.768903,
+     "rss_kb": 272000,
+     "rc": 0,
+     "identical": true,
+     "speedup": 15.724470088504095
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.770305,
+      "open": 0.018894,
+      "H": 0.032898,
+      "Q": 0.712027,
+      "report": 0.0,
+      "close": 0.006486,
+      "steps": 72,
+      "hash": "852b1128bd42a85f",
+      "rss_kb": 273376
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.769546,
+       "open": 0.02474,
+       "H": 0.034242,
+       "Q": 0.704669,
+       "report": 0.0,
+       "close": 0.005895,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 272816
+      }
+     ],
+     "best": 0.769546,
+     "best_Q": 0.704669,
+     "rss_kb": 273376,
+     "rc": 0,
+     "identical": false,
+     "speedup": 16.980901726472492
+    }
+   },
+   "load_start": [
+    8.87,
+    13.09,
+    16.7
+   ],
+   "load_end": [
+    7.46,
+    12.34,
+    16.31
+   ]
+  },
+  {
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.456741,
+      "open": 0.018473,
+      "H": 0.119716,
+      "Q": 3.312973,
+      "report": 0.0,
+      "close": 0.005579,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 199264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 3.460603,
+       "open": 0.019266,
+       "H": 0.143796,
+       "Q": 3.291922,
+       "report": 0.0,
+       "close": 0.005619,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198656
+      }
+     ],
+     "best": 3.456741,
+     "best_Q": 3.291922,
+     "rss_kb": 199264,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.3559,
+      "open": 0.018144,
+      "H": 0.032694,
+      "Q": 0.299143,
+      "report": 0.0,
+      "close": 0.005919,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 272368
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.33499,
+       "open": 0.01748,
+       "H": 0.031569,
+       "Q": 0.280428,
+       "report": 0.0,
+       "close": 0.005513,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 271840
+      }
+     ],
+     "best": 0.33499,
+     "best_Q": 0.280428,
+     "rss_kb": 272368,
+     "rc": 0,
+     "identical": true,
+     "speedup": 10.318937878742648
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.353383,
+      "open": 0.017669,
+      "H": 0.032375,
+      "Q": 0.296782,
+      "report": 0.0,
+      "close": 0.006557,
+      "steps": 72,
+      "hash": "852b1128bd42a85f",
+      "rss_kb": 274992
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.324482,
+       "open": 0.01735,
+       "H": 0.031493,
+       "Q": 0.270117,
+       "report": 0.0,
+       "close": 0.005522,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 273088
+      }
+     ],
+     "best": 0.324482,
+     "best_Q": 0.270117,
+     "rss_kb": 274992,
+     "rc": 0,
+     "identical": false,
+     "speedup": 10.65310556517773
+    }
+   },
+   "load_start": [
+    7.46,
+    12.34,
+    16.31
+   ],
+   "load_end": [
+    7.46,
+    12.18,
+    16.2
+   ]
+  },
+  {
+   "case": "bwsn2-2src",
+   "name": "BWSN2, two-source chlorine",
+   "mode": "step",
+   "threads": "default",
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.264417,
+      "open": 0.017643,
+      "H": 0.110577,
+      "Q": 3.131214,
+      "report": 0.0,
+      "close": 0.004983,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 198784
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 3.421855,
+       "open": 0.017089,
+       "H": 0.114554,
+       "Q": 3.285315,
+       "report": 0.0,
+       "close": 0.004897,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 198752
+      }
+     ],
+     "best": 3.264417,
+     "best_Q": 3.131214,
+     "rss_kb": 198784,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.331889,
+      "open": 0.017441,
+      "H": 0.031496,
+      "Q": 0.277168,
+      "report": 0.0,
+      "close": 0.005784,
+      "steps": 72,
+      "hash": "36ec687bab915854",
+      "rss_kb": 272288
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.332848,
+       "open": 0.017428,
+       "H": 0.031831,
+       "Q": 0.278179,
+       "report": 0.0,
+       "close": 0.00541,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 271920
+      }
+     ],
+     "best": 0.331889,
+     "best_Q": 0.277168,
+     "rss_kb": 272288,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.835869823947164
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.34406,
+      "open": 0.017536,
+      "H": 0.031864,
+      "Q": 0.288723,
+      "report": 0.0,
+      "close": 0.005937,
+      "steps": 72,
+      "hash": "852b1128bd42a85f",
+      "rss_kb": 273632
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.35429,
+       "open": 0.017113,
+       "H": 0.032529,
+       "Q": 0.298744,
+       "report": 0.0,
+       "close": 0.005904,
+       "steps": 72,
+       "hash": "0000000000000000",
+       "rss_kb": 273248
+      }
+     ],
+     "best": 0.34406,
+     "best_Q": 0.288723,
+     "rss_kb": 273632,
+     "rc": 0,
+     "identical": false,
+     "speedup": 9.487929430913214
+    }
+   },
+   "load_start": [
+    7.46,
+    12.18,
+    16.2
+   ],
+   "load_end": [
+    7.72,
+    12.08,
+    16.12
+   ]
+  },
+  {
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 11.0398,
+      "open": 0.007358,
+      "H": 0.285019,
+      "Q": 10.745678,
+      "report": 0.0,
+      "close": 0.001745,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 48976
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 10.919594,
+       "open": 0.005874,
+       "H": 0.286462,
+       "Q": 10.624459,
+       "report": 0.0,
+       "close": 0.002799,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 49008
+      }
+     ],
+     "best": 10.919594,
+     "best_Q": 10.624459,
+     "rss_kb": 49008,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.509807,
+      "open": 0.006835,
+      "H": 0.068815,
+      "Q": 0.43112,
+      "report": 0.0,
+      "close": 0.003037,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89328
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.51306,
+       "open": 0.005874,
+       "H": 0.068094,
+       "Q": 0.436179,
+       "report": 0.0,
+       "close": 0.002913,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89264
+      }
+     ],
+     "best": 0.509807,
+     "best_Q": 0.43112,
+     "rss_kb": 89328,
+     "rc": 0,
+     "identical": true,
+     "speedup": 21.419074277128402
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.501748,
+      "open": 0.006972,
+      "H": 0.071549,
+      "Q": 0.420121,
+      "report": 0.0,
+      "close": 0.003106,
+      "steps": 720,
+      "hash": "91a2c2b5e078f973",
+      "rss_kb": 89264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.497919,
+       "open": 0.005513,
+       "H": 0.068117,
+       "Q": 0.421336,
+       "report": 0.0,
+       "close": 0.002953,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89152
+      }
+     ],
+     "best": 0.497919,
+     "best_Q": 0.420121,
+     "rss_kb": 89264,
+     "rc": 0,
+     "identical": false,
+     "speedup": 21.930462585279937
+    }
+   },
+   "load_start": [
+    7.72,
+    12.08,
+    16.12
+   ],
+   "load_end": [
+    6.59,
+    11.49,
+    15.79
+   ]
+  },
+  {
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 2.903012,
+      "open": 0.0057,
+      "H": 0.274782,
+      "Q": 2.619796,
+      "report": 0.0,
+      "close": 0.002734,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 49632
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.951516,
+       "open": 0.006008,
+       "H": 0.315516,
+       "Q": 2.627055,
+       "report": 0.0,
+       "close": 0.002937,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 49568
+      }
+     ],
+     "best": 2.903012,
+     "best_Q": 2.619796,
+     "rss_kb": 49632,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.372192,
+      "open": 0.005774,
+      "H": 0.068731,
+      "Q": 0.293853,
+      "report": 0.0,
+      "close": 0.003834,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89728
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.41369,
+       "open": 0.006141,
+       "H": 0.07039,
+       "Q": 0.333969,
+       "report": 0.0,
+       "close": 0.00319,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89664
+      }
+     ],
+     "best": 0.372192,
+     "best_Q": 0.293853,
+     "rss_kb": 89728,
+     "rc": 0,
+     "identical": true,
+     "speedup": 7.799770011177026
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.388027,
+      "open": 0.006148,
+      "H": 0.067697,
+      "Q": 0.310145,
+      "report": 0.0,
+      "close": 0.004037,
+      "steps": 720,
+      "hash": "91a2c2b5e078f973",
+      "rss_kb": 89536
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.377263,
+       "open": 0.005859,
+       "H": 0.070168,
+       "Q": 0.298549,
+       "report": 0.0,
+       "close": 0.002687,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89584
+      }
+     ],
+     "best": 0.377263,
+     "best_Q": 0.298549,
+     "rss_kb": 89584,
+     "rc": 0,
+     "identical": false,
+     "speedup": 7.694929001783901
+    }
+   },
+   "load_start": [
+    6.59,
+    11.49,
+    15.79
+   ],
+   "load_end": [
+    6.38,
+    11.36,
+    15.72
+   ]
+  },
+  {
+   "case": "net6-cl2",
+   "name": "Net6, chlorine bulk + wall",
+   "mode": "step",
+   "threads": "default",
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 2.79554,
+      "open": 0.005703,
+      "H": 0.277644,
+      "Q": 2.510471,
+      "report": 0.0,
+      "close": 0.001722,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 49760
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.844418,
+       "open": 0.006262,
+       "H": 0.279471,
+       "Q": 2.555666,
+       "report": 0.0,
+       "close": 0.003019,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 49696
+      }
+     ],
+     "best": 2.79554,
+     "best_Q": 2.510471,
+     "rss_kb": 49760,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.417428,
+      "open": 0.005838,
+      "H": 0.068343,
+      "Q": 0.339848,
+      "report": 0.0,
+      "close": 0.003399,
+      "steps": 720,
+      "hash": "c6d735de9abd7794",
+      "rss_kb": 89904
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.390478,
+       "open": 0.006009,
+       "H": 0.06915,
+       "Q": 0.311865,
+       "report": 0.0,
+       "close": 0.003454,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89808
+      }
+     ],
+     "best": 0.390478,
+     "best_Q": 0.311865,
+     "rss_kb": 89904,
+     "rc": 0,
+     "identical": true,
+     "speedup": 7.159276578962195
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.395155,
+      "open": 0.006781,
+      "H": 0.070528,
+      "Q": 0.314651,
+      "report": 0.0,
+      "close": 0.003195,
+      "steps": 720,
+      "hash": "91a2c2b5e078f973",
+      "rss_kb": 89744
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.412076,
+       "open": 0.006427,
+       "H": 0.071123,
+       "Q": 0.331103,
+       "report": 0.0,
+       "close": 0.003423,
+       "steps": 720,
+       "hash": "0000000000000000",
+       "rss_kb": 89632
+      }
+     ],
+     "best": 0.395155,
+     "best_Q": 0.314651,
+     "rss_kb": 89744,
+     "rc": 0,
+     "identical": false,
+     "speedup": 7.074540370234465
+    }
+   },
+   "load_start": [
+    6.38,
+    11.36,
+    15.72
+   ],
+   "load_end": [
+    7.53,
+    11.45,
+    15.7
+   ]
+  },
+  {
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 10.213341,
+      "open": 0.008962,
+      "H": 0.013916,
+      "Q": 10.189133,
+      "report": 0.0,
+      "close": 0.00133,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 24000
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 10.149248,
+       "open": 0.007905,
+       "H": 0.01231,
+       "Q": 10.127631,
+       "report": 0.0,
+       "close": 0.001402,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 23216
+      }
+     ],
+     "best": 10.149248,
+     "best_Q": 10.127631,
+     "rss_kb": 24000,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.53859,
+      "open": 0.008849,
+      "H": 0.005119,
+      "Q": 0.52307,
+      "report": 0.0,
+      "close": 0.001552,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 36432
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.519984,
+       "open": 0.009013,
+       "H": 0.00502,
+       "Q": 0.504551,
+       "report": 0.0,
+       "close": 0.0014,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36416
+      }
+     ],
+     "best": 0.519984,
+     "best_Q": 0.504551,
+     "rss_kb": 36432,
+     "rc": 0,
+     "identical": true,
+     "speedup": 19.518385181082493
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.37829,
+      "open": 0.007852,
+      "H": 0.004959,
+      "Q": 0.363135,
+      "report": 0.0,
+      "close": 0.002344,
+      "steps": 240,
+      "hash": "790a8075116acad9",
+      "rss_kb": 36304
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.383195,
+       "open": 0.007902,
+       "H": 0.004924,
+       "Q": 0.369094,
+       "report": 0.0,
+       "close": 0.001275,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36304
+      }
+     ],
+     "best": 0.37829,
+     "best_Q": 0.363135,
+     "rss_kb": 36304,
+     "rc": 0,
+     "identical": false,
+     "speedup": 26.829279124481218
+    }
+   },
+   "load_start": [
+    7.53,
+    11.45,
+    15.7
+   ],
+   "load_end": [
+    6.47,
+    10.95,
+    15.42
+   ]
+  },
+  {
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 2.761045,
+      "open": 0.008128,
+      "H": 0.013399,
+      "Q": 2.73795,
+      "report": 0.0,
+      "close": 0.001568,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 24448
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.39609,
+       "open": 0.013278,
+       "H": 0.017204,
+       "Q": 2.364263,
+       "report": 0.0,
+       "close": 0.001345,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 25248
+      }
+     ],
+     "best": 2.39609,
+     "best_Q": 2.364263,
+     "rss_kb": 25248,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.264105,
+      "open": 0.007735,
+      "H": 0.0052,
+      "Q": 0.249563,
+      "report": 0.0,
+      "close": 0.001607,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 37856
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.276985,
+       "open": 0.008502,
+       "H": 0.005384,
+       "Q": 0.259741,
+       "report": 0.0,
+       "close": 0.003358,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 37760
+      }
+     ],
+     "best": 0.264105,
+     "best_Q": 0.249563,
+     "rss_kb": 37856,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.072490108100945
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.204789,
+      "open": 0.008626,
+      "H": 0.005762,
+      "Q": 0.186732,
+      "report": 0.0,
+      "close": 0.003669,
+      "steps": 240,
+      "hash": "790a8075116acad9",
+      "rss_kb": 37120
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.192382,
+       "open": 0.008382,
+       "H": 0.005263,
+       "Q": 0.177393,
+       "report": 0.0,
+       "close": 0.001344,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 36992
+      }
+     ],
+     "best": 0.192382,
+     "best_Q": 0.177393,
+     "rss_kb": 37120,
+     "rc": 0,
+     "identical": false,
+     "speedup": 12.454855443856495
+    }
+   },
+   "load_start": [
+    6.47,
+    10.95,
+    15.42
+   ],
+   "load_end": [
+    8.35,
+    11.2,
+    15.46
+   ]
+  },
+  {
+   "case": "ky8-disp",
+   "name": "KY8, chlorine + dispersion",
+   "mode": "step",
+   "threads": "default",
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.88125,
+      "open": 0.0083,
+      "H": 0.012782,
+      "Q": 3.858518,
+      "report": 0.0,
+      "close": 0.00165,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 24720
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 3.972651,
+       "open": 0.007827,
+       "H": 0.01291,
+       "Q": 3.950598,
+       "report": 0.0,
+       "close": 0.001316,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 25648
+      }
+     ],
+     "best": 3.88125,
+     "best_Q": 3.858518,
+     "rss_kb": 25648,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.223808,
+      "open": 0.007665,
+      "H": 0.005392,
+      "Q": 0.20943,
+      "report": 0.0,
+      "close": 0.001321,
+      "steps": 240,
+      "hash": "1a103df57418ff59",
+      "rss_kb": 38016
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.2326,
+       "open": 0.007974,
+       "H": 0.00527,
+       "Q": 0.217995,
+       "report": 0.0,
+       "close": 0.001361,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 38016
+      }
+     ],
+     "best": 0.223808,
+     "best_Q": 0.20943,
+     "rss_kb": 38016,
+     "rc": 0,
+     "identical": true,
+     "speedup": 17.34187339147841
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.296226,
+      "open": 0.008069,
+      "H": 0.005488,
+      "Q": 0.281324,
+      "report": 0.0,
+      "close": 0.001345,
+      "steps": 240,
+      "hash": "790a8075116acad9",
+      "rss_kb": 37200
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.19543,
+       "open": 0.008098,
+       "H": 0.005262,
+       "Q": 0.180755,
+       "report": 0.0,
+       "close": 0.001315,
+       "steps": 240,
+       "hash": "0000000000000000",
+       "rss_kb": 37136
+      }
+     ],
+     "best": 0.19543,
+     "best_Q": 0.180755,
+     "rss_kb": 37200,
+     "rc": 0,
+     "identical": false,
+     "speedup": 19.860052192600932
+    }
+   },
+   "load_start": [
+    8.35,
+    11.2,
+    15.46
+   ],
+   "load_end": [
+    9.88,
+    11.44,
+    15.49
+   ]
+  },
+  {
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 16.939224,
+      "open": 0.005653,
+      "H": 0.029323,
+      "Q": 16.902831,
+      "report": 0.0,
+      "close": 0.001417,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 22192
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 15.516268,
+       "open": 0.004638,
+       "H": 0.029138,
+       "Q": 15.481213,
+       "report": 0.0,
+       "close": 0.001279,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 22144
+      }
+     ],
+     "best": 15.516268,
+     "best_Q": 15.481213,
+     "rss_kb": 22192,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.727628,
+      "open": 0.007057,
+      "H": 0.009247,
+      "Q": 0.71021,
+      "report": 0.0,
+      "close": 0.001114,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31184
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.736934,
+       "open": 0.006347,
+       "H": 0.009171,
+       "Q": 0.720238,
+       "report": 0.0,
+       "close": 0.001178,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31056
+      }
+     ],
+     "best": 0.727628,
+     "best_Q": 0.71021,
+     "rss_kb": 31184,
+     "rc": 0,
+     "identical": true,
+     "speedup": 21.32445150543959
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.607356,
+      "open": 0.00527,
+      "H": 0.00932,
+      "Q": 0.591645,
+      "report": 0.0,
+      "close": 0.001121,
+      "steps": 144,
+      "hash": "fb551f7530329c7f",
+      "rss_kb": 31184
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.620499,
+       "open": 0.005296,
+       "H": 0.009509,
+       "Q": 0.604564,
+       "report": 0.0,
+       "close": 0.00113,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31200
+      }
+     ],
+     "best": 0.607356,
+     "best_Q": 0.591645,
+     "rss_kb": 31200,
+     "rc": 0,
+     "identical": false,
+     "speedup": 25.547237534493775
+    }
+   },
+   "load_start": [
+    9.88,
+    11.44,
+    15.49
+   ],
+   "load_end": [
+    10.27,
+    11.36,
+    15.3
+   ]
+  },
+  {
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.274089,
+      "open": 0.005269,
+      "H": 0.029404,
+      "Q": 3.238109,
+      "report": 1e-06,
+      "close": 0.001306,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 24288
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 3.384468,
+       "open": 0.004725,
+       "H": 0.02904,
+       "Q": 3.349167,
+       "report": 0.0,
+       "close": 0.001536,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 24336
+      }
+     ],
+     "best": 3.274089,
+     "best_Q": 3.238109,
+     "rss_kb": 24336,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.207108,
+      "open": 0.004832,
+      "H": 0.009368,
+      "Q": 0.191677,
+      "report": 0.0,
+      "close": 0.001231,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31568
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.195549,
+       "open": 0.005313,
+       "H": 0.009463,
+       "Q": 0.177734,
+       "report": 0.0,
+       "close": 0.003039,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31424
+      }
+     ],
+     "best": 0.195549,
+     "best_Q": 0.177734,
+     "rss_kb": 31568,
+     "rc": 0,
+     "identical": true,
+     "speedup": 16.743061841277633
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.166654,
+      "open": 0.004571,
+      "H": 0.009015,
+      "Q": 0.151735,
+      "report": 0.0,
+      "close": 0.001333,
+      "steps": 144,
+      "hash": "fb551f7530329c7f",
+      "rss_kb": 31568
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.224092,
+       "open": 0.005983,
+       "H": 0.009527,
+       "Q": 0.207359,
+       "report": 0.0,
+       "close": 0.001223,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31520
+      }
+     ],
+     "best": 0.166654,
+     "best_Q": 0.151735,
+     "rss_kb": 31568,
+     "rc": 0,
+     "identical": false,
+     "speedup": 19.646027098059452
+    }
+   },
+   "load_start": [
+    10.27,
+    11.36,
+    15.3
+   ],
+   "load_end": [
+    10.41,
+    11.37,
+    15.28
+   ]
+  },
+  {
+   "case": "rich-bact",
+   "name": "Richmond, bacterial regrowth",
+   "mode": "step",
+   "threads": "default",
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 3.413829,
+      "open": 0.005116,
+      "H": 0.031952,
+      "Q": 3.375525,
+      "report": 0.0,
+      "close": 0.001236,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 24368
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 3.504819,
+       "open": 0.00512,
+       "H": 0.033443,
+       "Q": 3.464521,
+       "report": 0.0,
+       "close": 0.001735,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 23328
+      }
+     ],
+     "best": 3.413829,
+     "best_Q": 3.375525,
+     "rss_kb": 24368,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.258105,
+      "open": 0.007434,
+      "H": 0.009849,
+      "Q": 0.239395,
+      "report": 0.0,
+      "close": 0.001427,
+      "steps": 144,
+      "hash": "cff1a29bd5dce4f9",
+      "rss_kb": 31584
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.170676,
+       "open": 0.004889,
+       "H": 0.009055,
+       "Q": 0.154557,
+       "report": 0.0,
+       "close": 0.002175,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31488
+      }
+     ],
+     "best": 0.170676,
+     "best_Q": 0.154557,
+     "rss_kb": 31584,
+     "rc": 0,
+     "identical": true,
+     "speedup": 20.00181044786613
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.194476,
+      "open": 0.005173,
+      "H": 0.009626,
+      "Q": 0.177744,
+      "report": 0.0,
+      "close": 0.001933,
+      "steps": 144,
+      "hash": "fb551f7530329c7f",
+      "rss_kb": 31680
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.184978,
+       "open": 0.005019,
+       "H": 0.008985,
+       "Q": 0.169051,
+       "report": 0.0,
+       "close": 0.001923,
+       "steps": 144,
+       "hash": "0000000000000000",
+       "rss_kb": 31616
+      }
+     ],
+     "best": 0.184978,
+     "best_Q": 0.169051,
+     "rss_kb": 31680,
+     "rc": 0,
+     "identical": false,
+     "speedup": 18.45532441695769
+    }
+   },
+   "load_start": [
+    10.41,
+    11.37,
+    15.28
+   ],
+   "load_end": [
+    12.57,
+    11.79,
+    15.38
+   ]
+  },
+  {
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 11.478443,
+      "open": 0.002536,
+      "H": 0.003088,
+      "Q": 11.471954,
+      "report": 0.0,
+      "close": 0.000865,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 8176
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 11.455495,
+       "open": 0.00212,
+       "H": 0.002997,
+       "Q": 11.449694,
+       "report": 0.0,
+       "close": 0.000684,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 7632
+      }
+     ],
+     "best": 11.455495,
+     "best_Q": 11.449694,
+     "rss_kb": 8176,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.248733,
+      "open": 0.002903,
+      "H": 0.001106,
+      "Q": 1.243999,
+      "report": 0.0,
+      "close": 0.000725,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9664
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 1.255454,
+       "open": 0.002751,
+       "H": 0.000888,
+       "Q": 1.250739,
+       "report": 0.0,
+       "close": 0.001076,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9664
+      }
+     ],
+     "best": 1.248733,
+     "best_Q": 1.243999,
+     "rss_kb": 9664,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.173694456701313
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.90135,
+      "open": 0.002537,
+      "H": 0.000915,
+      "Q": 0.896825,
+      "report": 0.0,
+      "close": 0.001073,
+      "steps": 288,
+      "hash": "4811b18eb7bd7eb9",
+      "rss_kb": 9584
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.877564,
+       "open": 0.00271,
+       "H": 0.000955,
+       "Q": 0.872809,
+       "report": 0.0,
+       "close": 0.00109,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9536
+      }
+     ],
+     "best": 0.877564,
+     "best_Q": 0.872809,
+     "rss_kb": 9584,
+     "rc": 0,
+     "identical": false,
+     "speedup": 13.053743088823152
+    }
+   },
+   "load_start": [
+    12.57,
+    11.79,
+    15.38
+   ],
+   "load_end": [
+    10.31,
+    11.37,
+    15.13
+   ]
+  },
+  {
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 2.888555,
+      "open": 0.002365,
+      "H": 0.003027,
+      "Q": 2.8824,
+      "report": 0.0,
+      "close": 0.000763,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9152
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.899083,
+       "open": 0.001978,
+       "H": 0.003507,
+       "Q": 2.892445,
+       "report": 0.0,
+       "close": 0.001153,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9152
+      }
+     ],
+     "best": 2.888555,
+     "best_Q": 2.8824,
+     "rss_kb": 9152,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.309799,
+      "open": 0.002383,
+      "H": 0.001077,
+      "Q": 0.305115,
+      "report": 1e-06,
+      "close": 0.001223,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9984
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.277411,
+       "open": 0.002394,
+       "H": 0.001039,
+       "Q": 0.272786,
+       "report": 0.0,
+       "close": 0.001192,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 10064
+      }
+     ],
+     "best": 0.277411,
+     "best_Q": 0.272786,
+     "rss_kb": 10064,
+     "rc": 0,
+     "identical": true,
+     "speedup": 10.412546726697933
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.198608,
+      "open": 0.002098,
+      "H": 0.001072,
+      "Q": 0.194347,
+      "report": 0.0,
+      "close": 0.001091,
+      "steps": 288,
+      "hash": "4811b18eb7bd7eb9",
+      "rss_kb": 9936
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.20687,
+       "open": 0.002443,
+       "H": 0.000983,
+       "Q": 0.202511,
+       "report": 0.0,
+       "close": 0.000933,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9968
+      }
+     ],
+     "best": 0.198608,
+     "best_Q": 0.194347,
+     "rss_kb": 9968,
+     "rc": 0,
+     "identical": false,
+     "speedup": 14.54400124869089
+    }
+   },
+   "load_start": [
+    10.31,
+    11.37,
+    15.13
+   ],
+   "load_end": [
+    10.03,
+    11.28,
+    15.05
+   ]
+  },
+  {
+   "case": "net3-chlm",
+   "name": "Net3, chloramine decay",
+   "mode": "step",
+   "threads": "default",
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 2.863755,
+      "open": 0.002616,
+      "H": 0.00314,
+      "Q": 2.856746,
+      "report": 0.0,
+      "close": 0.001253,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 9264
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.813976,
+       "open": 0.002301,
+       "H": 0.003042,
+       "Q": 2.807482,
+       "report": 0.0,
+       "close": 0.001151,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 9232
+      }
+     ],
+     "best": 2.813976,
+     "best_Q": 2.807482,
+     "rss_kb": 9264,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.272322,
+      "open": 0.002368,
+      "H": 0.001133,
+      "Q": 0.267934,
+      "report": 0.0,
+      "close": 0.000887,
+      "steps": 288,
+      "hash": "15810c74e40f4bc6",
+      "rss_kb": 10096
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.264318,
+       "open": 0.001981,
+       "H": 0.000958,
+       "Q": 0.260149,
+       "report": 0.0,
+       "close": 0.00123,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 10048
+      }
+     ],
+     "best": 0.264318,
+     "best_Q": 0.260149,
+     "rss_kb": 10096,
+     "rc": 0,
+     "identical": true,
+     "speedup": 10.646176196853789
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.221098,
+      "open": 0.002319,
+      "H": 0.000981,
+      "Q": 0.216801,
+      "report": 0.0,
+      "close": 0.000997,
+      "steps": 288,
+      "hash": "4811b18eb7bd7eb9",
+      "rss_kb": 10016
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.203196,
+       "open": 0.002035,
+       "H": 0.001191,
+       "Q": 0.198855,
+       "report": 0.0,
+       "close": 0.001115,
+       "steps": 288,
+       "hash": "0000000000000000",
+       "rss_kb": 10064
+      }
+     ],
+     "best": 0.203196,
+     "best_Q": 0.198855,
+     "rss_kb": 10064,
+     "rc": 0,
+     "identical": false,
+     "speedup": 13.848579696450717
+    }
+   },
+   "load_start": [
+    10.03,
+    11.28,
+    15.05
+   ],
+   "load_end": [
+    10.51,
+    11.35,
+    15.05
+   ]
+  },
+  {
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 2.582184,
+      "open": 0.001953,
+      "H": 0.003016,
+      "Q": 2.576541,
+      "report": 0.0,
+      "close": 0.000674,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 6880
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 2.600855,
+       "open": 0.000857,
+       "H": 0.003062,
+       "Q": 2.59502,
+       "report": 0.0,
+       "close": 0.000641,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8992
+      }
+     ],
+     "best": 2.582184,
+     "best_Q": 2.576541,
+     "rss_kb": 8992,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.450392,
+      "open": 0.002061,
+      "H": 0.000873,
+      "Q": 0.446748,
+      "report": 1e-06,
+      "close": 0.000709,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7632
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.437945,
+       "open": 0.000978,
+       "H": 0.00091,
+       "Q": 0.435303,
+       "report": 0.0,
+       "close": 0.000754,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7792
+      }
+     ],
+     "best": 0.437945,
+     "best_Q": 0.435303,
+     "rss_kb": 7792,
+     "rc": 0,
+     "identical": true,
+     "speedup": 5.896137642854696
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.421237,
+      "open": 0.002225,
+      "H": 0.001023,
+      "Q": 0.416969,
+      "report": 0.0,
+      "close": 0.00102,
+      "steps": 480,
+      "hash": "790ac79cf88f38ac",
+      "rss_kb": 7632
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.410916,
+       "open": 0.000892,
+       "H": 0.000864,
+       "Q": 0.40702,
+       "report": 0.0,
+       "close": 0.000719,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 11520
+      }
+     ],
+     "best": 0.410916,
+     "best_Q": 0.40702,
+     "rss_kb": 11520,
+     "rc": 0,
+     "identical": false,
+     "speedup": 6.283970446514616
+    }
+   },
+   "load_start": [
+    10.51,
+    11.35,
+    15.05
+   ],
+   "load_end": [
+    9.5,
+    11.11,
+    14.93
+   ]
+  },
+  {
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 0.72127,
+      "open": 0.00227,
+      "H": 0.003089,
+      "Q": 0.715115,
+      "report": 0.0,
+      "close": 0.000796,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7360
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.678454,
+       "open": 0.00098,
+       "H": 0.003043,
+       "Q": 0.672721,
+       "report": 0.0,
+       "close": 0.000746,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 9504
+      }
+     ],
+     "best": 0.678454,
+     "best_Q": 0.672721,
+     "rss_kb": 9504,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.153783,
+      "open": 0.002013,
+      "H": 0.001015,
+      "Q": 0.149953,
+      "report": 0.0,
+      "close": 0.000802,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7936
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.148232,
+       "open": 0.001194,
+       "H": 0.000967,
+       "Q": 0.144301,
+       "report": 0.0,
+       "close": 0.000632,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8608
+      }
+     ],
+     "best": 0.148232,
+     "best_Q": 0.144301,
+     "rss_kb": 8608,
+     "rc": 0,
+     "identical": true,
+     "speedup": 4.576973932754061
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.160051,
+      "open": 0.002012,
+      "H": 0.000995,
+      "Q": 0.156239,
+      "report": 0.0,
+      "close": 0.000805,
+      "steps": 480,
+      "hash": "790ac79cf88f38ac",
+      "rss_kb": 7936
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.139115,
+       "open": 0.001099,
+       "H": 0.000943,
+       "Q": 0.13612,
+       "report": 0.0,
+       "close": 0.00074,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 10096
+      }
+     ],
+     "best": 0.139115,
+     "best_Q": 0.13612,
+     "rss_kb": 10096,
+     "rc": 0,
+     "identical": false,
+     "speedup": 4.876929159328613
+    }
+   },
+   "load_start": [
+    9.5,
+    11.11,
+    14.93
+   ],
+   "load_end": [
+    9.54,
+    11.09,
+    14.9
+   ]
+  },
+  {
+   "case": "net3-as",
+   "name": "Net3, arsenic adsorption",
+   "mode": "step",
+   "threads": "default",
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 0.651316,
+      "open": 0.002018,
+      "H": 0.003024,
+      "Q": 0.645506,
+      "report": 0.0,
+      "close": 0.000768,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 7488
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.649637,
+       "open": 0.001145,
+       "H": 0.003098,
+       "Q": 0.64418,
+       "report": 0.0,
+       "close": 0.00087,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 9456
+      }
+     ],
+     "best": 0.649637,
+     "best_Q": 0.64418,
+     "rss_kb": 9456,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.153674,
+      "open": 0.002137,
+      "H": 0.001018,
+      "Q": 0.149327,
+      "report": 0.0,
+      "close": 0.001192,
+      "steps": 480,
+      "hash": "8c1bc2a7c84f3937",
+      "rss_kb": 8016
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.158068,
+       "open": 0.00105,
+       "H": 0.000928,
+       "Q": 0.155406,
+       "report": 0.0,
+       "close": 0.000684,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8640
+      }
+     ],
+     "best": 0.153674,
+     "best_Q": 0.149327,
+     "rss_kb": 8640,
+     "rc": 0,
+     "identical": true,
+     "speedup": 4.227370928068509
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.148072,
+      "open": 0.002009,
+      "H": 0.000992,
+      "Q": 0.143991,
+      "report": 0.0,
+      "close": 0.00108,
+      "steps": 480,
+      "hash": "790ac79cf88f38ac",
+      "rss_kb": 8016
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.149762,
+       "open": 0.001052,
+       "H": 0.000992,
+       "Q": 0.146772,
+       "report": 0.0,
+       "close": 0.000946,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 10704
+      }
+     ],
+     "best": 0.148072,
+     "best_Q": 0.143991,
+     "rss_kb": 10704,
+     "rc": 0,
+     "identical": false,
+     "speedup": 4.387304824679886
+    }
+   },
+   "load_start": [
+    9.54,
+    11.09,
+    14.9
+   ],
+   "load_end": [
+    9.54,
+    11.09,
+    14.9
+   ]
+  },
+  {
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 0.215744,
+      "open": 0.001918,
+      "H": 0.00072,
+      "Q": 0.212525,
+      "report": 0.0,
+      "close": 0.000581,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 4704
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.213758,
+       "open": 0.000523,
+       "H": 0.000611,
+       "Q": 0.212149,
+       "report": 0.0,
+       "close": 0.000441,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 4864
+      }
+     ],
+     "best": 0.213758,
+     "best_Q": 0.212149,
+     "rss_kb": 4864,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.063958,
+      "open": 0.001353,
+      "H": 0.000455,
+      "Q": 0.061191,
+      "report": 0.0,
+      "close": 0.000959,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 4944
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.063172,
+       "open": 0.000515,
+       "H": 0.000416,
+       "Q": 0.061453,
+       "report": 0.0,
+       "close": 0.000446,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7680
+      }
+     ],
+     "best": 0.063172,
+     "best_Q": 0.061191,
+     "rss_kb": 7680,
+     "rc": 0,
+     "identical": true,
+     "speedup": 3.383745963401507
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.063457,
+      "open": 0.001336,
+      "H": 0.000482,
+      "Q": 0.060723,
+      "report": 0.0,
+      "close": 0.000916,
+      "steps": 480,
+      "hash": "c6676134b11a20f6",
+      "rss_kb": 4928
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.062996,
+       "open": 0.000565,
+       "H": 0.000435,
+       "Q": 0.060952,
+       "report": 0.0,
+       "close": 0.000393,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7744
+      }
+     ],
+     "best": 0.062996,
+     "best_Q": 0.060723,
+     "rss_kb": 7744,
+     "rc": 0,
+     "identical": false,
+     "speedup": 3.3931995682265543
+    }
+   },
+   "load_start": [
+    9.54,
+    11.09,
+    14.9
+   ],
+   "load_end": [
+    9.9,
+    11.14,
+    14.89
+   ]
+  },
+  {
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 0.136873,
+      "open": 0.001602,
+      "H": 0.000627,
+      "Q": 0.133852,
+      "report": 0.0,
+      "close": 0.000792,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 5072
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.143708,
+       "open": 0.000594,
+       "H": 0.00063,
+       "Q": 0.141515,
+       "report": 0.0,
+       "close": 0.000586,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7520
+      }
+     ],
+     "best": 0.136873,
+     "best_Q": 0.133852,
+     "rss_kb": 7520,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.066332,
+      "open": 0.001862,
+      "H": 0.000567,
+      "Q": 0.063233,
+      "report": 0.0,
+      "close": 0.00067,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 5280
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.06898,
+       "open": 0.000657,
+       "H": 0.000461,
+       "Q": 0.065837,
+       "report": 0.0,
+       "close": 0.000584,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8016
+      }
+     ],
+     "best": 0.066332,
+     "best_Q": 0.063233,
+     "rss_kb": 8016,
+     "rc": 0,
+     "identical": true,
+     "speedup": 2.0634535367545075
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.069514,
+      "open": 0.001753,
+      "H": 0.000585,
+      "Q": 0.066377,
+      "report": 0.0,
+      "close": 0.000799,
+      "steps": 480,
+      "hash": "c6676134b11a20f6",
+      "rss_kb": 5376
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.066244,
+       "open": 0.000648,
+       "H": 0.000471,
+       "Q": 0.062454,
+       "report": 0.0,
+       "close": 0.000539,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8000
+      }
+     ],
+     "best": 0.066244,
+     "best_Q": 0.062454,
+     "rss_kb": 8000,
+     "rc": 0,
+     "identical": false,
+     "speedup": 2.0661946742346475
+    }
+   },
+   "load_start": [
+    9.9,
+    11.14,
+    14.89
+   ],
+   "load_end": [
+    9.91,
+    11.12,
+    14.86
+   ]
+  },
+  {
+   "case": "example",
+   "name": "MSX example (4 nodes)",
+   "mode": "step",
+   "threads": "default",
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 0.153985,
+      "open": 0.002317,
+      "H": 0.000872,
+      "Q": 0.149626,
+      "report": 0.0,
+      "close": 0.00117,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 5152
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.151895,
+       "open": 0.000662,
+       "H": 0.000641,
+       "Q": 0.14937,
+       "report": 0.0,
+       "close": 0.000588,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 7648
+      }
+     ],
+     "best": 0.151895,
+     "best_Q": 0.14937,
+     "rss_kb": 7648,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.07734,
+      "open": 0.001984,
+      "H": 0.000614,
+      "Q": 0.073677,
+      "report": 1e-06,
+      "close": 0.001064,
+      "steps": 480,
+      "hash": "2d27ebbc1fe41c83",
+      "rss_kb": 5360
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.074809,
+       "open": 0.00072,
+       "H": 0.000482,
+       "Q": 0.071455,
+       "report": 0.0,
+       "close": 0.000675,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 6064
+      }
+     ],
+     "best": 0.074809,
+     "best_Q": 0.071455,
+     "rss_kb": 6064,
+     "rc": 0,
+     "identical": true,
+     "speedup": 2.0304375142028364
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.073647,
+      "open": 0.001922,
+      "H": 0.00054,
+      "Q": 0.070124,
+      "report": 0.0,
+      "close": 0.001061,
+      "steps": 480,
+      "hash": "c6676134b11a20f6",
+      "rss_kb": 5424
+     },
+     "times": [
+      {
+       "rc": 0,
+       "total": 0.072009,
+       "open": 0.000652,
+       "H": 0.000436,
+       "Q": 0.070246,
+       "report": 0.0,
+       "close": 0.00058,
+       "steps": 480,
+       "hash": "0000000000000000",
+       "rss_kb": 8096
+      }
+     ],
+     "best": 0.072009,
+     "best_Q": 0.070124,
+     "rss_kb": 8096,
+     "rc": 0,
+     "identical": false,
+     "speedup": 2.10938910413976
+    }
+   },
+   "load_start": [
+    9.91,
+    11.12,
+    14.86
+   ],
+   "load_end": [
+    9.43,
+    11.0,
+    14.8
+   ]
+  }
+ ]
+}
