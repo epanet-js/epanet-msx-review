@@ -1,0 +1,3 @@
+[submodule "msx"]
+	path = msx
+	url = https://github.com/USEPA/EPANETMSX.git

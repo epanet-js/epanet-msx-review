@@ -1,0 +1,58 @@
+FIX-01: Keep one pipe's integration error from being lost to the next pipe's success
+
+MSXchem_react() reacts the pipes in an OpenMP loop, and every pipe's
+call wrote its return code into one shared errcode. An integration error
+(513) or equilibrium error (514) in one pipe was overwritten by the next
+pipe's 0, with one thread as with many, so the run carried on with
+concentrations that were never solved. Each thread now keeps its own code,
+and the largest code found is returned, whatever the number of threads.
+
+A model that appears to run today can stop with error 513 or 514 once this
+is applied. The error is real: it was there before, and was being lost.
+Results are unchanged on every benchmark case, which have no such errors.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, on its own:
+    git apply --whitespace=nowarn FIX-01.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index 3fca3e3..44ce617 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -279,8 +279,12 @@ int MSXchem_react(double dt)
+     }
+ 
+ // --- examine each link
++//     (the largest error code found is returned whatever the number
++//     of threads, as the order in which links are done may vary)
++
+ #pragma omp parallel
+ {
++    int ierr;
+     #pragma omp for private(k)
+     for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+     {
+@@ -293,10 +297,17 @@ int MSXchem_react(double dt)
+         //evalHydVariables(k);
+         for (int hi = 1; hi < MAX_HYD_VARS; hi++)
+             HydVar[hi] = MSX.Link[k].HydVar[hi];
+-         // --- compute pipe reactions
+ 
+-         errcode = evalPipeReactions(k, dt);
+-        //if (errcode) return errcode;
++        // --- compute pipe reactions
++
++        ierr = evalPipeReactions(k, dt);
++        if (ierr)
++        {
++            #pragma omp critical
++            {
++                if (ierr > errcode) errcode = ierr;
++            }
++        }
+     }
+ }
+     if (errcode) return errcode;

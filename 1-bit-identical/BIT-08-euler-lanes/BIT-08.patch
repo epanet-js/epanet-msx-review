@@ -1,0 +1,514 @@
+BIT-08: Evaluate Euler rates for eight segments at once
+
+With the Euler integrator a segment's reaction is one evaluation of a
+short rate program, and the cost was the overhead around it. Evaluate the
+program for eight segments at a time, one operation across all eight, in a
+loop the compiler can vectorise. Each segment's arithmetic is unchanged.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-07:
+    git apply --whitespace=nowarn BIT-08.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/mathexpr.c b/src/solver/mathexpr.c
+index e3ae1e5..d29a4cd 100644
+--- a/src/solver/mathexpr.c
++++ b/src/solver/mathexpr.c
+@@ -858,6 +858,211 @@ done:
+ 
+ //=============================================================================
+ 
++#define LANES       MATHEXPR_LANES
++#define LANE_STACK  32            // stack size of mathexpr_runLanes
++#define EACH(s)     for (l = 0; l < LANES; l++) { s; }
++
++int mathexpr_runLanes(MathExpr* prog, double* values)
++/*
++**  Purpose:
++**    runs a program made by mathexpr_join for MATHEXPR_LANES sets of
++**    variable values at once.
++**
++**  Input:
++**    prog = the program
++**    values = the values of the variables: the value of variable i in
++**             set l is values[i * MATHEXPR_LANES + l].
++**
++**  Output:
++**    the values stored by the program, in values.
++**
++**  Returns:
++**    1, or 0 if the program is not suited to it (not well formed, or
++**    needing a stack of LANE_STACK or more), in which case nothing is done.
++**
++**  Note:
++**    each set of values goes through the same operations as in
++**    mathexpr_run, so the values stored are the same; the operations of
++**    the sets are done side by side, one operation at a time.
++*/
++{
++#ifdef THREADED_CODE
++    static const void* const dispatch[62] = {
++        &&op_end,  &&op_none, &&op_none, &&op_add,  &&op_sub,     // 0-4
++        &&op_mul,  &&op_div,  &&op_num,  &&op_var,  &&op_neg,     // 5-9
++        &&op_cos,  &&op_sin,  &&op_tan,  &&op_cot,  &&op_abs,     // 10-14
++        &&op_sgn,  &&op_sqrt, &&op_log,  &&op_exp,  &&op_asin,    // 15-19
++        &&op_acos, &&op_atan, &&op_acot, &&op_sinh, &&op_cosh,    // 20-24
++        &&op_tanh, &&op_coth, &&op_log10, &&op_step, &&op_none,   // 25-29
++        &&op_none, &&op_pow,  &&op_none, &&op_none, &&op_none,    // 30-34
++        &&op_none, &&op_none, &&op_none, &&op_none, &&op_none,    // 35-39
++        &&op_none, &&op_addv, &&op_subv, &&op_mulv, &&op_divv,    // 40-44
++        &&op_powv, &&op_none, &&op_none, &&op_none, &&op_none,    // 45-49
++        &&op_none, &&op_addn, &&op_subn, &&op_muln, &&op_divn,    // 50-54
++        &&op_pown, &&op_none, &&op_none, &&op_none, &&op_none,    // 55-59
++        &&op_store, &&op_storeraw };                              // 60-61
++#endif
++
++    double stack[LANE_STACK][LANES];
++    double top[LANES], r1[LANES];
++    ExprNode* node;
++#ifndef THREADED_CODE
++    ExprNode* end;
++#endif
++    double *s, *v, x;
++    int sp, l;
++
++    if (prog == NULL || prog->maxDepth < 0 || prog->maxDepth >= LANE_STACK)
++        return 0;
++
++    // --- the values on top of the stack are held in top and those
++    //     beneath them in stack[1..sp]
++
++    EACH(top[l] = 0.0)
++    sp = 0;
++    node = prog->node;
++
++#ifdef THREADED_CODE
++    goto *dispatch[node->opcode];
++#else
++    end = node + prog->count;
++    for (; node < end; node++)
++    {
++        switch (node->opcode)
++        {
++#endif
++        OP(op_add, 3)  s = stack[sp--]; EACH(top[l] = s[l] + top[l])  NEXT;
++        OP(op_sub, 4)  s = stack[sp--]; EACH(top[l] = s[l] - top[l])  NEXT;
++        OP(op_mul, 5)  s = stack[sp--]; EACH(top[l] = s[l] * top[l])  NEXT;
++        OP(op_div, 6)  s = stack[sp--]; EACH(top[l] = s[l] / top[l])  NEXT;
++
++        OP(op_num, 7)
++            s = stack[++sp];
++            x = node->fvalue;
++            EACH(s[l] = top[l]; top[l] = x)
++            NEXT;
++
++        OP(op_var, 8)
++            s = stack[++sp];
++            v = values + (size_t)node->ivar * LANES;
++            EACH(s[l] = top[l]; top[l] = v[l])
++            NEXT;
++
++        OP(op_addv, 41)
++            v = values + (size_t)node->ivar * LANES;
++            EACH(top[l] = top[l] + v[l])
++            NEXT;
++        OP(op_subv, 42)
++            v = values + (size_t)node->ivar * LANES;
++            EACH(top[l] = top[l] - v[l])
++            NEXT;
++        OP(op_mulv, 43)
++            v = values + (size_t)node->ivar * LANES;
++            EACH(top[l] = top[l] * v[l])
++            NEXT;
++        OP(op_divv, 44)
++            v = values + (size_t)node->ivar * LANES;
++            EACH(top[l] = top[l] / v[l])
++            NEXT;
++        OP(op_powv, 45)
++            v = values + (size_t)node->ivar * LANES;
++            EACH(if (top[l] <= 0.0) top[l] = 0.0; else top[l] = pow(top[l], v[l]))
++            NEXT;
++
++        OP(op_addn, 51)  x = node->fvalue; EACH(top[l] = top[l] + x)  NEXT;
++        OP(op_subn, 52)  x = node->fvalue; EACH(top[l] = top[l] - x)  NEXT;
++        OP(op_muln, 53)  x = node->fvalue; EACH(top[l] = top[l] * x)  NEXT;
++        OP(op_divn, 54)  x = node->fvalue; EACH(top[l] = top[l] / x)  NEXT;
++        OP(op_pown, 55)
++            x = node->fvalue;
++            EACH(if (top[l] <= 0.0) top[l] = 0.0; else top[l] = pow(top[l], x))
++            NEXT;
++
++        OP(op_store, 60)
++            v = values + (size_t)node->ivar * LANES;
++            EACH(if (top[l] != top[l]) v[l] = 0.0; else v[l] = top[l])
++            sp = 0;
++            NEXT;
++
++        OP(op_storeraw, 61)
++            v = values + (size_t)node->ivar * LANES;
++            EACH(v[l] = top[l])
++            sp = 0;
++            NEXT;
++
++        OP(op_neg, 9)   EACH(top[l] = -top[l])       NEXT;
++        OP(op_cos, 10)  EACH(top[l] = cos(top[l]))   NEXT;
++        OP(op_sin, 11)  EACH(top[l] = sin(top[l]))   NEXT;
++        OP(op_tan, 12)  EACH(top[l] = tan(top[l]))   NEXT;
++        OP(op_cot, 13)  EACH(top[l] = 1.0 / tan(top[l]))  NEXT;
++        OP(op_abs, 14)  EACH(top[l] = fabs(top[l]))  NEXT;
++
++        OP(op_sgn, 15)
++            EACH(if (top[l] < 0.0) top[l] = -1.0;
++                 else if (top[l] > 0.0) top[l] = 1.0;
++                 else top[l] = 0.0)
++            NEXT;
++
++        OP(op_sqrt, 16) EACH(top[l] = sqrt(top[l]))  NEXT;
++        OP(op_log, 17)  EACH(top[l] = log(top[l]))   NEXT;
++        OP(op_exp, 18)  EACH(top[l] = exp(top[l]))   NEXT;
++        OP(op_asin, 19) EACH(top[l] = asin(top[l]))  NEXT;
++        OP(op_acos, 20) EACH(top[l] = acos(top[l]))  NEXT;
++        OP(op_atan, 21) EACH(top[l] = atan(top[l]))  NEXT;
++        OP(op_acot, 22) EACH(top[l] = 1.57079632679489661923 - atan(top[l]))  NEXT;
++
++        OP(op_sinh, 23)
++            EACH(r1[l] = top[l]; top[l] = (exp(r1[l]) - exp(-r1[l])) / 2.0)
++            NEXT;
++
++        OP(op_cosh, 24)
++            EACH(r1[l] = top[l]; top[l] = (exp(r1[l]) + exp(-r1[l])) / 2.0)
++            NEXT;
++
++        OP(op_tanh, 25)
++            EACH(r1[l] = top[l];
++                 top[l] = (exp(r1[l]) - exp(-r1[l])) / (exp(r1[l]) + exp(-r1[l])))
++            NEXT;
++
++        OP(op_coth, 26)
++            EACH(r1[l] = top[l];
++                 top[l] = (exp(r1[l]) + exp(-r1[l])) / (exp(r1[l]) - exp(-r1[l])))
++            NEXT;
++
++        OP(op_log10, 27) EACH(top[l] = log10(top[l]))  NEXT;
++
++        OP(op_step, 28)
++            EACH(if (top[l] <= 0.0) top[l] = 0.0; else top[l] = 1.0)
++            NEXT;
++
++        OP(op_pow, 31)
++            s = stack[sp--];
++            EACH(r1[l] = top[l]; top[l] = s[l];
++                 if (top[l] <= 0.0) top[l] = 0.0; else top[l] = pow(top[l], r1[l]))
++            NEXT;
++
++#ifdef THREADED_CODE
++        op_none:
++            NEXT;
++        op_end:
++            goto done;
++#else
++        default:
++            break;
++        }
++    }
++#endif
++
++#ifdef THREADED_CODE
++done:
++#endif
++    return 1;
++}
++
++#undef EACH
++
++//=============================================================================
++
+ void mathexpr_fuse(MathExpr* expr)
+ /*
+ **  Purpose:
+diff --git a/src/solver/mathexpr.h b/src/solver/mathexpr.h
+index 676b393..8b65f7b 100644
+--- a/src/solver/mathexpr.h
++++ b/src/solver/mathexpr.h
+@@ -68,6 +68,11 @@ MathExpr* mathexpr_join(int n, MathExpr** exprs, const int* dest,
+ //  Runs a program made by mathexpr_join
+ void mathexpr_run(MathExpr* prog, double* values);
+ 
++//  Runs a program made by mathexpr_join for several sets of values at
++//  once (the value of variable i in set l is values[i*MATHEXPR_LANES + l])
++#define MATHEXPR_LANES 8
++int mathexpr_runLanes(MathExpr* prog, double* values);
++
+ //  Deletes a tokenized math expression
+ void  mathexpr_delete(MathExpr* expr);
+ 
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index e7dce9b..ca1b6c1 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -70,6 +70,8 @@ typedef struct
+     double HydVar[MAX_HYD_VARS];       // Values of hydraulic variables
+     double *F;                         // Function values
+     double *ChemC1;                    // Values of variables (see below)
++    double *Lanes;                     // Values of variables of several
++                                       // segments (see evalPipeLanes)
+ }  ChemState;
+ 
+ static ChemState *Chem;                // State of the calling thread
+@@ -134,6 +136,18 @@ static MathExpr *InvProg;              // Program computing the invariants
+ static double   *InvCache;             // Cache entry of each link
+ static char     *InvValid;             // 1 if a link's cache entry is filled
+ 
++//  Segments evaluated together
++//-----------------------------
++//  With the Euler integrator, the rates of MATHEXPR_LANES segments of a
++//  pipe are computed at once, if there are no equilibrium or formula
++//  species (see evalPipeLanes).
++static int       UseLanes;             // 1 if segments are done together
++static int       NumLaneInputs;        // Number of values the rate program
++static int      *LaneInputs;           // reads that are the same for every
++                                       // segment of a pipe, & their positions
++static int       NumLaneSpecies;       // Number of species it reads
++static int      *LaneSpecies;          // & their indexes
++
+ //  Exported functions
+ //--------------------
+ int    MSXchem_open(void);
+@@ -185,6 +199,8 @@ static int    splitInvariants(ChemExprs *ce);
+ static int    filterDeps(int *list, int n, char *isFixed);
+ static void   simplifyExpr(MathExpr **expr, char *isFixed);
+ static void   setPipeInvariants(ChemState *cs, int k);
++static int    setLanes(void);
++static int    evalPipeLanes(ChemState *cs, int k, double dt);
+ static void   getPipeDcDt(double t, double y[], int n, double deriv[],
+                           void *data);
+ static void   getTankDcDt(double t, double y[], int n, double deriv[],
+@@ -241,6 +257,11 @@ int  MSXchem_open()
+     NumInvParts = 0;
+     InvParts = NULL;
+     InvProg = NULL;
++    UseLanes = 0;
++    NumLaneInputs = 0;
++    LaneInputs = NULL;
++    NumLaneSpecies = 0;
++    LaneSpecies = NULL;
+     InvCache = NULL;
+     InvValid = NULL;
+ 
+@@ -328,6 +349,8 @@ int  MSXchem_open()
+         if ( errcode ) return errcode;
+         errcode = joinExprs(&TankExprs, 0);
+         if ( errcode ) return errcode;
++        errcode = setLanes();
++        if ( errcode ) return errcode;
+     }
+ 
+ // --- each thread's own chemistry state
+@@ -343,6 +366,9 @@ int  MSXchem_open()
+         cs->Yequil = (double*)calloc(m, sizeof(double));
+         cs->F = (double*)calloc(m, sizeof(double));
+         cs->ChemC1 = (double*)calloc(NumValues, sizeof(double));
++        if ( UseLanes )
++            cs->Lanes = (double*)calloc((size_t)NumValues * MATHEXPR_LANES,
++                                        sizeof(double));
+     }
+ #pragma omp critical
+     {
+@@ -353,6 +379,7 @@ int  MSXchem_open()
+             CALL(errcode, MEMCHECK(cs->Yequil));
+             CALL(errcode, MEMCHECK(cs->F));
+             CALL(errcode, MEMCHECK(cs->ChemC1));
++            if ( UseLanes ) CALL(errcode, MEMCHECK(cs->Lanes));
+         }
+     }
+ }
+@@ -438,6 +465,9 @@ void MSXchem_close()
+     FREE(InvDeps);
+     FREE(InvCache);
+     FREE(InvValid);
++    FREE(LaneInputs);
++    FREE(LaneSpecies);
++    UseLanes = 0;
+     NumInvParts = 0;
+     NumInvDeps = 0;
+ 
+@@ -447,6 +477,7 @@ void MSXchem_close()
+     if ( cs )
+     {
+         FREE(cs->ChemC1);
++        FREE(cs->Lanes);
+         FREE(cs->Yrate);
+         FREE(cs->Yequil);
+         FREE(cs->F);
+@@ -809,6 +840,11 @@ int evalPipeReactions(ChemState *cs, int k, double dt)
+     double c, dh;
+     Pseg src = NULL, seg;
+ 
++// --- with the Euler integrator, several segments at a time
++
++    if ( UseLanes && dt > 0.0 && MSX.FirstSeg[k] && MSX.FirstSeg[k]->prev )
++        return evalPipeLanes(cs, k, dt);
++
+ // --- start with the most downstream pipe segment
+ 
+     cs->TheLink = k;
+@@ -2346,3 +2382,157 @@ void setPipeInvariants(ChemState *cs, int k)
+     memcpy(inputs, in, NumInvInputs * sizeof(double));
+     InvValid[k] = 1;
+ }
++
++//=============================================================================
++
++int setLanes()
++/*
++**  Purpose:
++**    decides whether the rates of several pipe segments are computed at
++**    once (see evalPipeLanes) and lists the values that the program
++**    computing the rates reads.
++**
++**  Returns:
++**    an error code or 0 if no error.
++*/
++{
++    int j, i, op;
++    char *seen;
++    MathExpr *prog = PipeExprs.rateProg;
++
++    if ( MSX.Solver != EUL || prog == NULL ||
++         NumPipeEquilSpecies + NumPipeFormulaSpecies > 0 ) return 0;
++    seen = (char *)calloc(NumValues, sizeof(char));
++    LaneInputs = (int *)calloc(NumValues, sizeof(int));
++    LaneSpecies = (int *)calloc(NumValues, sizeof(int));
++    if ( !seen || !LaneInputs || !LaneSpecies )
++    {
++        FREE(seen);
++        return ERR_MEMORY;
++    }
++
++// --- values read before the program stores them: species concentrations
++//     and values that are the same throughout a pipe (seen = 1 for those
++//     read, 2 for those stored)
++
++    for (j = 0; j < prog->count; j++)
++    {
++        op = prog->node[j].opcode;
++        i = prog->node[j].ivar;
++        if ( op == 60 || op == 61 )
++        {
++            if ( !seen[i] ) seen[i] = 2;
++        }
++        else if ( (op == 8 || (op >= 41 && op <= 45)) && !seen[i] )
++        {
++            seen[i] = 1;
++            if ( i >= 1 && i <= NumSpecies ) LaneSpecies[NumLaneSpecies++] = i;
++            else LaneInputs[NumLaneInputs++] = i;
++        }
++    }
++    FREE(seen);
++    UseLanes = (prog->maxDepth >= 0 && prog->maxDepth < 32);
++    return 0;
++}
++
++//=============================================================================
++
++int evalPipeLanes(ChemState *cs, int k, double dt)
++/*
++**  Purpose:
++**    updates species concentrations in each WQ segment of a pipe after
++**    reactions over time step dt, with the Euler integrator, computing
++**    the rates of MATHEXPR_LANES segments at once.
++**
++**  Input:
++**    k = link index
++**    dt = time step (sec).
++**
++**  Returns:
++**    an error code or 0 if no error.
++**
++**  Note:
++**    the results are those of evalPipeReactions: each segment's rates
++**    are computed by the same operations (see mathexpr_runLanes), the
++**    segments that hold the same water as the one before them get its
++**    results copied, and the segments are updated in the same order.
++*/
++{
++    int i, j, l, m, n;
++    int nsame[MATHEXPR_LANES];
++    double tstep = (double)dt / MSX.Ucf[RATE_UNITS];
++    double c;
++    double *val = cs->ChemC1;
++    double *lv = cs->Lanes;
++    Pseg seg, src, lane[MATHEXPR_LANES];
++
++    cs->TheLink = k;
++    setPipeValues(cs, k);
++    for (j = 0; j < NumLaneInputs; j++)
++    {
++        i = LaneInputs[j];
++        for (l = 0; l < MATHEXPR_LANES; l++) lv[i * MATHEXPR_LANES + l] = val[i];
++    }
++
++// --- start with the most downstream pipe segment
++
++    seg = MSX.FirstSeg[k];
++    while ( seg )
++    {
++        // --- the next segments that do not hold the same water as the
++        //     one before them, each followed by nsame segments that do
++        //     (the last one is repeated in unused lanes)
++
++        for (n = 0; n < MATHEXPR_LANES && seg; n++)
++        {
++            lane[n] = seg;
++            nsame[n] = 0;
++            for (seg = seg->prev; seg != NULL; seg = seg->prev)
++            {
++                if ( !isSameWater(seg, lane[n]) ) break;
++                nsame[n]++;
++            }
++        }
++        for (j = 0; j < NumLaneSpecies; j++)
++        {
++            m = LaneSpecies[j];
++            for (l = 0; l < MATHEXPR_LANES; l++)
++                lv[m * MATHEXPR_LANES + l] = lane[l < n ? l : n - 1]->c[m];
++        }
++
++        // --- their rates
++
++        mathexpr_runLanes(PipeExprs.rateProg, lv);
++
++        // --- update each segment as evalPipeReactions does, and give
++        //     the segments that follow it with the same water its results
++
++        for (l = 0; l < n; l++)
++        {
++            cs->TheSeg = lane[l];
++            for (m = 1; m <= NumSpecies; m++)
++                cs->TheSeg->lastc[m] = cs->TheSeg->c[m];
++            for (i = 1; i <= NumPipeRateSpecies; i++)
++            {
++                m = PipeRateSpecies[i];
++                cs->Yrate[i] = validate(lv[(OutBase + i) * MATHEXPR_LANES + l],
++                                        m, LINK, RATE);
++            }
++            for (i = 1; i <= NumPipeRateSpecies; i++)
++            {
++                m = PipeRateSpecies[i];
++                c = cs->TheSeg->c[m] + cs->Yrate[i]*tstep;
++                cs->TheSeg->c[m] = MAX(c, 0.0);
++            }
++            addPipeReactedMass(k, cs->TheSeg);
++            src = cs->TheSeg;
++            for (j = 0; j < nsame[l]; j++)
++            {
++                cs->TheSeg = cs->TheSeg->prev;
++                copyPipeReactions(k, src, cs->TheSeg);
++            }
++        }
++    }
++    cs->TheSeg = NULL;
++    return 0;
++}

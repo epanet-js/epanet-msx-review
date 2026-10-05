@@ -1,0 +1,37 @@
+FIX-02: Take no new segment for a link without flow
+
+advectSegs() took a new segment from the pool for every link at every
+quality step. For a link with no flow, evalnodeoutflow() returns before
+using it and never gives it back, and the next step overwrites the pointer:
+one segment and its concentration arrays leaked per zero-flow link per step
+(about 70 MB per simulated week on Net6). Links without flow now take no
+segment. Results are unchanged.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, on its own:
+    git apply --whitespace=nowarn FIX-02.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxqual.c b/src/solver/msxqual.c
+index 410ed5d..e73bd11 100644
+--- a/src/solver/msxqual.c
++++ b/src/solver/msxqual.c
+@@ -882,6 +882,16 @@ void advectSegs(double dt)
+ 
+         for (m=1; m<=MSX.Nobjects[SPECIES]; m++) MSX.C1[m] = 0.0;
+ 
++    // --- a link with no flow releases no new segment over this time
++    //     step (evalnodeoutflow returns before using it), so don't take
++    //     one from the pool: it would never be returned to it
++
++        if ( MSX.Q[k] == 0.0 )
++        {
++            MSX.NewSeg[k] = NULL;
++            continue;
++        }
++
+     // --- get a free segment to add to entrance of link
+ 
+         MSX.NewSeg[k] = MSXqual_getFreeSeg(0.0, MSX.C1);

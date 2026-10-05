@@ -1,0 +1,613 @@
+BIT-04: Cache terms that depend only on hydraulics, parameters and constants
+
+Terms such as Re^0.88 or (4/D)*Kw*Kf/(Kw+Kf) depend only on a pipe's
+hydraulics, parameters and constants, yet were recomputed for every segment
+at every step. Find those terms and leading sub-expressions when the file is
+read, and evaluate them once per pipe when its hydraulics change.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-03:
+    git apply --whitespace=nowarn BIT-04.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/mathexpr.c b/src/solver/mathexpr.c
+index 8bc7fb3..a5fbc06 100644
+--- a/src/solver/mathexpr.c
++++ b/src/solver/mathexpr.c
+@@ -129,9 +129,9 @@ static int        countTree(ExprTree*);
+ static void       traverseTree(ExprTree*, ExprNode**);
+ static int        getMaxDepth(MathExpr*);
+ static NOINLINE double evalGeneric(MathExpr*, double (*getVal) (int),
+-                                   const double*);
++                                   const double*, int);
+ static FORCEINLINE double evaluate(MathExpr*, double (*getVal) (int),
+-                                   const double*);
++                                   const double*, int);
+ static void       deleteTree(ExprTree*);
+ 
+ // Callback functions
+@@ -586,7 +586,7 @@ double mathexpr_eval(MathExpr* expr, double (*getVariableValue) (int))
+ //  Evaluates an expression, getting the value of the variable with
+ //  index i from getVariableValue(i)
+ {
+-    return evaluate(expr, getVariableValue, NULL);
++    return evaluate(expr, getVariableValue, NULL, 1);
+ }
+ 
+ //=============================================================================
+@@ -595,15 +595,26 @@ double mathexpr_evalVector(MathExpr* expr, const double* values)
+ //  Evaluates an expression whose variable with index i has the value
+ //  values[i]
+ {
+-    return evaluate(expr, NULL, values);
++    return evaluate(expr, NULL, values, 1);
++}
++
++//=============================================================================
++
++double mathexpr_evalPart(MathExpr* expr, const double* values)
++//  Evaluates a part split off an expression by mathexpr_split (as
++//  mathexpr_evalVector does, except that a NaN result is kept, as it
++//  would be within the whole expression)
++{
++    return evaluate(expr, NULL, values, 0);
+ }
+ 
+ //=============================================================================
+ 
+ double evaluate(MathExpr* expr, double (*getVariableValue) (int),
+-                const double* values)
++                const double* values, int nanToZero)
+ //  Mathematical expression evaluation using a stack (variable values come
+-//  from the values array if it is not NULL or else from getVariableValue)
++//  from the values array if it is not NULL or else from getVariableValue;
++//  a NaN result is replaced by 0 if nanToZero is nonzero)
+ {
+     // --- Note: the stack array must be declared locally and not globally
+     //     since this function can be called recursively.
+@@ -619,7 +630,7 @@ double evaluate(MathExpr* expr, double (*getVariableValue) (int),
+ 
+     if (expr == NULL) return 0.0;
+     if (expr->maxDepth < 0 || expr->maxDepth >= FAST_STACK_SIZE)
+-        return evalGeneric(expr, getVariableValue, values);
++        return evalGeneric(expr, getVariableValue, values, nanToZero);
+ 
+     // --- the value on top of the stack is held in top and the values
+     //     beneath it in stack[1..sp]; the operations are the same as
+@@ -710,14 +721,14 @@ double evaluate(MathExpr* expr, double (*getVariableValue) (int),
+     }
+ 
+     // Set result to 0 if it is NaN due to an illegal math op
+-    if (top != top) top = 0.0;
++    if (nanToZero && top != top) top = 0.0;
+     return top;
+ }
+ 
+ //=============================================================================
+ 
+ double evalGeneric(MathExpr* expr, double (*getVariableValue) (int),
+-                   const double* values)
++                   const double* values, int nanToZero)
+ //  Mathematical expression evaluation using a stack (general case)
+ {
+ 
+@@ -917,7 +928,7 @@ double evalGeneric(MathExpr* expr, double (*getVariableValue) (int),
+         r1 = 0.0;
+ 
+     // Set result to 0 if it is NaN due to an illegal math op
+-    if (r1 != r1) r1 = 0.0;
++    if (nanToZero && r1 != r1) r1 = 0.0;
+ 
+     return r1;
+ }
+@@ -950,6 +961,134 @@ MathExpr* mathexpr_copy(MathExpr* expr)
+ 
+ //=============================================================================
+ 
++int mathexpr_split(MathExpr* expr, const char* isFixed, int firstVar,
++                   MathExpr** parts)
++/*
++**  Purpose:
++**    replaces each largest part of an expression (of two or more nodes)
++**    whose value depends only on numbers and on variables i for which
++**    isFixed[i] is nonzero by a new variable (firstVar, firstVar+1, ...)
++**    and makes each part an expression of its own.
++**
++**  Input:
++**    expr = a tokenized expression (changed in place)
++**    isFixed = flags of the variables whose values are fixed
++**    firstVar = index given to the variable that replaces the first part
++**    parts = array that receives the parts (with room for at least
++**            expr->count / 2 of them).
++**
++**  Returns:
++**    the number of parts (or -1 if out of memory).
++**
++**  Note:
++**    the expression keeps its value when the new variables are given
++**    the values of the parts as computed by mathexpr_evalPart, since
++**    the same operations are carried out on the same numbers.
++*/
++{
++    int i, j, r, left, n, nparts = 0;
++    int *start, *parent, *splitAt;
++    char *fixed;
++
++    if (expr == NULL || expr->maxDepth < 0) return 0;
++    n = expr->count;
++    start = (int*)malloc(n * sizeof(int));
++    parent = (int*)malloc(n * sizeof(int));
++    splitAt = (int*)malloc(n * sizeof(int));
++    fixed = (char*)malloc(n * sizeof(char));
++    if (!start || !parent || !splitAt || !fixed)
++    {
++        nparts = -1;
++        goto done;
++    }
++
++    // --- find the first node of the sub-tree rooted at each node, its
++    //     parent node and whether its value is fixed (in postfix order the
++    //     root of an operator's last operand comes just before it and the
++    //     root of the operand before that just before the first node of
++    //     the last operand)
++
++    for (i = 0; i < n; i++)
++    {
++        parent[i] = -1;
++        splitAt[i] = -1;
++        switch (expr->node[i].opcode)
++        {
++        case 7:
++            start[i] = i;
++            fixed[i] = 1;
++            break;
++        case 8:
++            start[i] = i;
++            fixed[i] = (isFixed[expr->node[i].ivar] != 0);
++            break;
++        case 3: case 4: case 5: case 6: case 31:
++            left = start[i-1] - 1;
++            start[i] = start[left];
++            fixed[i] = fixed[left] && fixed[i-1];
++            parent[left] = i;
++            parent[i-1] = i;
++            break;
++        default:
++            start[i] = start[i-1];
++            fixed[i] = fixed[i-1];
++            parent[i-1] = i;
++        }
++    }
++
++    // --- mark the largest fixed sub-trees of two or more nodes
++
++    for (r = 0; r < n; r++)
++    {
++        if (fixed[r] && start[r] < r &&
++            (parent[r] < 0 || !fixed[parent[r]])) splitAt[start[r]] = r;
++    }
++
++    // --- move each one to an expression of its own
++
++    j = 0;
++    i = 0;
++    while (i < n)
++    {
++        r = splitAt[i];
++        if (r < 0)
++        {
++            expr->node[j++] = expr->node[i++];
++            continue;
++        }
++        parts[nparts] = (MathExpr*)malloc(sizeof(MathExpr) +
++                                          (r - i + 1) * sizeof(ExprNode));
++        if (parts[nparts] == NULL)
++        {
++            while (nparts > 0) free(parts[--nparts]);
++            nparts = -1;
++            goto done;
++        }
++        parts[nparts]->count = r - i + 1;
++        parts[nparts]->node = (ExprNode*)(parts[nparts] + 1);
++        memcpy(parts[nparts]->node, &expr->node[i],
++               (r - i + 1) * sizeof(ExprNode));
++        parts[nparts]->maxDepth = getMaxDepth(parts[nparts]);
++        expr->node[j].opcode = 8;
++        expr->node[j].ivar = firstVar + nparts;
++        expr->node[j].fvalue = 0.0;
++        j++;
++        nparts++;
++        i = r + 1;
++    }
++    expr->count = j;
++    expr->maxDepth = getMaxDepth(expr);
++
++done:
++    free(start);
++    free(parent);
++    free(splitAt);
++    free(fixed);
++    return nparts;
++}
++
++//=============================================================================
++
+ MathExpr* mathexpr_create(char* formula, int (*getVar) (char*))
+ {
+     ExprTree* tree;
+diff --git a/src/solver/mathexpr.h b/src/solver/mathexpr.h
+index 30ce647..7d704a9 100644
+--- a/src/solver/mathexpr.h
++++ b/src/solver/mathexpr.h
+@@ -45,6 +45,14 @@ double mathexpr_evalVector(MathExpr* expr, const double* values);
+ //  Makes a copy of a tokenized math expression
+ MathExpr* mathexpr_copy(MathExpr* expr);
+ 
++//  Splits the parts of an expression with fixed values off into
++//  expressions of their own
++int mathexpr_split(MathExpr* expr, const char* isFixed, int firstVar,
++                   MathExpr** parts);
++
++//  Evaluates a part of an expression split off by mathexpr_split
++double mathexpr_evalPart(MathExpr* expr, const double* values);
++
+ //  Deletes a tokenized math expression
+ void  mathexpr_delete(MathExpr* expr);
+ 
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index 9841b34..4e057d3 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -99,6 +99,27 @@ static int       FormBase;             // Offset of formula species values
+ static ChemExprs PipeExprs;            // Compiled pipe chemistry expressions
+ static ChemExprs TankExprs;            // Compiled tank chemistry expressions
+ 
++//  Pipe invariants
++//-----------------
++//  Pipe terms and formula species whose values depend only on parameters,
++//  constants and hydraulic variables, and the parts of the other pipe
++//  expressions of which this is true, keep their values throughout a pipe
++//  for as long as those inputs do not change. They are computed when work
++//  on a pipe starts and kept, together with the inputs they were computed
++//  from, in a cache; they are computed again only when the inputs change.
++//  The values of the parts are held in the vector of variable values from
++//  position InvBase on.
++static int       NumInvDeps;           // Number of invariant terms & formulas
++static int      *InvDeps;              // Their positions, in dependency order
++static int       NumInvParts;          // Number of invariant parts
++static MathExpr **InvParts;            // The invariant parts
++static int       InvBase;              // Position of the first part's value
++static int       NumInvInputs;         // Number of inputs (parameters,
++                                       // constants & hydraulic variables)
++static int       InvStride;            // Size of a pipe's cache entry
++static double   *InvCache;             // Cache entry of each link
++static char     *InvValid;             // 1 if a link's cache entry is filled
++
+ //  Exported functions
+ //--------------------
+ int    MSXchem_open(void);
+@@ -135,6 +156,9 @@ static void   freeExprs(ChemExprs *ce);
+ static void   evalDeps(MathExpr **slotExpr, int *list, int n, double *val);
+ static void   setPipeValues(ChemState *cs, int k);
+ static void   setTankValues(ChemState *cs);
++static int    splitInvariants(ChemExprs *ce);
++static int    filterDeps(int *list, int n, char *isFixed);
++static void   setPipeInvariants(ChemState *cs, int k);
+ static void   getPipeDcDt(double t, double y[], int n, double deriv[],
+                           void *data);
+ static void   getTankDcDt(double t, double y[], int n, double deriv[],
+@@ -186,6 +210,12 @@ int  MSXchem_open()
+ 
+     memset(&PipeExprs, 0, sizeof(ChemExprs));
+     memset(&TankExprs, 0, sizeof(ChemExprs));
++    NumInvDeps = 0;
++    InvDeps = NULL;
++    NumInvParts = 0;
++    InvParts = NULL;
++    InvCache = NULL;
++    InvValid = NULL;
+ 
+ // --- assign entries to LastIndex array
+ 
+@@ -224,32 +254,6 @@ int  MSXchem_open()
+     CALL(errcode, MEMCHECK(TankEquilSpecies));
+     CALL(errcode, MEMCHECK(Atol));
+     CALL(errcode, MEMCHECK(Rtol));
+-
+-// --- each thread's own chemistry state
+-
+-#pragma omp parallel
+-{
+-    ChemState *cs = (ChemState*)calloc(1, sizeof(ChemState));
+-    Chem = cs;
+-    if ( cs )
+-    {
+-        cs->Yrate = (double*)calloc(m, sizeof(double));
+-        cs->Yequil = (double*)calloc(m, sizeof(double));
+-        cs->F = (double*)calloc(m, sizeof(double));
+-        cs->ChemC1 = (double*)calloc(NumValues, sizeof(double));
+-    }
+-#pragma omp critical
+-    {
+-        CALL(errcode, MEMCHECK(cs));
+-        if ( cs )
+-        {
+-            CALL(errcode, MEMCHECK(cs->Yrate));
+-            CALL(errcode, MEMCHECK(cs->Yequil));
+-            CALL(errcode, MEMCHECK(cs->F));
+-            CALL(errcode, MEMCHECK(cs->ChemC1));
+-        }
+-    }
+-}
+     if ( errcode ) return errcode;
+ 
+ // --- assign species to each type of chemical expression
+@@ -286,8 +290,38 @@ int  MSXchem_open()
+         if ( errcode ) return errcode;
+         errcode = compileExprs(&TankExprs, 0);
+         if ( errcode ) return errcode;
++        errcode = splitInvariants(&PipeExprs);
++        if ( errcode ) return errcode;
+     }
+ 
++// --- each thread's own chemistry state
++
++    m = NumSpecies + 1;
++#pragma omp parallel
++{
++    ChemState *cs = (ChemState*)calloc(1, sizeof(ChemState));
++    Chem = cs;
++    if ( cs )
++    {
++        cs->Yrate = (double*)calloc(m, sizeof(double));
++        cs->Yequil = (double*)calloc(m, sizeof(double));
++        cs->F = (double*)calloc(m, sizeof(double));
++        cs->ChemC1 = (double*)calloc(NumValues, sizeof(double));
++    }
++#pragma omp critical
++    {
++        CALL(errcode, MEMCHECK(cs));
++        if ( cs )
++        {
++            CALL(errcode, MEMCHECK(cs->Yrate));
++            CALL(errcode, MEMCHECK(cs->Yequil));
++            CALL(errcode, MEMCHECK(cs->F));
++            CALL(errcode, MEMCHECK(cs->ChemC1));
++        }
++    }
++}
++    if ( errcode ) return errcode;
++
+ // --- open the ODE solver;
+ //     arguments are max. number of ODE's,
+ //     max. number of steps to be taken,
+@@ -330,6 +364,7 @@ void MSXchem_close()
+ **    none.
+ */
+ {
++    int m;
+     if (MSX.Compiler)	MSXcompiler_close();                                   
+     if (MSX.Solver == RK5) rk5_close();
+     if (MSX.Solver == ROS2) ros2_close();
+@@ -342,6 +377,16 @@ void MSXchem_close()
+     FREE(Rtol);
+     freeExprs(&PipeExprs);
+     freeExprs(&TankExprs);
++    if ( InvParts )
++    {
++        for (m = 0; m < NumInvParts; m++) mathexpr_delete(InvParts[m]);
++    }
++    FREE(InvParts);
++    FREE(InvDeps);
++    FREE(InvCache);
++    FREE(InvValid);
++    NumInvParts = 0;
++    NumInvDeps = 0;
+ 
+ #pragma omp parallel
+ {
+@@ -1616,6 +1661,7 @@ void setPipeValues(ChemState *cs, int k)
+         val[LastIndex[PARAMETER] + i] = MSX.Const[i].value;
+     for (i = 1; i < MAX_HYD_VARS; i++)
+         val[HydBase + i] = cs->HydVar[i];
++    if ( NumInvDeps + NumInvParts > 0 ) setPipeInvariants(cs, k);
+ }
+ 
+ //=============================================================================
+@@ -1638,3 +1684,194 @@ void setTankValues(ChemState *cs)
+     for (i = 1; i <= MSX.Nobjects[CONSTANT]; i++)
+         val[LastIndex[PARAMETER] + i] = MSX.Const[i].value;
+ }
++
++//=============================================================================
++
++int splitInvariants(ChemExprs *ce)
++/*
++**  Purpose:
++**    finds the pipe terms and formula species whose values are invariant
++**    within a pipe and splits the invariant parts off the other pipe
++**    expressions.
++**
++**  Input:
++**    ce = compiled pipe chemistry expressions.
++**
++**  Output:
++**    ce = expressions without their invariant parts.
++**
++**  Returns:
++**    an error code or 0 if no error.
++*/
++{
++    int i, j, m, n, type, nAll = 0, maxParts = 0, errcode = 0;
++    int *all;
++    char *isFixed;
++    MathExpr *expr;
++
++    all = (int *)calloc(NumValues, sizeof(int));
++    isFixed = (char *)calloc(NumValues, sizeof(char));
++    InvDeps = (int *)calloc(NumValues, sizeof(int));
++    if ( !all || !isFixed || !InvDeps )
++    {
++        errcode = ERR_MEMORY;
++        goto done;
++    }
++
++// --- parameters, constants & hydraulic variables are fixed within a pipe
++//     (as is position 0, which always holds 0)
++
++    isFixed[0] = 1;
++    for (i = LastIndex[TERM] + 1; i <= FormBase; i++) isFixed[i] = 1;
++
++// --- list the terms & formula species used by pipe expressions in order
++//     of dependency (merging the lists of each type of expression)
++
++    for (j = 0; j < ce->nRateDeps; j++)
++        if ( !isFixed[ce->rateDeps[j]] ) isFixed[all[nAll++] = ce->rateDeps[j]] = 2;
++    for (j = 0; j < ce->nEquilDeps; j++)
++        if ( !isFixed[ce->equilDeps[j]] ) isFixed[all[nAll++] = ce->equilDeps[j]] = 2;
++    for (j = 0; j < ce->nFormulaDeps; j++)
++        if ( !isFixed[ce->formulaDeps[j]] ) isFixed[all[nAll++] = ce->formulaDeps[j]] = 2;
++    for (j = 0; j < nAll; j++) isFixed[all[j]] = 0;
++
++// --- a term or formula is invariant if all of its variables are
++
++    for (j = 0; j < nAll; j++)
++    {
++        expr = ce->slotExpr[all[j]];
++        isFixed[all[j]] = 1;
++        if ( expr == NULL ) continue;
++        for (i = 0; i < expr->count; i++)
++        {
++            if ( expr->node[i].opcode == 8 && !isFixed[expr->node[i].ivar] )
++            {
++                isFixed[all[j]] = 0;
++                break;
++            }
++        }
++        if ( isFixed[all[j]] ) InvDeps[NumInvDeps++] = all[j];
++    }
++
++// --- invariant terms & formulas are taken off the lists of values
++//     computed for each type of expression
++
++    ce->nRateDeps = filterDeps(ce->rateDeps, ce->nRateDeps, isFixed);
++    ce->nEquilDeps = filterDeps(ce->equilDeps, ce->nEquilDeps, isFixed);
++    ce->nFormulaDeps = filterDeps(ce->formulaDeps, ce->nFormulaDeps, isFixed);
++
++// --- split the invariant parts off the other terms & formulas and off
++//     the rate & equilibrium expressions
++
++    for (j = 0; j < nAll; j++)
++        if ( !isFixed[all[j]] && ce->slotExpr[all[j]] )
++            maxParts += ce->slotExpr[all[j]]->count / 2;
++    for (m = 1; m <= NumSpecies; m++)
++        if ( ce->speciesExpr[m] ) maxParts += ce->speciesExpr[m]->count / 2;
++    InvParts = (MathExpr **)calloc(maxParts + 1, sizeof(MathExpr *));
++    if ( !InvParts )
++    {
++        errcode = ERR_MEMORY;
++        goto done;
++    }
++    InvBase = NumValues;
++    for (j = 0; j < nAll && !errcode; j++)
++    {
++        if ( isFixed[all[j]] ) continue;
++        n = mathexpr_split(ce->slotExpr[all[j]], isFixed,
++                           InvBase + NumInvParts, InvParts + NumInvParts);
++        if ( n < 0 ) errcode = ERR_MEMORY;
++        else NumInvParts += n;
++    }
++    for (m = 1; m <= NumSpecies && !errcode; m++)
++    {
++        type = MSX.Species[m].pipeExprType;
++        if ( type != RATE && type != EQUIL ) continue;
++        n = mathexpr_split(ce->speciesExpr[m], isFixed,
++                           InvBase + NumInvParts, InvParts + NumInvParts);
++        if ( n < 0 ) errcode = ERR_MEMORY;
++        else NumInvParts += n;
++    }
++    if ( errcode ) goto done;
++    NumValues += NumInvParts;
++
++// --- cache of the values of the invariants of each link
++
++    if ( NumInvDeps + NumInvParts > 0 )
++    {
++        NumInvInputs = FormBase - LastIndex[TERM];
++        InvStride = NumInvDeps + NumInvParts + NumInvInputs;
++        InvCache = (double *)calloc((size_t)(MSX.Nobjects[LINK] + 1) * InvStride,
++                                    sizeof(double));
++        InvValid = (char *)calloc(MSX.Nobjects[LINK] + 1, sizeof(char));
++        if ( !InvCache || !InvValid ) errcode = ERR_MEMORY;
++    }
++
++done:
++    FREE(all);
++    FREE(isFixed);
++    return errcode;
++}
++
++//=============================================================================
++
++int filterDeps(int *list, int n, char *isFixed)
++/*
++**  Purpose:
++**    removes the invariant terms & formulas from a list of them.
++**
++**  Input:
++**    list = positions of terms & formula species
++**    n = number of items in list
++**    isFixed = 1 for those that are invariant.
++**
++**  Returns:
++**    the new number of items in the list.
++*/
++{
++    int j, k = 0;
++    for (j = 0; j < n; j++)
++    {
++        if ( !isFixed[list[j]] ) list[k++] = list[j];
++    }
++    return k;
++}
++
++//=============================================================================
++
++void setPipeInvariants(ChemState *cs, int k)
++/*
++**  Purpose:
++**    places the values of the invariant terms, formulas and parts of
++**    pipe k in the vector of variable values, taking them from the cache
++**    if they were computed from the same inputs.
++**
++**  Input:
++**    cs = the thread's chemistry state (with the parameters, constants
++**         and hydraulic variables of pipe k already in place)
++**    k = link index.
++*/
++{
++    int i;
++    double *val = cs->ChemC1;
++    double *in = val + LastIndex[TERM] + 1;
++    double *cache = InvCache + (size_t)k * InvStride;
++    double *inputs = cache + NumInvDeps + NumInvParts;
++
++    if ( InvValid[k] &&
++         memcmp(inputs, in, NumInvInputs * sizeof(double)) == 0 )
++    {
++        for (i = 0; i < NumInvDeps; i++) val[InvDeps[i]] = cache[i];
++        for (i = 0; i < NumInvParts; i++)
++            val[InvBase + i] = cache[NumInvDeps + i];
++        return;
++    }
++    evalDeps(PipeExprs.slotExpr, InvDeps, NumInvDeps, val);
++    for (i = 0; i < NumInvParts; i++)
++        val[InvBase + i] = mathexpr_evalPart(InvParts[i], val);
++    for (i = 0; i < NumInvDeps; i++) cache[i] = val[InvDeps[i]];
++    for (i = 0; i < NumInvParts; i++)
++        cache[NumInvDeps + i] = val[InvBase + i];
++    memcpy(inputs, in, NumInvInputs * sizeof(double));
++    InvValid[k] = 1;
++}

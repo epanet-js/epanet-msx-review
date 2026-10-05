@@ -1,0 +1,284 @@
+NEAR-03: Dispersion: a tridiagonal solve without a chain of divisions
+
+Each row of the dispersion system's forward elimination waited for the
+division of the row before it. Factor the system while it is built, and
+keep the divisions off that chain. Results change at the level of
+rounding.
+
+Requires: none
+Results: near (concentrations move at the level of rounding; see 2-near-identical/README.md)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02
+and BIT-01 to BIT-17 (the other near-identical changes are not needed):
+    git apply --whitespace=nowarn NEAR-03.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxdispersion.c b/src/solver/msxdispersion.c
+index 1f5b090..a7831b6 100644
+--- a/src/solver/msxdispersion.c
++++ b/src/solver/msxdispersion.c
+@@ -57,8 +57,20 @@ static int linksegN;                       //number of links linkseg was allocat
+ 
+ static void linkhydraulics(int k, int m, double d0, SdispHyd *hc);
+ 
++static void linksolve(int k, int m, double cons, int disperse);
+ static void tridiag3(int n, double *a, double *b, double *c, double *r, Pseg *seg);
+ 
++// linksolve() solves a link's system with a recurrence (see there) while the
++// diagonal elements of the system are below LINKSOLVE_BMAX; any other system (it
++// takes a segment of next to no volume) goes to tridiag3(). The recurrence
++// scales the determinants p of the leading rows of the system by
++// LINKSOLVE_PSCALE whenever they pass LINKSOLVE_PBIG, which it checks every 4
++// rows: p cannot get beyond PBIG * BMAX^4 = 1e200 within a block and is below
++// BMAX^4 = 1e100 after a scaling, so it never overflows.
++#define LINKSOLVE_BMAX   1.0e25
++#define LINKSOLVE_PBIG   1.0e100
++#define LINKSOLVE_PSCALE 1.0e-100
++
+ static void freelinkseg()
+ {
+ 	int k;
+@@ -259,18 +271,165 @@ static void linkhydraulics(int k, int m, double d0, SdispHyd *hc)
+ 	hc->h2 = MSX.H[MSX.Link[k].n2];
+ }
+ 
++// Find the responses of link k's segments (hresponse, dresponse, uresponse)
++// to species m's concentrations, to a unit concentration at the downstream end
++// and to one at the upstream end, after one time step of dispersion: build the
++// link's tri-diagonal system from its segments (downstream to upstream) and
++// solve it for the three right-hand sides. The segments are kept in linkseg[k]
++// (their number in linksegn[k]). If disperse is 0 the responses are those of a
++// link without dispersion.
++//
++// The system is solved while it is built, because the solution of its first
++// j rows needs only the segments up to j+1 and walking along the list of
++// segments (where the memory is) takes as long as the elimination: the two
++// overlap. The elimination is that of tridiag3(), but without the division in
++// its chain of dependencies: the pivots are bet(j) = p(j) / p(j-1) with
++// p(j) = b(j) p(j-1) - a(j) c(j-1) p(j-2), the determinant of the first j+1 rows
++// (p(-1) = 1, p(0) = b(0) = 1), so p(j) takes a multiplication and a
++// subtraction after p(j-1), and the divisions for the bet(j) do not wait for
++// each other. The other divisions are multiplications by 1 / bet(j). The
++// right-hand side at the upstream end is zero except in the last row, which is
++// the unit vector (its pivot is 1), so there the responses are known:
++// 0, 0 and 1. The results differ from tridiag3()'s by rounding (about 1e-14
++// relative).
++
++static void linksolve(int k, int m, double cons, int disperse)
++{
++	Pseg  seg = MSX.FirstSeg[k];           // downstream
++	Pseg* segp = linkseg[k];
++	int   cap = linksegcap[k];
++	int   nseg = 0, j, last;
++	int   slow = 0;
++	double vd = 0.0, vu, vself, ca, cc, b, rj;
++	double cprev = 0.0;                    // c(j-1)
++	double p1 = 1.0, p2 = 1.0, pj, inv = 1.0, ainv, q, g;
++	double y1 = 0.0, y2 = 1.0, z1, z2, z3;
++	double *s1 = sol, *s2 = sold, *gm = gam;
++
++	if (cap < MSX.Link[k].nsegs + 2)
++	{
++		segp = growlinkseg(k, MSX.Link[k].nsegs);
++		cap = linksegcap[k];
++	}
++	s1[0] = 0.0;                           // row 0, the downstream boundary
++	s2[0] = 1.0;                           // (b = 1, c = 0, r = 0)
++	gm[0] = 0.0;
++	while (seg != NULL && segp != NULL)
++	{
++		// --- up to 4 rows between checks of the size of p
++		last = nseg + 4;
++		while (seg != NULL && nseg < last)
++		{
++			nseg++;
++			if (nseg + 1 >= cap)
++			{
++				segp = growlinkseg(k, nseg);
++				if (segp == NULL)
++					break;
++				cap = linksegcap[k];
++			}
++			segp[nseg] = seg;
++			vself = seg->v;
++			rj = seg->c[m];
++			seg = seg->prev;
++			if (seg)
++				vu = seg->v;
++			else
++				vu = 0.0;
++			ca = -cons / (vself * vself + vself * vd);
++			cc = -cons / (vself * vself + vself * vu);
++			b = 1 - ca - cc;
++			vd = vself;
++			slow |= (b >= LINKSOLVE_BMAX);
++
++			g = cprev * inv;
++			q = ca * cprev;
++			pj = b * p1 - q * p2;
++			inv = p1 / pj;
++			ainv = ca * inv;
++			y1 = rj * inv - ainv * y1;
++			y2 = -ainv * y2;
++			gm[nseg] = g;
++			s1[nseg] = y1;
++			s2[nseg] = y2;
++			p2 = p1;
++			p1 = pj;
++			cprev = cc;
++		}
++		if (segp == NULL)
++			break;
++		if (p1 > LINKSOLVE_PBIG)
++		{
++			p1 *= LINKSOLVE_PSCALE;
++			p2 *= LINKSOLVE_PSCALE;
++		}
++	}
++	linksegn[k] = (segp != NULL) ? nseg : 0;
++	if (nseg == 0 || segp == NULL)
++		return;
++
++	if (!disperse)
++	{
++		for (j = 1; j <= nseg; j++)
++		{
++			segp[j]->hresponse = segp[j]->c[m];
++			segp[j]->dresponse = 0.0;
++			segp[j]->uresponse = 0.0;
++		}
++		return;
++	}
++	if (slow)
++	{
++		// --- a diagonal element is out of the range of the recurrence:
++		//     build the system and solve it with tridiag3()
++		for (j = 1; j <= nseg; j++)
++		{
++			vself = segp[j]->v;
++			vd = (j > 1) ? segp[j - 1]->v : 0.0;
++			vu = (j < nseg) ? segp[j + 1]->v : 0.0;
++			al[j] = -cons / (vself * vself + vself * vd);
++			cl[j] = -cons / (vself * vself + vself * vu);
++			bl[j] = 1 - al[j] - cl[j];
++			rl[j] = segp[j]->c[m];
++		}
++		bl[0] = 1.0;
++		cl[0] = 0.0;
++		rl[0] = 0.0;
++		al[nseg + 1] = 0.0;
++		bl[nseg + 1] = 1.0;
++		rl[nseg + 1] = 0.0;
++		tridiag3(nseg + 2, al, bl, cl, rl, segp);
++		return;
++	}
++
++	// --- back substitution, from the upstream end to row 1 (row 0, the
++	//     downstream boundary, is not needed)
++	z1 = 0.0;
++	z2 = 0.0;
++	z3 = 1.0;
++	g = cprev * inv;
++	for (j = nseg; j >= 1; j--)
++	{
++		z1 = s1[j] - g * z1;
++		z2 = s2[j] - g * z2;
++		z3 = -g * z3;
++		segp[j]->hresponse = z1;
++		segp[j]->dresponse = z2;
++		segp[j]->uresponse = z3;
++		g = gm[j];
++	}
++}
++
+ void dispersion_pipe(int m, double tstep)
+ {
+ 
+ 	double cons = 0.0;
+ 	double ldispersion = 0.0;
+ 	double velocity = 0.0, area = 0.0;
+-	int nseg = 0, k;
++	int k;
+ 	double diam = 0.0;
+-	double vd = 0.0, vu = 0.0, vself = 0.0, asquare = 0.0;
++	double asquare = 0.0;
+ 	double reynolds=0;
+-	Pseg seg = NULL;
+-	Pseg* segp;
+ 	SdispHyd *hc, hloc;
+ 
+ 	double d0 = 1.292e-8;   //molecular diffusivity 1.292e-8 ft^2/s   1.2e-9 m^2/s
+@@ -283,7 +442,7 @@ void dispersion_pipe(int m, double tstep)
+ 	// --- the work per link varies with its number of segments (and links
+ 	//     without dispersion are skipped), so links are handed out dynamically
+ 	#ifdef USE_OPENMP
+-	#pragma omp for private(seg, segp, cons, vd, vu, vself, k, nseg, asquare, velocity, diam, area, reynolds, ldispersion, hc, hloc) schedule(dynamic, 8)
++	#pragma omp for private(cons, k, asquare, velocity, diam, area, reynolds, ldispersion, hc, hloc) schedule(dynamic, 8)
+ 	#endif
+ 		for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+ 		{
+@@ -327,63 +486,11 @@ void dispersion_pipe(int m, double tstep)
+ 				continue;
+ 			}
+ 			asquare = area * area;
+-			seg = MSX.FirstSeg[k];   //downstream
+ 			cons = 2.0 * ldispersion * asquare * tstep;
+-			vd = 0.0;
+-			bl[0] = 1.0;
+-			cl[0] = 0.0;
+-			rl[0] = 0.0;
+-			nseg = 0;
+ 
+ 			// --- the segments are kept in linkseg[k] for the back substitution
+ 			//     and for segqual_update
+-			segp = linkseg[k];
+-			if (linksegcap[k] < MSX.Link[k].nsegs + 2)
+-				segp = growlinkseg(k, MSX.Link[k].nsegs);
+-			while (seg != NULL && segp != NULL)
+-			{
+-				nseg++;
+-				if (nseg + 1 >= linksegcap[k])
+-				{
+-					segp = growlinkseg(k, nseg);
+-					if (segp == NULL)
+-						break;
+-				}
+-				segp[nseg] = seg;
+-				vself = seg->v;
+-				rl[nseg] = seg->c[m];
+-				seg = seg->prev;
+-				if (seg)
+-					vu = seg->v;
+-				else
+-					vu = 0.0;
+-				al[nseg] = -cons / (vself * vself + vself * vd);
+-				cl[nseg] = -cons / (vself * vself + vself * vu);
+-				bl[nseg] = 1 - al[nseg] - cl[nseg];
+-
+-				vd = vself;
+-			}
+-			linksegn[k] = (segp != NULL) ? nseg : 0;
+-			if (nseg == 0 || segp == NULL)
+-				continue;
+-		
+-
+-			al[nseg + 1] = 0.0;
+-			bl[nseg + 1] = 1.0;
+-			rl[nseg + 1] = 0.0;
+-
+-			/*responses to the initial condition, downstream and upstream unit boundary conditions*/
+-			if (reynolds >= 0)
+-				tridiag3(nseg + 2, al, bl, cl, rl, segp);
+-			else
+-			{
+-				for (int p = 1; p <= nseg; p++)
+-				{
+-					segp[p]->hresponse = rl[p];
+-					segp[p]->dresponse = 0.0;
+-					segp[p]->uresponse = 0.0;
+-				}
+-			}
++			linksolve(k, m, cons, reynolds >= 0);
+ 		}
+ 	}
+ }

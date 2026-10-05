@@ -1,0 +1,278 @@
+BIT-10: List each node's links once per hydraulic step and prefetch their segments
+
+Every quality step walked each node's adjacency list twice and rebuilt its
+outflow, although flows change only at hydraulic steps. Build the list of
+each node's inflow and outflow links once per hydraulic step, and prefetch
+the end segments of the nodes two ahead in topological order.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-09:
+    git apply --whitespace=nowarn BIT-10.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxqual.c b/src/solver/msxqual.c
+index 554fa06..5644375 100644
+--- a/src/solver/msxqual.c
++++ b/src/solver/msxqual.c
+@@ -26,6 +26,19 @@
+ #define   DOWN_NODE(x) ( (MSX.FlowDir[(x)]==POSITIVE) ? MSX.Link[(x)].n2 : MSX.Link[(x)].n1 )
+ #define   LINKVOL(k)   ( 0.785398*MSX.Link[(k)].len*SQR(MSX.Link[(k)].diam) )
+ 
++// Macro to ask the processor to start fetching memory that will be used soon
++// (only a hint: it has no effect on results)
++//
++#if defined(__GNUC__) || defined(__clang__)
++#define   PREFETCH(p)  __builtin_prefetch(p)
++#else
++#define   PREFETCH(p)
++#endif
++
++// Number of nodes ahead of the current one in topological order whose
++// pipe segments are prefetched in topological_transport()
++#define   PREFETCH_AHEAD 2
++
+ //  External variables
+ //--------------------
+ extern MSXproject  MSX;                // MSX project data
+@@ -50,6 +63,16 @@ static int    *WallSpecies;            // indexes of the WALL species
+ static int    NumBulkSpecies;          // number of BULK species
+ static int    *BulkSpecies;            // indexes of the BULK species
+ 
++// Transport plan: for the j-th node in topological order, the links with
++// flow into it are PlanLinks[PlanStart[j] .. PlanOutStart[j]-1] and the
++// links with flow out of it PlanLinks[PlanOutStart[j] .. PlanStart[j+1]-1],
++// each in adjacency list order, and PlanVolOut[j] is its outflow rate.
++// It is rebuilt whenever a new hydraulic solution is read.
++static int    *PlanLinks;
++static int    *PlanStart;
++static int    *PlanOutStart;
++static double *PlanVolOut;
++
+ //  Imported functions
+ //--------------------
+ int    MSXchem_open(void);
+@@ -106,6 +129,7 @@ static void noflowqual(int n);
+ static void evalnodeinflow(int, double, double*, double*);
+ static void evalnodeoutflow(int k, double* upnodequal, double tstep);
+ static int sortNodes();
++static void buildTransportPlan(void);
+ static int selectnonstacknode(int numsorted, int* indegree);
+ static void findstoredmass(double* mass);
+ 
+@@ -186,6 +210,14 @@ int  MSXqual_open()
+ 
+     MSX.SortedNodes = (int*)calloc(n, sizeof(int));
+ 
++// --- allocate memory for the transport plan (each end of each link
++//     can be both an inflow and an outflow entry)
++
++    PlanLinks = (int*)calloc(4*MSX.Nobjects[LINK] + 1, sizeof(int));
++    PlanStart = (int*)calloc(n + 1, sizeof(int));
++    PlanOutStart = (int*)calloc(n + 1, sizeof(int));
++    PlanVolOut = (double*)calloc(n + 1, sizeof(double));
++
+ // --- check for successful memory allocation
+ 
+     CALL(errcode, MEMCHECK(MSX.C1));
+@@ -196,6 +228,10 @@ int  MSXqual_open()
+     CALL(errcode, MEMCHECK(MSX.MassIn));
+     CALL(errcode, MEMCHECK(MSX.SourceIn));
+     CALL(errcode, MEMCHECK(MSX.SortedNodes));
++    CALL(errcode, MEMCHECK(PlanLinks));
++    CALL(errcode, MEMCHECK(PlanStart));
++    CALL(errcode, MEMCHECK(PlanOutStart));
++    CALL(errcode, MEMCHECK(PlanVolOut));
+     CALL(errcode, MEMCHECK(MSX.MassBalance.initial));
+     CALL(errcode, MEMCHECK(MSX.MassBalance.inflow));
+     CALL(errcode, MEMCHECK(MSX.MassBalance.indisperse));
+@@ -419,6 +455,7 @@ int MSXqual_step(double *t, double *tleft)
+                     {
+                         CALL(errcode, sortNodes());
+                     }
++                    buildTransportPlan();
+                 }
+             }
+ 
+@@ -574,6 +611,10 @@ int MSXqual_close()
+     FREE(MSX.NewSeg);
+     FREE(MSX.FlowDir);
+     FREE(MSX.SortedNodes);
++    FREE(PlanLinks);
++    FREE(PlanStart);
++    FREE(PlanOutStart);
++    FREE(PlanVolOut);
+     FREE(MSX.MassIn);
+     FREE(MSX.SourceIn);
+     FREE(WallSpecies);
+@@ -1304,70 +1345,130 @@ void  removeAllSegs(int k)
+         MSX.Link[k].nsegs =  0;
+ }
+ 
+-void topological_transport(double dt)
++void buildTransportPlan(void)
++/*
++**--------------------------------------------------------------
++**   Input:   none
++**   Output:  none
++**   Purpose: lists, for each node in topological order, the links
++**            with flow into and out of it and its outflow rate, as
++**            topological_transport() would find them from the node
++**            adjacency lists and flow directions at every time step.
++**   Note:    links with no flow are left out of both lists:
++**            evalnodeinflow() and evalnodeoutflow() do nothing for
++**            them. Their (zero) flow is still added to the outflow
++**            rate, so that it is the same sum.
++**--------------------------------------------------------------
++*/
+ {
+-    int j, n, k, m;
+-    double volin, volout;
++    int j, n, k, m, p = 0;
++    double volout;
+     Padjlist  alink;
+ 
+-
+-    // Analyze each node in topological order
+     for (j = 1; j <= MSX.Nobjects[NODE]; j++)
+     {
+-        // ... index of node to be processed
+         n = MSX.SortedNodes[j];
+-
+-        // ... zero out mass & flow volumes for this node
+-        volin = 0.0;
++        PlanStart[j] = p;
+         volout = 0.0;
+-        memset(MSX.MassIn, 0, (MSX.Nobjects[SPECIES] + 1) * sizeof(double));
+-        memset(MSX.SourceIn, 0, (MSX.Nobjects[SPECIES] + 1) * sizeof(double));
++        if (n > 0)
++        {
++            // ... links with flow into the node; outflow rate of the others
++            for (alink = MSX.Adjlist[n]; alink != NULL; alink = alink->next)
++            {
++                k = alink->link;
++                m = MSX.Link[k].n2;
++                if (MSX.FlowDir[k] < 0) m = MSX.Link[k].n1;
++                if (m == n)
++                {
++                    if (MSX.Q[k] != 0.0) PlanLinks[p++] = k;
++                }
++                else volout += fabs(MSX.Q[k]);
++            }
+ 
+-        // ... examine each link with flow into the node
+-        for (alink = MSX.Adjlist[n]; alink != NULL; alink = alink->next)
++            // ... if node is a junction, add on any external outflow (e.g., demands)
++            if (MSX.Node[n].tank == 0)
++            {
++                volout += fmax(0.0, MSX.D[n]);
++            }
++        }
++        PlanVolOut[j] = volout;
++        PlanOutStart[j] = p;
++        if (n > 0)
+         {
+-            // ... k is index of next link incident on node n
+-            k = alink->link;
+-
+-            // ... link has flow into node - add it to node's inflow
+-            //     (m is index of link's downstream node)
+-            m = MSX.Link[k].n2;
+-            if (MSX.FlowDir[k] < 0) m = MSX.Link[k].n1;
+-            if (m == n)
++            // ... links with flow out of the node
++            for (alink = MSX.Adjlist[n]; alink != NULL; alink = alink->next)
+             {
+-                evalnodeinflow(k, dt, &volin, MSX.MassIn);
++                k = alink->link;
++                m = MSX.Link[k].n1;
++                if (MSX.FlowDir[k] < 0) m = MSX.Link[k].n2;
++                if (m == n && MSX.Q[k] != 0.0) PlanLinks[p++] = k;
+             }
++        }
++    }
++    PlanStart[MSX.Nobjects[NODE] + 1] = p;
++}
++
++void topological_transport(double dt)
++{
++    int j, n, p, jp;
++    int nnodes = MSX.Nobjects[NODE];
++    double volin, volout;
++    Pseg seg;
+ 
+-            // ... link has flow out of node - add it to node's outflow
+-            else volout += fabs(MSX.Q[k]);
++    // Analyze each node in topological order
++    for (j = 1; j <= nnodes; j++)
++    {
++        // ... start fetching the segments that a node further down the
++        //     order will use: the leading segment of each link with flow
++        //     into it and the last segment of each link with flow out of it
++        jp = j + PREFETCH_AHEAD;
++        if (jp <= nnodes)
++        {
++            for (p = PlanStart[jp]; p < PlanOutStart[jp]; p++)
++            {
++                seg = MSX.FirstSeg[PlanLinks[p]];
++                if (seg)
++                {
++                    PREFETCH(seg);
++                    PREFETCH((char *)seg + 64);
++                }
++            }
++            for (p = PlanOutStart[jp]; p < PlanStart[jp + 1]; p++)
++            {
++                seg = MSX.LastSeg[PlanLinks[p]];
++                if (seg)
++                {
++                    PREFETCH(seg);
++                    PREFETCH((char *)seg + 64);
++                }
++            }
+         }
+ 
+-        // ... if node is a junction, add on any external outflow (e.g., demands)
+-        if (MSX.Node[n].tank == 0)
++        // ... index of node to be processed
++        n = MSX.SortedNodes[j];
++
++        // ... zero out mass & flow volumes for this node
++        volin = 0.0;
++        memset(MSX.MassIn, 0, (MSX.Nobjects[SPECIES] + 1) * sizeof(double));
++
++        // ... examine each link with flow into the node
++        for (p = PlanStart[j]; p < PlanOutStart[j]; p++)
+         {
+-            volout += fmax(0.0, MSX.D[n]);
++            evalnodeinflow(PlanLinks[p], dt, &volin, MSX.MassIn);
+         }
+ 
+         // ... convert from outflow rate to volume
+-        volout *= dt;
++        volout = PlanVolOut[j] * dt;
+ 
+         // ... find the concentration of flow leaving the node
+         findnodequal(n, volin, MSX.MassIn, volout, dt);
+ 
+         // ... examine each link with flow out of the node
+-        for (alink = MSX.Adjlist[n]; alink != NULL; alink = alink->next)
++        //     and send flow at new node concen. into link
++        for (p = PlanOutStart[j]; p < PlanStart[j + 1]; p++)
+         {
+-            // ... link k incident on node n has upstream node m equal to n
+-            k = alink->link;
+-            m = MSX.Link[k].n1;
+-            if (MSX.FlowDir[k] < 0) m = MSX.Link[k].n2;
+-            if (m == n)
+-            {
+-                // ... send flow at new node concen. into link
+-                evalnodeoutflow(k, MSX.Node[n].c, dt);
+-            }
++            evalnodeoutflow(PlanLinks[p], MSX.Node[n].c, dt);
+         }
+-
+     }
+     /*Advection-Reaction Done, Dispersion Starts*/
+     //1. Linear relationship for each pipe

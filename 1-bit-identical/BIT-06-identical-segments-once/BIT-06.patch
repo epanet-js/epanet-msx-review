@@ -1,0 +1,197 @@
+BIT-06: React a pipe's identical segments once
+
+Every pipe starts as 100 identical segments, and many stay identical:
+same water, same pipe, same reactions. Each was integrated on its own every
+step. Integrate a run of segments with equal concentrations once and copy
+the result to the others.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-05:
+    git apply --whitespace=nowarn BIT-06.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index 1e7b43c..c2a10d5 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -150,6 +150,9 @@ static void   setTankChemistry(void);
+ //static void   evalHydVariables(int k);           
+ static int    evalPipeReactions(ChemState *cs, int k, double dt);
+ static int    evalTankReactions(ChemState *cs, int k, double dt);
++static int    isSameWater(Pseg seg1, Pseg seg2);
++static void   copyPipeReactions(int k, Pseg src, Pseg seg);
++static void   addPipeReactedMass(int k, Pseg seg);
+ static int    evalPipeEquil(ChemState *cs, double *c);
+ static int    evalTankEquil(ChemState *cs, double *c);
+ static int    pipeEquil(ChemState *cs, double *c);
+@@ -778,8 +781,10 @@ int evalPipeReactions(ChemState *cs, int k, double dt)
+ {
+     int i, m;
+     int errcode = 0, ierr = 0;
++    int nsame = 0;
+     double tstep = (double)dt / MSX.Ucf[RATE_UNITS];
+     double c, dh;
++    Pseg src = NULL, seg;
+ 
+ // --- start with the most downstream pipe segment
+ 
+@@ -788,6 +793,34 @@ int evalPipeReactions(ChemState *cs, int k, double dt)
+     cs->TheSeg = MSX.FirstSeg[cs->TheLink];
+     while ( cs->TheSeg )
+     {
++    // --- a segment found below to hold the same water as the segment
++    //     reacted last (src) gets the same results as that segment
++
++        if ( nsame > 0 )
++        {
++            nsame--;
++            copyPipeReactions(k, src, cs->TheSeg);
++            cs->TheSeg = cs->TheSeg->prev;
++            continue;
++        }
++
++    // --- count the segments upstream of this one that hold the same
++    //     water: same concentrations and same integration step (they
++    //     often do, as a pipe starts with identical segments, and these
++    //     stay identical until they leave the pipe); in the same pipe
++    //     and over the same time step, the chemistry, which depends only
++    //     on these and on the pipe, ends up the same for each of them
++
++        if ( dt > 0.0 )
++        {
++            src = cs->TheSeg;
++            for (seg = src->prev; seg != NULL; seg = seg->prev)
++            {
++                if ( !isSameWater(seg, src) ) break;
++                nsame++;
++            }
++        }
++
+         for (m = 1; m <= NumSpecies; m++)
+         {
+             cs->ChemC1[m] = cs->TheSeg->c[m];
+@@ -851,18 +884,7 @@ int evalPipeReactions(ChemState *cs, int k, double dt)
+             if ( ierr < 0 ) return 
+                 ERR_INTEGRATOR;
+ 
+-            for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
+-            {
+-                if (MSX.Species[m].type == BULK)
+-                {
+-                    MSX.Link[k].reacted[m] += cs->TheSeg->v * (cs->TheSeg->c[m] - cs->TheSeg->lastc[m]) * LperFT3;
+-                }
+-                else if (MSX.Link[k].diam > 0)
+-                {
+-                    MSX.Link[k].reacted[m] += cs->TheSeg->v * 4.0 / MSX.Link[k].diam * MSX.Ucf[AREA_UNITS] * (cs->TheSeg->c[m] - cs->TheSeg->lastc[m]);
+-                }
+-                cs->TheSeg->lastc[m] = cs->TheSeg->c[m];
+-            }
++            addPipeReactedMass(k, cs->TheSeg);
+         }
+ 
+     // --- compute new equilibrium concentrations within segment
+@@ -882,6 +904,102 @@ int evalPipeReactions(ChemState *cs, int k, double dt)
+ 
+ //=============================================================================
+ 
++int isSameWater(Pseg seg1, Pseg seg2)
++/*
++**  Purpose:
++**    checks if two segments of a pipe hold the same water.
++**
++**  Input:
++**    seg1, seg2 = two segments.
++**
++**  Returns:
++**    1 if their concentrations and integration time steps are the
++**    same, bit for bit, or 0 if not.
++*/
++{
++    int m;
++    uint64_t x, y;
++
++    memcpy(&x, &seg1->hstep, sizeof(x));
++    memcpy(&y, &seg2->hstep, sizeof(y));
++    if ( x != y ) return 0;
++    for (m = 1; m <= NumSpecies; m++)
++    {
++        memcpy(&x, &seg1->c[m], sizeof(x));
++        memcpy(&y, &seg2->c[m], sizeof(y));
++        if ( x != y ) return 0;
++    }
++    return 1;
++}
++
++//=============================================================================
++
++void copyPipeReactions(int k, Pseg src, Pseg seg)
++/*
++**  Purpose:
++**    gives a pipe segment the results of reactions over the current time
++**    step of another segment of the pipe that held the same water.
++**
++**  Input:
++**    k = link index
++**    src = the segment of pipe k already reacted (its lastc[] holds its
++**          concentrations after the reactions, and c[] those after the
++**          equilibria and formulas that followed)
++**    seg = a segment of pipe k that held the same water as src before.
++**
++**  Output:
++**    updates seg's concentrations and integration time step as
++**    evalPipeReactions would have, and the mass reacted in pipe k.
++*/
++{
++    int m;
++    for (m = 1; m <= NumSpecies; m++)
++    {
++        seg->lastc[m] = seg->c[m];
++        seg->c[m] = src->lastc[m];
++    }
++    seg->hstep = src->hstep;
++    addPipeReactedMass(k, seg);
++    if ( NumPipeEquilSpecies + NumPipeFormulaSpecies > 0 )
++    {
++        for (m = 1; m <= NumSpecies; m++) seg->c[m] = src->c[m];
++    }
++}
++
++//=============================================================================
++
++void addPipeReactedMass(int k, Pseg seg)
++/*
++**  Purpose:
++**    adds the mass of each species reacted in a pipe segment over the
++**    current time step to the pipe's total.
++**
++**  Input:
++**    k = link index
++**    seg = the segment, with its concentrations before the reactions
++**          in lastc[] and after them in c[].
++**
++**  Output:
++**    updates MSX.Link[k].reacted[] and sets seg->lastc[] to seg->c[].
++*/
++{
++    int m;
++    for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
++    {
++        if (MSX.Species[m].type == BULK)
++        {
++            MSX.Link[k].reacted[m] += seg->v * (seg->c[m] - seg->lastc[m]) * LperFT3;
++        }
++        else if (MSX.Link[k].diam > 0)
++        {
++            MSX.Link[k].reacted[m] += seg->v * 4.0 / MSX.Link[k].diam * MSX.Ucf[AREA_UNITS] * (seg->c[m] - seg->lastc[m]);
++        }
++        seg->lastc[m] = seg->c[m];
++    }
++}
++
++//=============================================================================
++
+ int evalTankReactions(ChemState *cs, int k, double dt)
+ /*
+ **  Purpose:

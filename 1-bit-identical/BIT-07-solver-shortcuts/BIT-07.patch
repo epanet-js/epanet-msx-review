@@ -1,0 +1,364 @@
+BIT-07: Skip solver work whose result is known
+
+newton_solve() computed pow(10, -numsig) on every call; compute it once.
+ROS2's Jacobian evaluated the rates twice for every species, including
+species that no rate expression uses, whose column is all zeros; skip those
+columns.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-06:
+    git apply --whitespace=nowarn BIT-07.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index c2a10d5..e7dce9b 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -48,6 +48,11 @@ static int    *TankEquilSpecies;       // Species governed by tank equilibria
+ static int    LastIndex[MAX_OBJECTS];  // Last index of given type of variable
+ static double *Atol;                   // Absolute concentration tolerances
+ static double *Rtol;                   // Relative concentration tolerances
++static char   *PipeRateUnused;         // 1 for each pipe rate species (by its
++                                       // position in PipeRateSpecies) on
++                                       // which no pipe rate depends (only
++                                       // set without full coupling)
++static char   *TankRateUnused;         // ... same for tanks
+ 
+ //  State of the chemistry computations of a thread
+ //-------------------------------------------------
+@@ -153,6 +158,8 @@ static int    evalTankReactions(ChemState *cs, int k, double dt);
+ static int    isSameWater(Pseg seg1, Pseg seg2);
+ static void   copyPipeReactions(int k, Pseg src, Pseg seg);
+ static void   addPipeReactedMass(int k, Pseg seg);
++static char*  findUnusedRateSpecies(int forPipes, int *errcode);
++static void   markUsedVariables(MathExpr *expr, int forPipes, char *used);
+ static int    evalPipeEquil(ChemState *cs, double *c);
+ static int    evalTankEquil(ChemState *cs, double *c);
+ static int    pipeEquil(ChemState *cs, double *c);
+@@ -365,6 +372,20 @@ int  MSXchem_open()
+     {
+         if ( ros2_open(NumSpecies, 1) == FALSE )
+             return ERR_INTEGRATOR_OPEN;
++
++    // --- the Jacobian of the rates has a column of zeros for each rate
++    //     species that no rate depends on (unless with full coupling,
++    //     where any species may change the equilibrium species, and so
++    //     the rates); ROS2 skips them
++
++        PipeRateUnused = NULL;
++        TankRateUnused = NULL;
++        if ( MSX.Coupling != FULL_COUPLING )
++        {
++            PipeRateUnused = findUnusedRateSpecies(1, &errcode);
++            TankRateUnused = findUnusedRateSpecies(0, &errcode);
++            if ( errcode ) return errcode;
++        }
+     }
+ 
+ // --- open the algebraic eqn. solver
+@@ -397,6 +418,8 @@ void MSXchem_close()
+     if (MSX.Compiler)	MSXcompiler_close();                                   
+     if (MSX.Solver == RK5) rk5_close();
+     if (MSX.Solver == ROS2) ros2_close();
++    FREE(PipeRateUnused);
++    FREE(TankRateUnused);
+     newton_close();
+     FREE(PipeRateSpecies);
+     FREE(TankRateSpecies);
+@@ -869,7 +892,8 @@ int evalPipeReactions(ChemState *cs, int k, double dt)
+ 
+                 if ( MSX.Solver == ROS2 )
+                     ierr = ros2_integrate(cs->Yrate, NumPipeRateSpecies, 0, tstep,
+-                                          &dh, Atol, Rtol, getPipeDcDt, cs);
++                                          &dh, Atol, Rtol, PipeRateUnused,
++                                          getPipeDcDt, cs);
+ 
+             // --- save new concentration values of the species that reacted
+ 
+@@ -1000,6 +1024,92 @@ void addPipeReactedMass(int k, Pseg seg)
+ 
+ //=============================================================================
+ 
++char* findUnusedRateSpecies(int forPipes, int *errcode)
++/*
++**  Purpose:
++**    finds the rate species on which no rate depends, in pipes or tanks.
++**
++**  Input:
++**    forPipes = 1 for pipe chemistry, 0 for tank chemistry.
++**
++**  Output:
++**    errcode = set to ERR_MEMORY if memory runs out.
++**
++**  Returns:
++**    an array with an entry for each rate species (in the order of
++**    PipeRateSpecies or TankRateSpecies), 1 if no rate expression nor
++**    any term or formula it uses refers to that species, 0 if not.
++*/
++{
++    int i, m, n;
++    int *rateSpecies;
++    char *used, *unused;
++    MathExpr *expr;
++
++    n = forPipes ? NumPipeRateSpecies : NumTankRateSpecies;
++    rateSpecies = forPipes ? PipeRateSpecies : TankRateSpecies;
++    used = (char*)calloc(LastIndex[TERM] + 1, sizeof(char));
++    unused = (char*)calloc(NumSpecies + 1, sizeof(char));
++    if ( used == NULL || unused == NULL )
++    {
++        FREE(used);
++        FREE(unused);
++        *errcode = ERR_MEMORY;
++        return NULL;
++    }
++    for (i = 1; i <= n; i++)
++    {
++        m = rateSpecies[i];
++        expr = forPipes ? MSX.Species[m].pipeExpr : MSX.Species[m].tankExpr;
++        markUsedVariables(expr, forPipes, used);
++    }
++    for (i = 1; i <= n; i++) unused[i] = !used[rateSpecies[i]];
++    free(used);
++    return unused;
++}
++
++//=============================================================================
++
++void markUsedVariables(MathExpr *expr, int forPipes, char *used)
++/*
++**  Purpose:
++**    marks the species and terms that an expression refers to, directly
++**    or through the terms and formula species it uses.
++**
++**  Input:
++**    expr = a chemistry expression (as read from the input file)
++**    forPipes = 1 for pipe chemistry, 0 for tank chemistry.
++**
++**  Output:
++**    used[i] = 1 for each species or term i (in the numbering of
++**    LastIndex) referred to.
++*/
++{
++    int j, i, type;
++    MathExpr *e;
++
++    if ( expr == NULL ) return;
++    for (j = 0; j < expr->count; j++)
++    {
++        i = expr->node[j].ivar;           // a variable (-1 or 0 if none)
++        if ( i < 1 || i > LastIndex[TERM] || used[i] ) continue;
++        used[i] = 1;
++        e = NULL;
++        if ( i <= LastIndex[SPECIES] )
++        {
++            type = forPipes ? MSX.Species[i].pipeExprType
++                            : MSX.Species[i].tankExprType;
++            if ( type == FORMULA )
++                e = forPipes ? MSX.Species[i].pipeExpr
++                             : MSX.Species[i].tankExpr;
++        }
++        else e = MSX.Term[i - LastIndex[SPECIES]].expr;
++        markUsedVariables(e, forPipes, used);
++    }
++}
++
++//=============================================================================
++
+ int evalTankReactions(ChemState *cs, int k, double dt)
+ /*
+ **  Purpose:
+@@ -1082,7 +1192,8 @@ int evalTankReactions(ChemState *cs, int k, double dt)
+ 
+                 if ( MSX.Solver == ROS2 )
+                     ierr = ros2_integrate(cs->Yrate, NumTankRateSpecies, 0, tstep,
+-                                          &dh, Atol, Rtol, getTankDcDt, cs);
++                                          &dh, Atol, Rtol, TankRateUnused,
++                                          getTankDcDt, cs);
+ 
+             // --- save new concentration values of the species that reacted
+ 
+diff --git a/src/solver/msxutils.c b/src/solver/msxutils.c
+index 2e81f37..85493a8 100644
+--- a/src/solver/msxutils.c
++++ b/src/solver/msxutils.c
+@@ -449,8 +449,9 @@ void solve(double **a, int n, int *indx, double b[])
+ 
+ //=============================================================================
+ 
+-void jacobian(double *x, int n, double *f, double *w, double **a,
+-              void (*func)(double, double*, int, double*, void*), void* data)
++int jacobian(double *x, int n, double *f, double *w, double **a,
++             const char *unused,
++             void (*func)(double, double*, int, double*, void*), void* data)
+ /*
+ **  Purpose: 
+ **    computes Jacobian matrix of F(t,X) at given X
+@@ -460,6 +461,9 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+ **    n = number of variables
+ **    f[1..n] = a work vector
+ **    w[1..n] = a work vector
++**    unused[1..n] = 1 for each variable on which no function depends
++**                   (its column is 0, found without evaluating the
++**                   functions), or NULL
+ **    func = user supplied routine that computes the function
+ **           values at x
+ **    data = pointer passed on to func.
+@@ -468,6 +472,9 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+ **    f[1..n] = function values at x
+ **    a[1..n][1..n] = coeffs. of the Jacobian matrix.
+ **
++**  Returns:
++**    the number of times that func() was called.
++**
+ **  Notes:
+ **  1. Arguments for func() are:
+ **      t = independent variable (not used)
+@@ -481,11 +488,17 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+ */
+ {
+ 
+-    int    i, j;
++    int    i, j, nfcn = 0;
+     double temp, eps = 1.0e-7, eps2;
+ 
+     for (j=1; j<=n; j++)
+     {
++        if ( unused && unused[j] )
++        {
++            for (i=1; i<=n; i++) a[i][j] = 0.0;
++            continue;
++        }
++        nfcn += 2;
+         temp = x[j];
+         x[j] = temp + eps;
+         func(0.0, x, n, f, data);
+@@ -503,6 +516,7 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+         for (i=1; i<=n; i++) a[i][j] = (f[i] - w[i]) / eps2;
+         x[j] = temp;
+     }
++    return nfcn;
+ 
+ 
+ /* --- An alternative method that uses forward differencing
+diff --git a/src/solver/msxutils.h b/src/solver/msxutils.h
+index d3b65e1..6ff0178 100644
+--- a/src/solver/msxutils.h
++++ b/src/solver/msxutils.h
+@@ -50,7 +50,8 @@ int factorize(double **a, int n, double *w, int *indx);
+ void solve(double **a, int n, int *indx, double b[]);
+ 
+ // Computes the Jacobian matrix of a set of functions
+-void jacobian(double *x, int n, double *f, double *w, double **a,
++int  jacobian(double *x, int n, double *f, double *w, double **a,
++              const char *unused,
+               void (*func)(double, double*, int, double*, void*), void* data);
+ 
+ #endif
+\ No newline at end of file
+diff --git a/src/solver/newton.c b/src/solver/newton.c
+index 95b9792..d9e2c3b 100644
+--- a/src/solver/newton.c
++++ b/src/solver/newton.c
+@@ -53,6 +53,8 @@ int newton_open(int n)
+     MSXNewtonSolver.F = (double*)calloc(n + 1, sizeof(double));
+     MSXNewtonSolver.W = (double*)calloc(n + 1, sizeof(double));
+     MSXNewtonSolver.J = createMatrix(n + 1, n + 1);
++    MSXNewtonSolver.Numsig = 0;
++    MSXNewtonSolver.Relconvg = pow(10.0, 0);
+ #pragma omp critical
+     {
+         if (!MSXNewtonSolver.Indx || !MSXNewtonSolver.F || !MSXNewtonSolver.W || !MSXNewtonSolver.J) 
+@@ -118,7 +120,7 @@ int newton_solve(double x[], int n, int maxit, int numsig,
+ */
+ {
+     int i, k;
+-	double errx, errmax, cscal, relconvg = pow(10.0, -numsig);
++	double errx, errmax, cscal, relconvg;
+ 
+     // --- the calling thread's work arrays (held in locals since the
+     //     solver struct is thread local storage, slow to get at)
+@@ -131,13 +133,23 @@ int newton_solve(double x[], int n, int maxit, int numsig,
+ 
+     if ( n > nw->Nmax ) return -3;
+ 
++    // --- relative convergence limit (kept from one call to the next as
++    //     numsig hardly ever changes)
++
++    if ( numsig != nw->Numsig )
++    {
++        nw->Numsig = numsig;
++        nw->Relconvg = pow(10.0, -numsig);
++    }
++    relconvg = nw->Relconvg;
++
+     // --- use up to maxit iterations to find a solution
+ 
+ 	for (k=1; k<=maxit; k++) 
+ 	{
+         // --- evaluate the Jacobian matrix
+ 
+-        jacobian(x, n, F, W, J, func, data);
++        jacobian(x, n, F, W, J, NULL, func, data);
+ 
+         // --- factorize the Jacobian
+ 
+diff --git a/src/solver/newton.h b/src/solver/newton.h
+index 042a11e..ecf3e4f 100644
+--- a/src/solver/newton.h
++++ b/src/solver/newton.h
+@@ -19,6 +19,8 @@ typedef struct
+     double* F;            // function & adjustment vector
+     double* W;            // work vector
+     double** J;           // Jacobian matrix
++    int      Numsig;      // number of significant digits last used
++    double   Relconvg;    // relative convergence limit for Numsig
+ }MSXNewton;
+ 
+ // Opens the equation solver system
+diff --git a/src/solver/ros2.c b/src/solver/ros2.c
+index 5e62ff9..f536020 100644
+--- a/src/solver/ros2.c
++++ b/src/solver/ros2.c
+@@ -99,6 +99,7 @@ void ros2_close()
+       
+ int ros2_integrate(double y[], int n, double t, double tnext,
+                    double* htry, double atol[], double rtol[],
++                   const char *unused,
+                    void (*func)(double, double*, int, double*, void*),
+                    void* data)
+ /*
+@@ -114,6 +115,8 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+ **    htry = initial step size to be taken
+ **    atol[1..n] = vector of absolute tolerances on the variables y
+ **    rtol[1..n] = vector of relative tolerances on the variables y
++**    unused[1..n] = 1 for each variable on which no dy/dt depends
++**                   (its column of the Jacobian is 0), or NULL
+ **    func = name of the function that computes dy/dt for each y
+ **    data = pointer passed on to func
+ **
+@@ -205,9 +208,8 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+ 
+         if ( isReject == 0 )
+         {
+-            jacobian(y, n, K1, K2, A, func, data);
++            nfcn += jacobian(y, n, K1, K2, A, unused, func, data);
+             njac++;
+-            nfcn += 2*n;
+             ghinv1 = 0.0;
+         }
+ 
+diff --git a/src/solver/ros2.h b/src/solver/ros2.h
+index 71d6696..83b38ac 100644
+--- a/src/solver/ros2.h
++++ b/src/solver/ros2.h
+@@ -30,6 +30,7 @@ void ros2_close(void);
+ // Applies the solver to integrate a specific system of ODEs
+ int  ros2_integrate(double y[], int n, double t, double tnext,
+                     double* htry, double atol[], double rtol[],
++                    const char *unused,
+                     void (*func)(double, double*, int, double*, void*),
+                     void* data);
+ 

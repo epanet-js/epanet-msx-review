@@ -1,0 +1,47 @@
+FIX-03: Close the file descriptor that mkstemp opens
+
+On systems other than Windows, MSXutils_getTempName() makes a temporary
+file name with mkstemp(), which also opens the file and returns a
+descriptor that was never closed (the file is opened again by name later).
+Every MSXopen leaked two descriptors and every MSXsolveH one, so a program
+running about 100 scenarios in one process ran out of descriptors on macOS.
+Close the descriptor. Results are unchanged.
+
+Upstream dev fixed the same leak another way (PR #21), so this patch no
+longer applies there.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, on its own:
+    git apply --whitespace=nowarn FIX-03.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxutils.c b/src/solver/msxutils.c
+index b6caf6b..9a71a56 100644
+--- a/src/solver/msxutils.c
++++ b/src/solver/msxutils.c
+@@ -27,6 +27,10 @@
+   #define WINDOWS
+ #endif
+ 
++#ifndef WINDOWS
++#include <unistd.h>
++#endif
++
+ #define UCHAR(x) (((x) >= 'a' && (x) <= 'z') ? ((x)&~32) : (x))
+ #define TINY1 1.0e-20
+ 
+@@ -68,8 +72,11 @@ char * MSXutils_getTempName(char *s)
+     strcat(s, ptr);
+ #else
+     // --- use system function mkstemp() to create a temporary file name
++    //     (and close the descriptor it opens; the file is reopened by name)
++    int fd;
+     strcpy(s, "msxXXXXXX");
+-    mkstemp(s);
++    fd = mkstemp(s);
++    if ( fd >= 0 ) close(fd);
+ #endif
+     return s;
+ }

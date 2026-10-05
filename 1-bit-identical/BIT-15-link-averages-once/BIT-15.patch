@@ -1,0 +1,297 @@
+BIT-15: Average each link's segments once for all species
+
+Saving a reporting period averaged each link's segments once per species
+and wrote every value with its own fwrite; MSXgetqual() walked a link's
+segments once per species too. Average all species of a link in one walk
+(in parallel when saving), write each period with one fwrite, and let
+MSXgetqual() compute a link's species once per step. This assumes
+concentrations change only in MSXinit and MSXstep, as every toolkit
+function does today.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-14:
+    git apply --whitespace=nowarn BIT-15.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxout.c b/src/solver/msxout.c
+index 29e6d19..4e78298 100644
+--- a/src/solver/msxout.c
++++ b/src/solver/msxout.c
+@@ -13,10 +13,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <math.h>
+-
+-#if defined(macintosh) || defined(Macintosh) || defined(__APPLE__) && defined(__MACH__)
+ #include <stdlib.h>
+-#endif
+ 
+ #include "msxtypes.h"
+ 
+@@ -24,6 +21,10 @@
+ //--------------------
+ extern MSXproject  MSX;                // MSX project data
+ 
++//  Constants
++//-----------
++#define PARALLEL_MIN_LINKS 1000        // Fewer links are saved by one thread
++
+ //  Local variables
+ //-----------------
+ static long  ResultsOffset;            // Offset byte where results begin
+@@ -34,6 +35,7 @@ static long  LinkBytesPerPeriod;       // Bytes per time period used by all link
+ //--------------------
+ double MSXqual_getNodeQual(int j, int m);
+ double MSXqual_getLinkQual(int k, int m);
++void   MSXqual_getLinkQuals(int k, double c[]);
+ 
+ //  Exported functions
+ //--------------------
+@@ -155,8 +157,56 @@ int MSXout_saveResults()
+ **    an error code (or 0 if no error).
+ */
+ {
+-    int   m, j;
+-    REAL4 x;
++    int    m, j;
++    int    nn = MSX.Nobjects[NODE];
++    int    nl = MSX.Nobjects[LINK];
++    int    ns = MSX.Nobjects[SPECIES];
++    REAL4  x;
++    REAL4  *buf, *xl;
++    double *c;
++
++// --- assemble the period's results in memory and write them all at once
++//     (node results for each species, then link results for each species)
++
++    buf = (REAL4 *) malloc(((size_t)ns * (nn + nl) + 1) * sizeof(REAL4));
++    if ( buf )
++    {
++        for (m=1; m<=ns; m++)
++        {
++            for (j=1; j<=nn; j++)
++                buf[(size_t)(m-1)*nn + (j-1)] = (REAL4)MSXqual_getNodeQual(j, m);
++        }
++
++    // --- find all species' concentrations in a link in one pass over its
++    //     segments (links are independent, so they are shared among threads;
++    //     each value is computed the same way whatever the number of threads)
++
++        xl = buf + (size_t)ns * nn;
++#pragma omp parallel private(c, m, j) if (nl >= PARALLEL_MIN_LINKS)
++{
++        c = (double *) malloc((ns + 1) * sizeof(double));
++#pragma omp for schedule(dynamic, 256)
++        for (j=1; j<=nl; j++)
++        {
++            if ( c )
++            {
++                MSXqual_getLinkQuals(j, c);
++                for (m=1; m<=ns; m++) xl[(size_t)(m-1)*nl + (j-1)] = (REAL4)c[m];
++            }
++            else for (m=1; m<=ns; m++)
++            {
++                xl[(size_t)(m-1)*nl + (j-1)] = (REAL4)MSXqual_getLinkQual(j, m);
++            }
++        }
++        FREE(c);
++}
++        fwrite(buf, sizeof(REAL4), (size_t)ns * (nn + nl), MSX.TmpOutFile.file);
++        free(buf);
++        return 0;
++    }
++
++// --- if there is no memory for that, write the results one at a time
++
+     for (m=1; m<=MSX.Nobjects[SPECIES]; m++)
+     {
+         for (j=1; j<=MSX.Nobjects[NODE]; j++)
+diff --git a/src/solver/msxqual.c b/src/solver/msxqual.c
+index 5644375..7d7e506 100644
+--- a/src/solver/msxqual.c
++++ b/src/solver/msxqual.c
+@@ -2157,3 +2157,44 @@ void evalHydVariables(int k)
+ 
+     MSX.Link[k].HydVar[ROUGHNESS] = MSX.Link[k].roughness;
+ }
++
++//=============================================================================
++
++void  MSXqual_getLinkQuals(int k, double c[])
++/*
++**   Purpose:
++**     computes the average quality of every species in link k with a
++**     single pass over the link's segments.
++**
++**   Input:
++**     k = link index
++**
++**   Output:
++**     c[m] = WQ value of species m in link k, for m = 1 to the number of
++**            species (the same value as MSXqual_getLinkQual(k, m): each
++**            species' sums are accumulated over the segments in the same
++**            order).
++*/
++{
++    int     m, n = MSX.Nobjects[SPECIES];
++    double  vsum = 0.0;
++    Pseg    seg;
++
++    for (m = 1; m <= n; m++) c[m] = 0.0;
++    seg = MSX.FirstSeg[k];
++    while (seg != NULL)
++    {
++        vsum += seg->v;
++        for (m = 1; m <= n; m++) c[m] += (seg->c[m])*(seg->v);
++        seg = seg->prev;
++    }
++    if (vsum > 0.0)
++    {
++        for (m = 1; m <= n; m++) c[m] = c[m] / vsum;
++    }
++    else for (m = 1; m <= n; m++)
++    {
++        c[m] = (MSXqual_getNodeQual(MSX.Link[k].n1, m) +
++                MSXqual_getNodeQual(MSX.Link[k].n2, m)) / 2.0;
++    }
++}
+diff --git a/src/solver/msxtoolkit.c b/src/solver/msxtoolkit.c
+index e0928ae..f3ce118 100644
+--- a/src/solver/msxtoolkit.c
++++ b/src/solver/msxtoolkit.c
+@@ -37,6 +37,12 @@
+ //--------------------
+ extern MSXproject  MSX;                // MSX project data
+ 
++//  Local variables
++//-----------------
++static double   *LinkQual;             // Species concentrations of each link
++static unsigned *LinkQualStamp;        // QualStamp when LinkQual was found
++static unsigned  QualStamp;            // Advanced when concentrations change
++
+ //  Imported functions
+ //--------------------
+ int    MSXproj_open(char *fname);
+@@ -51,9 +57,16 @@ int    MSXqual_step(double *t, double *tleft);
+ int    MSXqual_close(void);
+ double MSXqual_getNodeQual(int j, int m);
+ double MSXqual_getLinkQual(int k, int m);
++void   MSXqual_getLinkQuals(int k, double c[]);
+ int    MSXrpt_write(void);
+ int    MSXfile_save(FILE *f);
+ 
++//  Local functions
++//-----------------
++static void   newQualStamp(void);
++static void   freeLinkQual(void);
++static double getLinkQual(int k, int m);
++
+ //=============================================================================
+ 
+ int MSXDLLEXPORT   MSXENopen(const char *inpFile, const char *rptFile, const char *outFile)
+@@ -252,6 +265,7 @@ int  MSXDLLEXPORT  MSXinit(int saveFlag)
+     int err= 0;
+     if ( !MSX.ProjectOpened ) return ERR_MSX_NOT_OPENED;
+     MSX.Saveflag = saveFlag;
++    newQualStamp();
+     err = MSXqual_init();
+     return err;
+ }
+@@ -275,6 +289,7 @@ int  MSXDLLEXPORT  MSXstep(double *t, double *tleft)
+ */
+ {
+     if ( !MSX.ProjectOpened ) return ERR_MSX_NOT_OPENED;
++    newQualStamp();
+     return MSXqual_step(t, tleft);
+ }
+ 
+@@ -354,6 +369,7 @@ int  MSXDLLEXPORT  MSXclose()
+ **    an error code (or 0 for no error).
+ */
+ {
++    freeLinkQual();
+     MSXqual_close();
+     MSXproj_close();
+     return 0;
+@@ -789,7 +805,7 @@ int  MSXDLLEXPORT  MSXgetqual(int type, int index, int species, double *value)
+     else if ( type == MSX_LINK )
+     {
+         if ( index < 1 || index > MSX.Nobjects[LINK] ) return ERR_INVALID_OBJECT_INDEX;
+-        *value = MSXqual_getLinkQual(index, species);
++        *value = getLinkQual(index, species);
+     }
+     else return ERR_INVALID_OBJECT_TYPE;
+     return 0;
+@@ -1178,3 +1194,70 @@ int  MSXDLLEXPORT MSXsavemsxfile(char *fname)
+     fclose(f);
+     return errcode;
+ }
++
++//=============================================================================
++
++void  newQualStamp()
++/*
++**  Purpose:
++**    marks all saved link concentrations as out of date (called before
++**    anything that can change concentrations).
++*/
++{
++    QualStamp++;
++    if ( QualStamp == 0 )
++    {
++        if ( LinkQualStamp )
++            memset(LinkQualStamp, 0, (MSX.Nobjects[LINK]+1)*sizeof(unsigned));
++        QualStamp = 1;
++    }
++}
++
++//=============================================================================
++
++void  freeLinkQual()
++{
++    FREE(LinkQual);
++    FREE(LinkQualStamp);
++}
++
++//=============================================================================
++
++double getLinkQual(int k, int m)
++/*
++**  Purpose:
++**    retrieves the current concentration of species m in link k.
++**
++**  Input:
++**    k = link index
++**    m = species index.
++**
++**  Returns:
++**    the same value as MSXqual_getLinkQual(k, m).
++**
++**  Notes:
++**    The first request for a link after a time step finds the concentrations
++**    of all species in that link with one pass over its segments and saves
++**    them, so requests for its other species need no further passes.
++*/
++{
++    int n = MSX.Nobjects[SPECIES] + 1;
++
++    if ( LinkQual == NULL )
++    {
++        LinkQual = (double *) malloc((size_t)(MSX.Nobjects[LINK]+1) * n * sizeof(double));
++        LinkQualStamp = (unsigned *) calloc(MSX.Nobjects[LINK]+1, sizeof(unsigned));
++        if ( LinkQual == NULL || LinkQualStamp == NULL )
++        {
++            freeLinkQual();
++            return MSXqual_getLinkQual(k, m);
++        }
++        if ( QualStamp == 0 ) QualStamp = 1;
++    }
++    if ( LinkQualStamp[k] != QualStamp )
++    {
++        MSXqual_getLinkQuals(k, LinkQual + (size_t)k * n);
++        LinkQualStamp[k] = QualStamp;
++    }
++    return LinkQual[(size_t)k * n + m];
++}

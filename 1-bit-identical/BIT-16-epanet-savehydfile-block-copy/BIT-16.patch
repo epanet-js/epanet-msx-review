@@ -1,0 +1,47 @@
+BIT-16: EPANET 2.2: copy the hydraulics file in blocks
+
+MSXsolveH() calls EPANET's ENsavehydfile(), which copied the scratch
+hydraulics file with fgetc/fputc, one locked call per byte; on BWSN2 the
+copy took longer than solving the hydraulics. Copy in blocks.
+This patch is for the EPANET2.2 submodule (paths relative to it).
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of the EPANET2.2 submodule (EPANET-MSX 85a303d pins it at
+1e2fc3d):
+    git apply --whitespace=nowarn BIT-16.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/SRC_engines/src/solver/epanet.c b/SRC_engines/src/solver/epanet.c
+index efc0535..7fee49e 100644
+--- a/SRC_engines/src/solver/epanet.c
++++ b/SRC_engines/src/solver/epanet.c
+@@ -608,6 +608,8 @@ int DLLEXPORT EN_savehydfile(EN_Project p, const char *filename)
+     FILE *f;
+     FILE *HydFile;
+     int c;
++    char *buf;
++    size_t n;
+ 
+     // Check that hydraulics results exist
+     if (p->outfile.HydFile == NULL || !p->outfile.SaveHflag) return 104;
+@@ -615,10 +617,16 @@ int DLLEXPORT EN_savehydfile(EN_Project p, const char *filename)
+     // Open the permanent hydraulics file
+     if ((f = fopen(filename, "w+b")) == NULL) return 305;
+ 
+-    // Copy from the scratch file to f
++    // Copy from the scratch file to f, in blocks if a buffer is available
+     HydFile = p->outfile.HydFile;
+     fseek(HydFile, 0, SEEK_SET);
+-    while ((c = fgetc(HydFile)) != EOF) fputc(c, f);
++    buf = (char *)malloc(65536);
++    if (buf)
++    {
++        while ((n = fread(buf, 1, 65536, HydFile)) > 0) fwrite(buf, 1, n, f);
++        free(buf);
++    }
++    else while ((c = fgetc(HydFile)) != EOF) fputc(c, f);
+     fclose(f);
+     return 0;
+ }

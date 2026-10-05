@@ -1,0 +1,186 @@
+NEAR-02: Jacobians by forward differences in ROS2 and Newton
+
+ROS2 and the Newton equilibrium solver compute their Jacobians by central
+differences, two evaluations per column. Use forward differences from the
+values each already has at y: one evaluation per column, through one shared
+helper with one step size. Newton keeps central differences for a single
+equation. Results change at the level of rounding.
+
+Requires: none
+Results: near (concentrations move at the level of rounding; see 2-near-identical/README.md)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02
+and BIT-01 to BIT-17 (the other near-identical changes are not needed):
+    git apply --whitespace=nowarn NEAR-02.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxutils.c b/src/solver/msxutils.c
+index fd62b31..badd270 100644
+--- a/src/solver/msxutils.c
++++ b/src/solver/msxutils.c
+@@ -545,3 +545,57 @@ int jacobian(double *x, int n, double *f, double *w, double **a,
+ */
+ 
+ }
++
++//=============================================================================
++
++int jacobianFwd(double *x, int n, double *f, double *w, double **a,
++                const char *unused,
++                void (*func)(double, double*, int, double*, void*), void* data)
++/*
++**  Purpose:
++**    computes Jacobian matrix of F(t,X) at given X by forward differences
++**
++**  Input:
++**    x[1..n] = vector of function variables
++**    n = number of variables
++**    f[1..n] = function values at x
++**    w[1..n] = a work vector
++**    unused[1..n] = 1 for each variable on which no function depends
++**                   (its column is 0, found without evaluating the
++**                   functions), or NULL
++**    func = user supplied routine that computes the function
++**           values at x
++**    data = pointer passed on to func.
++**
++**  Output:
++**    a[1..n][1..n] = coeffs. of the Jacobian matrix.
++**
++**  Returns:
++**    the number of times that func() was called.
++**
++**  Note:
++**    takes n evaluations of the functions where jacobian() takes 2n:
++**    column j is (F(x + eps e_j) - F(x)) / eps, with the step eps that
++**    jacobian() takes on either side of x (on one side only where x[j]
++**    is 0, which gives the same column as here).
++*/
++{
++    int    i, j, nfcn = 0;
++    double temp, eps = 1.0e-7;
++
++    for (j=1; j<=n; j++)
++    {
++        if ( unused && unused[j] )
++        {
++            for (i=1; i<=n; i++) a[i][j] = 0.0;
++            continue;
++        }
++        temp = x[j];
++        x[j] = temp + eps;
++        func(0.0, x, n, w, data);
++        nfcn++;
++        for (i=1; i<=n; i++) a[i][j] = (w[i] - f[i]) / eps;
++        x[j] = temp;
++    }
++    return nfcn;
++}
+diff --git a/src/solver/msxutils.h b/src/solver/msxutils.h
+index 6ff0178..7e5789e 100644
+--- a/src/solver/msxutils.h
++++ b/src/solver/msxutils.h
+@@ -54,4 +54,9 @@ int  jacobian(double *x, int n, double *f, double *w, double **a,
+               const char *unused,
+               void (*func)(double, double*, int, double*, void*), void* data);
+ 
++// Computes the Jacobian matrix of a set of functions by forward differences
++int  jacobianFwd(double *x, int n, double *f, double *w, double **a,
++                 const char *unused,
++                 void (*func)(double, double*, int, double*, void*), void* data);
++
+ #endif
+\ No newline at end of file
+diff --git a/src/solver/newton.c b/src/solver/newton.c
+index d9e2c3b..038da44 100644
+--- a/src/solver/newton.c
++++ b/src/solver/newton.c
+@@ -147,9 +147,18 @@ int newton_solve(double x[], int n, int maxit, int numsig,
+ 
+ 	for (k=1; k<=maxit; k++) 
+ 	{
+-        // --- evaluate the Jacobian matrix
++        // --- evaluate the Jacobian matrix (for more than one equation by
++        //     forward differences from the function values at x, in W:
++        //     n + 1 evaluations instead of 2n); either way F is left with
++        //     the function values at x + eps e_n (eps being the step that
++        //     jacobian() takes), from which the update is found
+ 
+-        jacobian(x, n, F, W, J, NULL, func, data);
++        if ( n > 1 )
++        {
++            func(0.0, x, n, W, data);
++            jacobianFwd(x, n, W, F, J, NULL, func, data);
++        }
++        else jacobian(x, n, F, W, J, NULL, func, data);
+ 
+         // --- factorize the Jacobian
+ 
+diff --git a/src/solver/ros2.c b/src/solver/ros2.c
+index f536020..f3a2140 100644
+--- a/src/solver/ros2.c
++++ b/src/solver/ros2.c
+@@ -145,7 +145,7 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+     double h, hold, hmin, hmax, tplus;
+     double ej, err, factor, facmax;
+     int    nfcn, njac, naccept, nreject, j;
+-    int    isReject;
++    int    isReject, haveF;
+ 
+ // --- the calling thread's work arrays (held in locals since the
+ //     solver struct is thread local storage, slow to get at)
+@@ -162,6 +162,7 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+     ghinv1 = 0.0;
+     tplus = t;
+     isReject = 0;
++    haveF    = 0;
+     naccept  = 0;
+     nreject  = 0;
+     nfcn     = 0;
+@@ -176,6 +177,7 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+     {
+         func(t, y, n, K1, data);
+         nfcn += 1;
++        haveF = 1;
+         adjust = 1;
+         h = tnext - t;
+         for (j=1; j<=n; j++)
+@@ -204,11 +206,22 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+             tplus = tnext;
+         }
+ 
++    // --- evaluate the derivatives at y (unless just done), which both
++    //     the Jacobian and the stage 1 solution use
++
++        if ( !haveF )
++        {
++            func(t, y, n, K1, data);
++            nfcn += 1;
++        }
++        haveF = 0;
++
+     // --- Re-compute the Jacobian if step size accepted
++    //     (by forward differences from the derivatives at y in K1)
+ 
+         if ( isReject == 0 )
+         {
+-            nfcn += jacobian(y, n, K1, K2, A, unused, func, data);
++            nfcn += jacobianFwd(y, n, K1, K2, A, unused, func, data);
+             njac++;
+             ghinv1 = 0.0;
+         }
+@@ -222,12 +235,10 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+             A[j][j] += dghinv;
+         }
+         ghinv1 = ghinv;
+-        if ( !factorize(A, n, K1, Jindx) ) return -1;
++        if ( !factorize(A, n, Ynew, Jindx) ) return -1;
+ 
+-    // --- Stage 1 solution
++    // --- Stage 1 solution (K1 holds the derivatives at y)
+ 
+-        func(t, y, n, K1, data);
+-        nfcn += 1;
+         for (j=1; j<=n; j++) K1[j] *= ghinv;
+         solve(A, n, Jindx, K1);
+ 

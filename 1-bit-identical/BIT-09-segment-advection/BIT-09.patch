@@ -1,0 +1,401 @@
+BIT-09: Linear wall shift, new segments only when added, one allocation each
+
+shiftSegWallQual() restarted its inner loop from the pipe's upstream end
+for every segment, O(n^2) in the segments of a pipe; make it one pass.
+advectSegs() took and zeroed a new segment for every link at every step,
+though the inflow usually merges into the last segment; take one only when
+a segment is added. Allocate a segment and its two concentration arrays in
+one block.
+
+Requires: FIX-02
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-08:
+    git apply --whitespace=nowarn BIT-09.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxqual.c b/src/solver/msxqual.c
+index e73bd11..554fa06 100644
+--- a/src/solver/msxqual.c
++++ b/src/solver/msxqual.c
+@@ -45,6 +45,11 @@ extern MSXproject  MSX;                // MSX project data
+ // Stagnant flow tolerance
+ const double Q_STAGNANT = 0.005 / GPMperCFS;     // 0.005 gpm = 1.114e-5 cfs
+ 
++static int    NumWallSpecies;          // number of WALL species
++static int    *WallSpecies;            // indexes of the WALL species
++static int    NumBulkSpecies;          // number of BULK species
++static int    *BulkSpecies;            // indexes of the BULK species
++
+ //  Imported functions
+ //--------------------
+ int    MSXchem_open(void);
+@@ -199,11 +204,27 @@ int  MSXqual_open()
+     CALL(errcode, MEMCHECK(MSX.MassBalance.final));
+     CALL(errcode, MEMCHECK(MSX.MassBalance.ratio));
+ 
+-// --- check if wall species are present
++// --- check if wall species are present and list them
+ 
++    NumWallSpecies = 0;
++    NumBulkSpecies = 0;
++    FREE(WallSpecies);
++    FREE(BulkSpecies);
++    WallSpecies = (int *) calloc(MSX.Nobjects[SPECIES]+1, sizeof(int));
++    BulkSpecies = (int *) calloc(MSX.Nobjects[SPECIES]+1, sizeof(int));
++    CALL(errcode, MEMCHECK(WallSpecies));
++    CALL(errcode, MEMCHECK(BulkSpecies));
+     for (n=1; n<=MSX.Nobjects[SPECIES]; n++)
+     {
+-        if ( MSX.Species[n].type == WALL ) MSX.HasWallSpecies = TRUE;
++        if ( MSX.Species[n].type == WALL )
++        {
++            MSX.HasWallSpecies = TRUE;
++            if ( WallSpecies ) WallSpecies[++NumWallSpecies] = n;
++        }
++        else if ( MSX.Species[n].type == BULK )
++        {
++            if ( BulkSpecies ) BulkSpecies[++NumBulkSpecies] = n;
++        }
+     }
+     if ( !errcode ) MSX.QualityOpened = TRUE;
+     return(errcode);
+@@ -555,6 +576,10 @@ int MSXqual_close()
+     FREE(MSX.SortedNodes);
+     FREE(MSX.MassIn);
+     FREE(MSX.SourceIn);
++    FREE(WallSpecies);
++    FREE(BulkSpecies);
++    NumWallSpecies = 0;
++    NumBulkSpecies = 0;
+     if ( MSX.QualPool)
+     {
+         AllocSetPool(MSX.QualPool);
+@@ -870,46 +895,45 @@ void advectSegs(double dt)
+ **
+ **   Input:
+ **     dt = current WQ time step (sec).
++**
++**   Note:
++**     Only pipes with flow and wall species need work here: the new
++**     segment that enters such a pipe takes the wall species of the
++**     segments it displaces, so it is set up here, before any segment
++**     moves. In all other links evalnodeoutflow() takes a new segment
++**     from the pool only if one is added to the link (NewSeg[k] stays
++**     NULL).
+ */
+ {
+     int k, m;
+ 
++    if ( !MSX.HasWallSpecies ) return;
++
+ // --- examine each link
+ 
+     for (k=1; k<=MSX.Nobjects[LINK]; k++)
+     {
+-    // --- zero out WQ in new segment to be added at entrance of link
++        MSX.NewSeg[k] = NULL;
+ 
+-        for (m=1; m<=MSX.Nobjects[SPECIES]; m++) MSX.C1[m] = 0.0;
++    // --- skip zero-length links (pumps & valves) & no-flow links
+ 
+-    // --- a link with no flow releases no new segment over this time
+-    //     step (evalnodeoutflow returns before using it), so don't take
+-    //     one from the pool: it would never be returned to it
++        if ( MSX.Link[(k)].len == 0.0 || MSX.Q[k] == 0.0 ) continue;
+ 
+-        if ( MSX.Q[k] == 0.0 )
+-        {
+-            MSX.NewSeg[k] = NULL;
+-            continue;
+-        }
++    // --- zero out WQ in new segment to be added at entrance of link
++
++        for (m=1; m<=MSX.Nobjects[SPECIES]; m++) MSX.C1[m] = 0.0;
+ 
+     // --- get a free segment to add to entrance of link
+ 
+         MSX.NewSeg[k] = MSXqual_getFreeSeg(0.0, MSX.C1);
+-
+-    // --- skip zero-length links (pumps & valves) & no-flow links
+-
+-        if ( MSX.NewSeg[k] == NULL ||
+-             MSX.Link[(k)].len == 0.0 || MSX.Q[k] == 0.0 ) continue;
++        if ( MSX.NewSeg[k] == NULL ) continue;
+ 
+     // --- find conc. of wall species in new segment to be added
+     //     and adjust conc. of wall species to reflect shifted
+     //     positions of existing segments
+ 
+-        if ( MSX.HasWallSpecies )
+-        {
+-            getNewSegWallQual(k, dt, MSX.NewSeg[k]);
+-            shiftSegWallQual(k, dt);
+-        }
++        getNewSegWallQual(k, dt, MSX.NewSeg[k]);
++        shiftSegWallQual(k, dt);
+     }
+ }
+ 
+@@ -931,7 +955,7 @@ void getNewSegWallQual(int k, double dt, Pseg newseg)
+ */
+ {
+     Pseg  seg;
+-    int   m;
++    int   i, m;
+     double v, vin, vsum, vadded, vleft;
+ 
+ // --- get volume of inflow to link
+@@ -946,10 +970,7 @@ void getNewSegWallQual(int k, double dt, Pseg newseg)
+ 	seg = MSX.LastSeg[k];
+ 	vsum = 0.0;
+     vleft = vin;
+-    for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
+-    {
+-        if ( MSX.Species[m].type == WALL ) newseg->c[m] = 0.0;
+-    }
++    for (i = 1; i <= NumWallSpecies; i++) newseg->c[WallSpecies[i]] = 0.0;
+ 
+ // --- repeat while some inflow volume still remains
+ 
+@@ -968,9 +989,10 @@ void getNewSegWallQual(int k, double dt, Pseg newseg)
+ 
+     // --- add wall species mass contributed by this segment to new segment
+ 
+-        for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
++        for (i = 1; i <= NumWallSpecies; i++)
+         {
+-            if ( MSX.Species[m].type == WALL ) newseg->c[m] += vadded*seg->c[m];
++            m = WallSpecies[i];
++            newseg->c[m] += vadded*seg->c[m];
+         }
+ 
+     // --- move to next downstream WQ segment
+@@ -982,9 +1004,10 @@ void getNewSegWallQual(int k, double dt, Pseg newseg)
+ 
+     if ( vsum > 0.0 )
+     {
+-        for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
++        for (i = 1; i <= NumWallSpecies; i++)
+         {
+-            if ( MSX.Species[m].type == WALL ) newseg->c[m] /= vsum;
++            m = WallSpecies[i];
++            newseg->c[m] /= vsum;
+         }
+     }
+ }
+@@ -1000,10 +1023,20 @@ void shiftSegWallQual(int k, double dt)
+ **  Input:
+ **    k = link index
+ **    dt = current WQ time step (sec)
++**
++**  Note:
++**    vsum is the volume of the segments from the upstream end of the
++**    pipe up to and including seg2. The segment seg2 that ends the
++**    search for one segment seg1 (the first one with vsum >= vend) is
++**    where the search for the next segment starts (the first one with
++**    vsum >= its vstart = vend), so seg2 and vsum carry over from one
++**    segment seg1 to the next instead of being re-accumulated from the
++**    upstream end of the pipe each time. The same segments contribute,
++**    with the same vsum values, in the same order.
+ */
+ {
+     Pseg  seg1, seg2;
+-    int   m;
++    int   i, m, counted;
+     double v, vin, vstart, vend, vcur, vsum;
+ 
+ // --- find volume of water displaced in pipe
+@@ -1016,6 +1049,13 @@ void shiftSegWallQual(int k, double dt)
+ 
+     vstart = vin;
+ 
++// --- seg2 is the next segment to examine; counted is TRUE if its
++//     volume is already included in vsum
++
++    seg2 = MSX.LastSeg[k];
++    counted = FALSE;
++    vsum = 0;
++
+ // --- examine each segment, from upstream to downstream
+ 
+     for( seg1 = MSX.LastSeg[k]; seg1 != NULL; seg1 = seg1->next )
+@@ -1025,28 +1065,31 @@ void shiftSegWallQual(int k, double dt)
+         //     if vstart >= v the segment seg1 will be out of the pipe,
+         //     so no need to track wall concentration of this segment
+         if (vstart >= v) break;   //2020 moved up
+-        
+-        for (m = 1; m <= MSX.Nobjects[SPECIES]; m++) MSX.C1[m] = 0.0;
++
++        for (i = 1; i <= NumWallSpecies; i++) MSX.C1[WallSpecies[i]] = 0.0;
+ 
+     // --- find the future end position of this segment
+ 
+         vend = vstart + seg1->v;   //
+         if (vend > v) vend = v;
+         vcur = vstart;
+-        vsum = 0;
+ 
+     // --- find volume taken up by the segment after it moves down the pipe
+ 
+-        for (seg2 = MSX.LastSeg[k]; seg2 != NULL; seg2 = seg2->next)
++        for ( ; seg2 != NULL; seg2 = seg2->next, counted = FALSE)
+         {
+-            if ( seg2->v == 0.0 ) continue;
+-            vsum += seg2->v;
++            if ( !counted )
++            {
++                if ( seg2->v == 0.0 ) continue;
++                vsum += seg2->v;
++                counted = TRUE;
++            }
+             if ( vsum >= vstart && vsum <= vend )  //DS end of seg2 is between vstart and vend 
+             {
+-                for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
++                for (i = 1; i <= NumWallSpecies; i++)
+                 {
+-                    if ( MSX.Species[m].type == WALL )
+-                        MSX.C1[m] += (vsum - vcur) * seg2->c[m];
++                    m = WallSpecies[i];
++                    MSX.C1[m] += (vsum - vcur) * seg2->c[m];
+                 }
+                 vcur = vsum;
+             }
+@@ -1055,9 +1098,9 @@ void shiftSegWallQual(int k, double dt)
+ 
+     // --- update the wall species concentrations in the segment
+ 
+-        for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
++        for (i = 1; i <= NumWallSpecies; i++)
+         {
+-            if ( MSX.Species[m].type != WALL ) continue;
++            m = WallSpecies[i];
+             if (seg2 != NULL) MSX.C1[m] += (vend - vcur) * seg2->c[m]; //only part of seg2
+             seg1->c[m] = MSX.C1[m] / (vend - vstart);
+             if ( seg1->c[m] < 0.0 ) seg1->c[m] = 0.0;
+@@ -1357,64 +1400,60 @@ void evalnodeoutflow(int k, double * upnodequal, double tstep)
+ {
+ 
+     double v;
+-    Pseg seg;
+-    int m;
+-    int useNewSeg = 0;
++    Pseg seg, newseg;
++    int i, m;
+ 
+     // Find flow volume (v) released over time step
+     v = fabs(MSX.Q[k]) * tstep;
+     if (v == 0.0) return;
+ 
+-    // Release flow and mass into upstream end of the link
++    // New segment prepared by advectSegs (only for pipes with wall species)
++    newseg = MSX.NewSeg[k];
++    MSX.NewSeg[k] = NULL;
+ 
+-    for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
+-    {
+-        if (MSX.Species[m].type == BULK)
+-            MSX.NewSeg[k]->c[m] = upnodequal[m];
+-    }
++    // Release flow and mass into upstream end of the link
+ 
+-    // ... case where link has a last (most upstream) segment
++    // ... case where link has a last (most upstream) segment whose
++    //     quality is the same as the inflow's (or the link has the
++    //     maximum number of segments): merge the inflow into it
+     seg = MSX.LastSeg[k];
+ 
+-    if (seg)
++    if (seg && (MSXqual_isSame(seg->c, upnodequal) || MSX.Link[k].nsegs >= MSX.MaxSegments))
+     {
+-        if (!MSXqual_isSame(seg->c, upnodequal) && MSX.Link[k].nsegs < MSX.MaxSegments)
+-        {
+-            useNewSeg = 1;
+-        }
+-        else
+-            useNewSeg = 0;
+-
+ //        if (MSX.DispersionFlag == 1 && MSX.Link[k].nsegs >= MSX.MaxSegments)
+ //            useNewSeg = 0;
+- 
+-        if (useNewSeg == 0)
++        for (i = 1; i <= NumBulkSpecies; i++)
+         {
+-            for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
+-            {
+-                if (MSX.Species[m].type == BULK)
+-                   seg->c[m] = (seg->c[m]*seg->v+upnodequal[m]*v)/(seg->v+v);
+-            }
+-            seg->v += v;
+-            MSXqual_removeSeg(MSX.NewSeg[k]);
++            m = BulkSpecies[i];
++            seg->c[m] = (seg->c[m]*seg->v+upnodequal[m]*v)/(seg->v+v);
+         }
++        seg->v += v;
++        MSXqual_removeSeg(newseg);
++    }
+ 
+-        // --- otherwise add the new seg to the end of the link
++    // ... otherwise add a new seg to the end of the link: BULK species
++    //     at the inflow's quality, WALL species as set by advectSegs
++    //     (or zero)
+ 
++    else
++    {
++        if (newseg == NULL)
++        {
++            newseg = MSXqual_getFreeSeg(v, upnodequal);
++            if (newseg == NULL) return;
++            for (i = 1; i <= NumWallSpecies; i++) newseg->c[WallSpecies[i]] = 0.0;
++        }
+         else
+         {
+-            MSX.NewSeg[k]->v = v;
+-            MSXqual_addSeg(k, MSX.NewSeg[k]);
++            for (i = 1; i <= NumBulkSpecies; i++)
++            {
++                m = BulkSpecies[i];
++                newseg->c[m] = upnodequal[m];
++            }
++            newseg->v = v;
+         }
++        MSXqual_addSeg(k, newseg);
+     }
+-
+-    // ... link has no segments so add one
+-    else
+-    {
+-        MSX.NewSeg[k]->v = v;
+-        MSXqual_addSeg(k, MSX.NewSeg[k]);
+-    }
+-
+ }
+ 
+ 
+@@ -1910,19 +1949,18 @@ Pseg MSXqual_getFreeSeg(double v, double c[])
+ 
+     else
+     {
+-        seg = (struct Sseg *) Alloc(sizeof(struct Sseg));
++    // --- the segment and its c[] and lastc[] arrays are one block
++    //     (sizeof(struct Sseg) is a multiple of sizeof(double))
++
++        seg = (struct Sseg *) Alloc(sizeof(struct Sseg) +
++                  2*(MSX.Nobjects[SPECIES]+1)*sizeof(double));
+         if (seg == NULL)
+         {
+             MSX.OutOfMemory = TRUE;
+             return NULL;
+         }
+-        seg->c = (double *) Alloc((MSX.Nobjects[SPECIES]+1)*sizeof(double));
+-        seg->lastc = (double *)Alloc((MSX.Nobjects[SPECIES] + 1) * sizeof(double));
+-        if ( seg->c == NULL||seg->lastc == NULL)
+-        {
+-            MSX.OutOfMemory = TRUE;
+-            return NULL;
+-        }
++        seg->c = (double *) (seg + 1);
++        seg->lastc = seg->c + MSX.Nobjects[SPECIES] + 1;
+     }
+ 
+ // --- assign volume, WQ, & integration time step to the new segment

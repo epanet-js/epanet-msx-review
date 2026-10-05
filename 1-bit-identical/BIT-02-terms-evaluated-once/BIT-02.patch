@@ -1,0 +1,1338 @@
+BIT-02: Evaluate each term and formula once per rate evaluation, from flat expressions
+
+Most of the run time was the expression interpreter re-doing work. Each
+expression was a linked list of tokens, evaluated with an 8 KB stack array
+per call; every NaN check was a call into another file; every variable was
+fetched through a callback that decoded its kind; and every reference to a
+[TERMS] entry or formula species evaluated it again, recursively. Store each
+expression in one block, check for NaN inline, skip per-segment copies that
+are never used, and evaluate every term and formula once per rate
+evaluation into an array that expressions read directly. The same
+operations are done in the same order.
+
+Also: a cycle of formula species, which recursed until the stack overflowed,
+is now reported as error 506 when the file is opened.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01:
+    git apply --whitespace=nowarn BIT-02.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/mathexpr.c b/src/solver/mathexpr.c
+index c0a9b0b..8bc7fb3 100644
+--- a/src/solver/mathexpr.c
++++ b/src/solver/mathexpr.c
+@@ -53,6 +53,22 @@
+ #include "mathexpr.h"
+ 
+ #define MAX_STACK_SIZE  1024
++#define FAST_STACK_SIZE 64        // stack size used for well formed expressions
++
++// --- keeps the compiler from inlining the general purpose evaluator (and
++//     its large stack array) into the fast one, and has the fast one
++//     inlined into each of its callers, so that each gets a version of
++//     it specialized for the way it looks up variables
++#if defined(_MSC_VER)
++  #define NOINLINE __declspec(noinline)
++  #define FORCEINLINE __forceinline
++#elif defined(__GNUC__)
++  #define NOINLINE __attribute__((noinline))
++  #define FORCEINLINE __inline__ __attribute__((always_inline))
++#else
++  #define NOINLINE
++  #define FORCEINLINE
++#endif
+ 
+ //***************************************************                         
+ #define MAX_TERM_SIZE  1024
+@@ -109,7 +125,13 @@ static ExprTree* newNode(void);
+ static ExprTree* getSingleOp(int*);
+ static ExprTree* getOp(int*);
+ static ExprTree* getTree(void);
+-static void       traverseTree(ExprTree*, MathExpr**);
++static int        countTree(ExprTree*);
++static void       traverseTree(ExprTree*, ExprNode**);
++static int        getMaxDepth(MathExpr*);
++static NOINLINE double evalGeneric(MathExpr*, double (*getVal) (int),
++                                   const double*);
++static FORCEINLINE double evaluate(MathExpr*, double (*getVal) (int),
++                                   const double*);
+ static void       deleteTree(ExprTree*);
+ 
+ // Callback functions
+@@ -488,24 +510,59 @@ ExprTree* getTree()
+ 
+ //=============================================================================
+ 
+-void traverseTree(ExprTree* tree, MathExpr** expr)
+-// Converts binary tree to linked list (postfix format)
++int countTree(ExprTree* tree)
++// Counts the nodes of a binary tree
++{
++    if (tree == NULL) return 0;
++    return 1 + countTree(tree->left) + countTree(tree->right);
++}
++
++//=============================================================================
++
++void traverseTree(ExprTree* tree, ExprNode** node)
++// Converts binary tree to an array of nodes (postfix format)
+ {
+-    MathExpr* node;
+     if (tree == NULL) return;
+-    traverseTree(tree->left, expr);
+-    traverseTree(tree->right, expr);
+-    node = (MathExpr*)malloc(sizeof(MathExpr));
+-    if (node)
++    traverseTree(tree->left, node);
++    traverseTree(tree->right, node);
++    (*node)->fvalue = tree->fvalue;
++    (*node)->opcode = tree->opcode;
++    (*node)->ivar = tree->ivar;
++    (*node)++;
++}
++
++//=============================================================================
++
++int getMaxDepth(MathExpr* expr)
++// Finds the largest depth that the evaluation stack reaches for an
++// expression, or -1 if the expression is not well formed (i.e., an
++// operator would find too few operands on the stack or the stack would
++// not end up holding exactly one value).
++{
++    int i, depth = 0, maxDepth = 0;
++    for (i = 0; i < expr->count; i++)
+     {
+-        node->fvalue = tree->fvalue;
+-        node->opcode = tree->opcode;
+-        node->ivar = tree->ivar;
+-        node->next = NULL;
+-        node->prev = (*expr);
++        switch (expr->node[i].opcode)
++        {
++        case 3: case 4: case 5: case 6: case 31:
++            if (depth < 2) return -1;
++            depth--;
++            break;
++        case 7: case 8:
++            depth++;
++            if (depth > maxDepth) maxDepth = depth;
++            break;
++        case 9:  case 10: case 11: case 12: case 13: case 14: case 15:
++        case 16: case 17: case 18: case 19: case 20: case 21: case 22:
++        case 23: case 24: case 25: case 26: case 27: case 28:
++            if (depth < 1) return -1;
++            break;
++        default:
++            return -1;
++        }
+     }
+-    if (*expr) (*expr)->next = node;
+-    (*expr) = node;
++    if (depth != 1) return -1;
++    return maxDepth;
+ }
+ 
+ //=============================================================================
+@@ -526,20 +583,157 @@ void deleteTree(ExprTree* tree)
+ #pragma float_control(precise, on, push)
+ 
+ double mathexpr_eval(MathExpr* expr, double (*getVariableValue) (int))
+-//  Mathematica expression evaluation using a stack
++//  Evaluates an expression, getting the value of the variable with
++//  index i from getVariableValue(i)
++{
++    return evaluate(expr, getVariableValue, NULL);
++}
++
++//=============================================================================
++
++double mathexpr_evalVector(MathExpr* expr, const double* values)
++//  Evaluates an expression whose variable with index i has the value
++//  values[i]
++{
++    return evaluate(expr, NULL, values);
++}
++
++//=============================================================================
++
++double evaluate(MathExpr* expr, double (*getVariableValue) (int),
++                const double* values)
++//  Mathematical expression evaluation using a stack (variable values come
++//  from the values array if it is not NULL or else from getVariableValue)
++{
++    // --- Note: the stack array must be declared locally and not globally
++    //     since this function can be called recursively.
++
++    double stack[FAST_STACK_SIZE];
++    ExprNode* node;
++    ExprNode* end;
++    double top, r1;
++    int sp;
++
++    // --- expressions that are not well formed (or need a very deep
++    //     stack) are evaluated by the general purpose evaluator
++
++    if (expr == NULL) return 0.0;
++    if (expr->maxDepth < 0 || expr->maxDepth >= FAST_STACK_SIZE)
++        return evalGeneric(expr, getVariableValue, values);
++
++    // --- the value on top of the stack is held in top and the values
++    //     beneath it in stack[1..sp]; the operations are the same as
++    //     those of evalGeneric
++
++    top = 0.0;
++    sp = 0;
++    node = expr->node;
++    end = node + expr->count;
++    for (; node < end; node++)
++    {
++        switch (node->opcode)
++        {
++        case 3:  top = stack[sp--] + top;  break;
++        case 4:  top = stack[sp--] - top;  break;
++        case 5:  top = stack[sp--] * top;  break;
++        case 6:  top = stack[sp--] / top;  break;
++
++        case 7:
++            stack[++sp] = top;
++            top = node->fvalue;
++            break;
++
++        case 8:
++            stack[++sp] = top;
++            if (values != NULL)
++                top = values[node->ivar];
++            else if (getVariableValue != NULL)
++                top = getVariableValue(node->ivar);
++            else top = 0.0;
++            break;
++
++        case 9:  top = -top;       break;
++        case 10: top = cos(top);   break;
++        case 11: top = sin(top);   break;
++        case 12: top = tan(top);   break;
++        case 13: top = 1.0 / tan(top);  break;
++        case 14: top = fabs(top);  break;
++
++        case 15:
++            if (top < 0.0) top = -1.0;
++            else if (top > 0.0) top = 1.0;
++            else top = 0.0;
++            break;
++
++        case 16: top = sqrt(top);  break;
++        case 17: top = log(top);   break;
++        case 18: top = exp(top);   break;
++        case 19: top = asin(top);  break;
++        case 20: top = acos(top);  break;
++        case 21: top = atan(top);  break;
++        case 22: top = 1.57079632679489661923 - atan(top);  break;
++
++        case 23:
++            r1 = top;
++            top = (exp(r1) - exp(-r1)) / 2.0;
++            break;
++
++        case 24:
++            r1 = top;
++            top = (exp(r1) + exp(-r1)) / 2.0;
++            break;
++
++        case 25:
++            r1 = top;
++            top = (exp(r1) - exp(-r1)) / (exp(r1) + exp(-r1));
++            break;
++
++        case 26:
++            r1 = top;
++            top = (exp(r1) + exp(-r1)) / (exp(r1) - exp(-r1));
++            break;
++
++        case 27: top = log10(top);  break;
++
++        case 28:
++            if (top <= 0.0) top = 0.0;
++            else            top = 1.0;
++            break;
++
++        case 31:
++            r1 = top;
++            top = stack[sp--];
++            if (top <= 0.0) top = 0.0;
++            else top = pow(top, r1);
++            break;
++        }
++    }
++
++    // Set result to 0 if it is NaN due to an illegal math op
++    if (top != top) top = 0.0;
++    return top;
++}
++
++//=============================================================================
++
++double evalGeneric(MathExpr* expr, double (*getVariableValue) (int),
++                   const double* values)
++//  Mathematical expression evaluation using a stack (general case)
+ {
+ 
+     // --- Note: the exprStack array must be declared locally and not globally
+     //     since this function can be called recursively.
+ 
+     double exprStack[MAX_STACK_SIZE];
+-    MathExpr* node = expr;
++    ExprNode* node;
+     double r1, r2;
++    int i;
+     int stackindex = 0;
+ 
+     exprStack[0] = 0.0;
+-    while (node != NULL)
++    for (i = 0; i < expr->count; i++)
+     {
++        node = &expr->node[i];
+         switch (node->opcode)
+         {
+         case 3:
+@@ -576,7 +770,9 @@ double mathexpr_eval(MathExpr* expr, double (*getVariableValue) (int))
+             break;
+ 
+         case 8:
+-            if (getVariableValue != NULL)
++            if (values != NULL)
++                r1 = values[node->ivar];
++            else if (getVariableValue != NULL)
+                 r1 = getVariableValue(node->ivar);
+             else r1 = 0.0;
+             stackindex++;
+@@ -714,7 +910,6 @@ double mathexpr_eval(MathExpr* expr, double (*getVariableValue) (int))
+             exprStack[stackindex] = r2;
+             break;
+         }
+-        node = node->next;
+     }
+     if (stackindex >= 0)
+         r1 = exprStack[stackindex];
+@@ -734,17 +929,33 @@ double mathexpr_eval(MathExpr* expr, double (*getVariableValue) (int))
+ 
+ void mathexpr_delete(MathExpr* expr)
+ {
+-    if (expr) mathexpr_delete(expr->next);
+     free(expr);
+ }
+ 
+ //=============================================================================
+ 
++MathExpr* mathexpr_copy(MathExpr* expr)
++//  Returns a copy of an expression (NULL if expr is NULL or out of memory)
++{
++    MathExpr* copy;
++    size_t size;
++    if (expr == NULL) return NULL;
++    size = sizeof(MathExpr) + expr->count * sizeof(ExprNode);
++    copy = (MathExpr*)malloc(size);
++    if (copy == NULL) return NULL;
++    memcpy(copy, expr, size);
++    copy->node = (ExprNode*)(copy + 1);
++    return copy;
++}
++
++//=============================================================================
++
+ MathExpr* mathexpr_create(char* formula, int (*getVar) (char*))
+ {
+     ExprTree* tree;
+-    MathExpr* expr = NULL;
++    ExprNode* node;
+     MathExpr* result = NULL;
++    int n;
+     getVariableIndex = getVar;
+     Err = 0;
+     PrevLex = 0;
+@@ -756,11 +967,20 @@ MathExpr* mathexpr_create(char* formula, int (*getVar) (char*))
+     tree = getTree();
+     if (Bc == 0 && Err == 0)
+     {
+-        traverseTree(tree, &expr);
+-        while (expr)
++        // --- store the tree's nodes in postfix order in an array that
++        //     follows the MathExpr header in a single memory block
++        n = countTree(tree);
++        if (n > 0)
++        {
++            result = (MathExpr*)malloc(sizeof(MathExpr) + n * sizeof(ExprNode));
++        }
++        if (result)
+         {
+-            result = expr;
+-            expr = expr->prev;
++            result->count = n;
++            result->node = (ExprNode*)(result + 1);
++            node = result->node;
++            traverseTree(tree, &node);
++            result->maxDepth = getMaxDepth(result);
+         }
+     }
+     deleteTree(tree);
+@@ -774,13 +994,15 @@ char* mathexpr_getStr(MathExpr* expr, char* exprStr,
+     char* (*getVariableStr) (int, char*))
+ {
+     Term TermStack[50];
+-    MathExpr* node = expr;
++    ExprNode* node;
+     char r1[MAX_TERM_SIZE], r2[MAX_TERM_SIZE];
++    int i, n = expr ? expr->count : 0;
+     int stackindex = 0;
+ 
+     strcpy(TermStack[0].s, "");
+-    while (node != NULL)
++    for (i = 0; i < n; i++)
+     {
++        node = &expr->node[i];
+         switch (node->opcode)
+         {
+         case 3:
+@@ -930,7 +1152,6 @@ char* mathexpr_getStr(MathExpr* expr, char* exprStr,
+             stackindex--;
+             break;
+         }
+-        node = node->next;
+     }
+     strcpy(exprStr, TermStack[stackindex].s);
+     return exprStr;
+diff --git a/src/solver/mathexpr.h b/src/solver/mathexpr.h
+index e8f29e1..30ce647 100644
+--- a/src/solver/mathexpr.h
++++ b/src/solver/mathexpr.h
+@@ -12,16 +12,25 @@
+ #ifndef MATHEXPR_H
+ #define MATHEXPR_H
+ 
+-//  Node in a tokenized math expression list
++//  Node (token) of a tokenized math expression
+ struct ExprNode
+ {
+     int    opcode;                // operator code
+     int    ivar;                  // variable index
+     double fvalue;                // numerical value
+-    struct ExprNode *prev;        // previous node
+-    struct ExprNode *next;        // next node
+ };
+-typedef struct ExprNode MathExpr;
++typedef struct ExprNode ExprNode;
++
++//  Tokenized math expression: its nodes in postfix order, stored
++//  contiguously in the same memory block as this header
++struct MathExpr
++{
++    int       count;              // number of nodes
++    int       maxDepth;           // max. depth of evaluation stack (-1 if
++                                  // the expression is not well formed)
++    ExprNode* node;               // array of nodes in postfix order
++};
++typedef struct MathExpr MathExpr;
+ 
+ //  Creates a tokenized math expression from a string
+ MathExpr* mathexpr_create(char* s, int (*getVar) (char *));
+@@ -29,6 +38,13 @@ MathExpr* mathexpr_create(char* s, int (*getVar) (char *));
+ //  Evaluates a tokenized math expression
+ double mathexpr_eval(MathExpr* expr, double (*getVal) (int));
+ 
++//  Evaluates a tokenized math expression whose variable with index i
++//  has the value values[i]
++double mathexpr_evalVector(MathExpr* expr, const double* values);
++
++//  Makes a copy of a tokenized math expression
++MathExpr* mathexpr_copy(MathExpr* expr);
++
+ //  Deletes a tokenized math expression
+ void  mathexpr_delete(MathExpr* expr);
+ 
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index 44ce617..b1ea14e 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -56,10 +56,38 @@ static double *Yrate;                  // Rate species concentrations
+ static double *Yequil;                 // Equilibrium species concentrations
+ static double HydVar[MAX_HYD_VARS];    // Values of hydraulic variables
+ static double *F;                      // Function values                      
+-static double *ChemC1;
++static double *ChemC1;                 // Values of variables (see below)
+ 
+ #pragma omp threadprivate(TheSeg, TheLink, TheNode, TheTank, Yrate, Yequil, HydVar, F, ChemC1)
+ 
++//  Compiled chemistry expressions
++//--------------------------------
++//  The chemistry expressions of pipes and of tanks are copied so that each
++//  variable in them refers to a position in a vector of values, ChemC1:
++//  species concentrations, intermediate terms, parameters, constants and
++//  hydraulic variables keep their variable index (see LastIndex), while
++//  species computed by formulas have positions of their own (FormBase +
++//  species index). The terms and formula species that a set of expressions
++//  needs are evaluated once each, in order of dependency, before the
++//  expressions themselves.
++typedef struct
++{
++    MathExpr **slotExpr;               // expression of each term & formula
++    MathExpr **speciesExpr;            // expression of each species
++    int       *rateDeps;               // terms & formulas needed by rates
++    int        nRateDeps;
++    int       *equilDeps;              // ... needed by equilibrium expr.
++    int        nEquilDeps;
++    int       *formulaDeps;            // ... needed by formulas
++    int        nFormulaDeps;
++}  ChemExprs;
++
++static int       NumValues;            // Size of a vector of variable values
++static int       HydBase;              // Offset of hydraulic variables in it
++static int       FormBase;             // Offset of formula species values
++static ChemExprs PipeExprs;            // Compiled pipe chemistry expressions
++static ChemExprs TankExprs;            // Compiled tank chemistry expressions
++
+ //  Exported functions
+ //--------------------
+ int    MSXchem_open(void);
+@@ -83,17 +111,43 @@ static int    evalPipeReactions(int k, double dt);
+ static int    evalTankReactions(int k, double dt);
+ static int    evalPipeEquil(double *c);
+ static int    evalTankEquil(double *c);
++static int    pipeEquil(double *c);
++static int    tankEquil(double *c);
+ static void   evalPipeFormulas(double *c);
+ static void   evalTankFormulas(double *c);
+-static double getPipeVariableValue(int i);
+-static double getTankVariableValue(int i);
++static int    compileExprs(ChemExprs *ce, int forPipes);
++static MathExpr* compileExpr(MathExpr *expr, int forPipes);
++static int    findDeps(ChemExprs *ce, MathExpr *expr, int *list, int *n,
++                       char *mark);
++static int    addDep(ChemExprs *ce, int i, int *list, int *n, char *mark);
++static void   freeExprs(ChemExprs *ce);
++static void   evalDeps(MathExpr **slotExpr, int *list, int n, double *val);
++static void   setPipeValues(int k);
++static void   setTankValues(void);
+ static void   getPipeDcDt(double t, double y[], int n, double deriv[]);
+ static void   getTankDcDt(double t, double y[], int n, double deriv[]);
+ static void   getPipeEquil(double t, double y[], int n, double f[]);
+ static void   getTankEquil(double t, double y[], int n, double f[]);
+ static int    isValidNumber(double x);                                         //(L.Rossman - 11/03/10)
++static double validate(double x, int index, int element, int exprType);
+ 
+ 
++//=============================================================================
++
++double validate(double x, int index, int element, int exprType)
++/*
++**  Purpose:
++**    checks if a number is valid or not.
++**
++**  Note:
++**    a fast path for the usual case of a valid number that saves a
++**    call to MSXerr_validate; the latter records a math error otherwise.
++*/
++{
++    if (x == x) return x;
++    return MSXerr_validate(x, index, element, exprType);
++}
++
+ //=============================================================================
+ 
+ int  MSXchem_open()
+@@ -115,6 +169,24 @@ int  MSXchem_open()
+     int numPipeExpr;
+     int errcode = 0;
+ 
++    memset(&PipeExprs, 0, sizeof(ChemExprs));
++    memset(&TankExprs, 0, sizeof(ChemExprs));
++
++// --- assign entries to LastIndex array
++
++    LastIndex[SPECIES] = MSX.Nobjects[SPECIES];
++    LastIndex[TERM] = LastIndex[SPECIES] + MSX.Nobjects[TERM];
++    LastIndex[PARAMETER] = LastIndex[TERM] + MSX.Nobjects[PARAMETER];
++    LastIndex[CONSTANT] = LastIndex[PARAMETER] + MSX.Nobjects[CONSTANT];
++
++// --- size of the vector of variable values: species concentrations,
++//     terms, parameters & constants, hydraulic variables and the values
++//     of species computed by formulas
++
++    HydBase = LastIndex[CONSTANT];
++    FormBase = HydBase + MAX_HYD_VARS - 1;
++    NumValues = FormBase + MSX.Nobjects[SPECIES] + 1;
++
+     // --- allocate memory
+ 
+     PipeRateSpecies = NULL;
+@@ -145,7 +217,7 @@ int  MSXchem_open()
+     Yrate = (double*)calloc(m, sizeof(double));
+     Yequil = (double*)calloc(m, sizeof(double));
+     F = (double*)calloc(m, sizeof(double));                             
+-    ChemC1 = (double*)calloc(m, sizeof(double));
++    ChemC1 = (double*)calloc(NumValues, sizeof(double));
+ #pragma omp critical
+     {
+         CALL(errcode, MEMCHECK(Yrate));
+@@ -182,6 +254,16 @@ int  MSXchem_open()
+     if ( numPipeExpr != NumSpecies )       return ERR_NUM_PIPE_EXPR;
+     if ( numTankExpr != numBulkSpecies   ) return ERR_NUM_TANK_EXPR;
+ 
++// --- compile the chemistry expressions (unless compiled functions are used)
++
++    if ( !MSX.Compiler )
++    {
++        errcode = compileExprs(&PipeExprs, 1);
++        if ( errcode ) return errcode;
++        errcode = compileExprs(&TankExprs, 0);
++        if ( errcode ) return errcode;
++    }
++
+ // --- open the ODE solver;
+ //     arguments are max. number of ODE's,
+ //     max. number of steps to be taken,
+@@ -203,13 +285,6 @@ int  MSXchem_open()
+     m = MAX(NumPipeEquilSpecies, NumTankEquilSpecies);
+     if ( newton_open(m) == FALSE ) return ERR_NEWTON_OPEN;
+ 
+-// --- assign entries to LastIndex array
+-
+-    LastIndex[SPECIES] = MSX.Nobjects[SPECIES];
+-    LastIndex[TERM] = LastIndex[SPECIES] + MSX.Nobjects[TERM];
+-    LastIndex[PARAMETER] = LastIndex[TERM] + MSX.Nobjects[PARAMETER];
+-    LastIndex[CONSTANT] = LastIndex[PARAMETER] + MSX.Nobjects[CONSTANT];
+-
+ // --- compile chemistry function dynamic library if specified                 
+ 
+     if ( MSX.Compiler )
+@@ -241,6 +316,8 @@ void MSXchem_close()
+     FREE(TankEquilSpecies);
+     FREE(Atol);
+     FREE(Rtol);
++    freeExprs(&PipeExprs);
++    freeExprs(&TankExprs);
+ 
+ #pragma omp parallel
+ {
+@@ -362,21 +439,70 @@ int MSXchem_equil(int zone, int k, double *c)
+         TheLink = k;
+         for (int vi = 1; vi < MAX_HYD_VARS; vi++)
+             HydVar[vi] = MSX.Link[k].HydVar[vi];
+-        if ( NumPipeEquilSpecies > 0 ) errcode = evalPipeEquil(c);
+-        evalPipeFormulas(c);
++        setPipeValues(k);
++        errcode = pipeEquil(c);
+     }
+     if ( zone == NODE )
+     {
+         TheTank = k;
+         TheNode = MSX.Tank[k].node;
+-        if ( NumTankEquilSpecies > 0 ) errcode = evalTankEquil(c);
+-        evalTankFormulas(c);
++        setTankValues();
++        errcode = tankEquil(c);
+     }
+     return errcode;
+ }
+ 
+ //=============================================================================
+ 
++int pipeEquil(double *c)
++/*
++**  Purpose:
++**    computes equilibrium concentrations and formulas for the
++**    water in the current pipe (TheLink, whose hydraulic variables
++**    are already in HydVar).
++**
++**  Input:
++**    c[] = array of species concentrations
++**
++**  Output:
++**    updated value of c[].
++**
++**  Returns:
++**    an error code or 0 if no errors.
++*/
++{
++    int errcode = 0;
++    if ( NumPipeEquilSpecies > 0 ) errcode = evalPipeEquil(c);
++    if ( NumPipeFormulaSpecies > 0 ) evalPipeFormulas(c);
++    return errcode;
++}
++
++//=============================================================================
++
++int tankEquil(double *c)
++/*
++**  Purpose:
++**    computes equilibrium concentrations and formulas for the
++**    water in the current tank (TheTank).
++**
++**  Input:
++**    c[] = array of species concentrations
++**
++**  Output:
++**    updated value of c[].
++**
++**  Returns:
++**    an error code or 0 if no errors.
++*/
++{
++    int errcode = 0;
++    if ( NumTankEquilSpecies > 0 ) errcode = evalTankEquil(c);
++    if ( NumTankFormulaSpecies > 0 ) evalTankFormulas(c);
++    return errcode;
++}
++
++//=============================================================================
++
+ char* MSXchem_getVariableStr(int i, char *s)                                   
+ /*
+ **  Purpose:
+@@ -555,6 +681,7 @@ int evalPipeReactions(int k, double dt)
+ // --- start with the most downstream pipe segment
+ 
+     TheLink = k;
++    setPipeValues(k);
+     TheSeg = MSX.FirstSeg[TheLink];
+     while ( TheSeg )
+     {
+@@ -636,9 +763,13 @@ int evalPipeReactions(int k, double dt)
+         }
+ 
+     // --- compute new equilibrium concentrations within segment
++    //     (TheLink is k and HydVar holds its hydraulic variables)
+ 
+-        errcode = MSXchem_equil(LINK, k, TheSeg->c);
+-        if ( errcode ) return errcode;
++        if ( NumPipeEquilSpecies + NumPipeFormulaSpecies > 0 )
++        {
++            errcode = pipeEquil(TheSeg->c);
++            if ( errcode ) return errcode;
++        }
+ 
+     // --- move to the segment upstream of the current one
+         TheSeg = TheSeg->prev;
+@@ -677,6 +808,7 @@ int evalTankReactions(int k, double dt)
+ 
+     TheTank = k;
+     TheNode = MSX.Tank[k].node;
++    setTankValues();
+     i = MSX.Nobjects[LINK] + k;
+     TheSeg = MSX.FirstSeg[i];
+     while ( TheSeg )
+@@ -747,7 +879,7 @@ int evalTankReactions(int k, double dt)
+ 
+     // --- compute new equilibrium concentrations within segment
+ 
+-        errcode = MSXchem_equil(NODE, k, TheSeg->c);
++        errcode = tankEquil(TheSeg->c);
+         if ( errcode ) return errcode;
+ 
+     // --- move to the next tank segment
+@@ -869,17 +1001,19 @@ void evalPipeFormulas(double *c)
+         for (m=1; m<=NumSpecies; m++)
+         {
+             if (MSX.Species[m].pipeExprType == FORMULA)
+-                c[m] = MSXerr_validate(ChemC1[m], m, LINK, FORMULA);
++                c[m] = validate(ChemC1[m], m, LINK, FORMULA);
+         }
+     	return;
+     }
+ 
++    evalDeps(PipeExprs.slotExpr, PipeExprs.formulaDeps,
++             PipeExprs.nFormulaDeps, ChemC1);
+     for (m=1; m<=NumSpecies; m++)
+     {
+         if ( MSX.Species[m].pipeExprType == FORMULA )
+         {
+-			x = mathexpr_eval(MSX.Species[m].pipeExpr, getPipeVariableValue);
+-			c[m] = MSXerr_validate(x, m, LINK, FORMULA);
++            x = ChemC1[FormBase + m];
++			c[m] = validate(x, m, LINK, FORMULA);
+         }
+     }
+ }
+@@ -914,162 +1048,25 @@ void evalTankFormulas(double *c)
+         for (m=1; m<=NumSpecies; m++)
+         {
+             if (MSX.Species[m].tankExprType == FORMULA)
+-                c[m] = MSXerr_validate(ChemC1[m], m, TANK, FORMULA);
++                c[m] = validate(ChemC1[m], m, TANK, FORMULA);
+         }
+     	return;
+     }
+ 
++    evalDeps(TankExprs.slotExpr, TankExprs.formulaDeps,
++             TankExprs.nFormulaDeps, ChemC1);
+     for (m=1; m<=NumSpecies; m++)
+     {
+         if ( MSX.Species[m].tankExprType == FORMULA )
+         {
+-            x = mathexpr_eval(MSX.Species[m].tankExpr, getTankVariableValue);
+-			c[m] = MSXerr_validate(x, m, TANK, FORMULA);
+-        }
+-    }
+-}
+-
+-//=============================================================================
+-
+-double getPipeVariableValue(int i)
+-/*
+-**  Purpose:
+-**    finds the value of a species, a parameter, or a constant for 
+-**    the pipe link being analyzed.
+-**
+-**  Input:
+-**    i = variable index.
+-**
+-**  Returns:
+-**    the current value of the indexed variable.
+-*/
+-{
+-	double x;
+-
+-// --- WQ species have index i between 1 & # of species
+-//     and their current values are stored in vector ChemC1 
+-
+-    if ( i <= LastIndex[SPECIES] )
+-    {
+-    // --- if species represented by a formula then evaluate it
+-
+-        if ( MSX.Species[i].pipeExprType == FORMULA )
+-        {
+-			x = mathexpr_eval(MSX.Species[i].pipeExpr, getPipeVariableValue);
+-            return MSXerr_validate(x, i, LINK, FORMULA);                       
++            x = ChemC1[FormBase + m];
++			c[m] = validate(x, m, TANK, FORMULA);
+         }
+-
+-    // --- otherwise return the current concentration
+-
+-        else return ChemC1[i];
+-    }
+-
+-// --- intermediate term expressions come next
+-
+-    else if ( i <= LastIndex[TERM] )
+-    {
+-        i -= LastIndex[TERM-1];
+-		x = mathexpr_eval(MSX.Term[i].expr, getPipeVariableValue);
+-        return MSXerr_validate(x, i, 0, TERM);                                 
+-    }
+-
+-// --- reaction parameter indexes come after that
+-
+-    else if ( i <= LastIndex[PARAMETER] )
+-    {
+-        i -= LastIndex[PARAMETER-1];
+-        return MSX.Link[TheLink].param[i];
+-    }
+-
+-// --- followed by constants
+-
+-    else if ( i <= LastIndex[CONSTANT] )
+-    {
+-        i -= LastIndex[CONSTANT-1];
+-        return MSX.Const[i].value;
+-    }
+-
+-// --- and finally by hydraulic variables
+-    else 
+-    {
+-        i -= LastIndex[CONSTANT];
+-        if (i < MAX_HYD_VARS) return HydVar[i];
+-        else return 0.0;
+     }
+ }
+ 
+ //=============================================================================
+ 
+-double getTankVariableValue(int i)
+-/*
+-**  Purpose:
+-**    finds the value of a species, a parameter, or a constant for 
+-**    the current node being analyzed.
+-**
+-**  Input:
+-**    i = variable index.
+-**
+-**  Returns:
+-**    the current value of the indexed variable.
+-**
+-**  Modified to check for NaN values (L.Rossman - 11/03/10).
+-*/
+-{
+-    int j;
+-	double x;
+-
+-// --- WQ species have index i between 1 & # of species
+-//     and their current values are stored in vector ChemC1
+-
+-    if ( i <= LastIndex[SPECIES] )
+-    {
+-    // --- if species represented by a formula then evaluate it
+-
+-        if ( MSX.Species[i].tankExprType == FORMULA )
+-        {
+-			x = mathexpr_eval(MSX.Species[i].tankExpr, getTankVariableValue);
+-            return MSXerr_validate(x, i, TANK, FORMULA);                       
+-        }
+-
+-    // --- otherwise return the current concentration
+-
+-        else return ChemC1[i];
+-    }
+-
+-// --- intermediate term expressions come next
+-
+-    else if ( i <= LastIndex[TERM] )
+-    {
+-        i -= LastIndex[TERM-1];
+-		x = mathexpr_eval(MSX.Term[i].expr, getTankVariableValue);
+-        return MSXerr_validate(x, i, 0, TERM);                                 
+-    }
+-
+-// --- next come reaction parameters associated with Tank nodes
+-
+-    else if (i <= LastIndex[PARAMETER] )
+-    {
+-        i -= LastIndex[PARAMETER-1];
+-        j = MSX.Node[TheNode].tank;
+-        if ( j > 0 )
+-        {
+-            return MSX.Tank[j].param[i];
+-        }
+-        else return 0.0;
+-    }
+-
+-// --- and then come constants
+-
+-    else if (i <= LastIndex[CONSTANT] )
+-    {
+-        i -= LastIndex[CONSTANT-1];
+-        return MSX.Const[i].value;
+-    }
+-    else return 0.0;
+-}
+-
+-//=============================================================================
+-
+ void getPipeDcDt(double t, double y[], int n, double deriv[])
+ /*
+ **  Purpose:
+@@ -1100,7 +1097,7 @@ void getPipeDcDt(double t, double y[], int n, double deriv[])
+ 
+     if ( MSX.Coupling == FULL_COUPLING )
+     {
+-        if ( MSXchem_equil(LINK, TheLink, ChemC1) > 0 )     // check for error condition
++        if ( pipeEquil(ChemC1) > 0 )     // check for error condition
+         {
+             for (i=1; i<=n; i++) deriv[i] = 0.0;
+             return;
+@@ -1115,18 +1112,20 @@ void getPipeDcDt(double t, double y[], int n, double deriv[])
+         for (i=1; i<=n; i++)
+         {
+             m = PipeRateSpecies[i];
+-            deriv[i] = MSXerr_validate(F[m], m, LINK, RATE);                   
++            deriv[i] = validate(F[m], m, LINK, RATE);                   
+         }
+ 	    return;
+     }
+ 
+ // --- evaluate each pipe reaction expression
+ 
++    evalDeps(PipeExprs.slotExpr, PipeExprs.rateDeps, PipeExprs.nRateDeps,
++             ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = PipeRateSpecies[i];
+-		x = mathexpr_eval(MSX.Species[m].pipeExpr, getPipeVariableValue);
+-        deriv[i] = MSXerr_validate(x, m, LINK, RATE);                          
++		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], ChemC1);
++        deriv[i] = validate(x, m, LINK, RATE);                          
+     }
+ }
+ 
+@@ -1162,7 +1161,7 @@ void getTankDcDt(double t, double y[], int n, double deriv[])
+ 
+     if ( MSX.Coupling == FULL_COUPLING )
+     {
+-        if ( MSXchem_equil(NODE, TheTank, ChemC1) > 0 )     // check for error condition
++        if ( tankEquil(ChemC1) > 0 )     // check for error condition
+         {
+             for (i=1; i<=n; i++) deriv[i] = 0.0;
+             return;
+@@ -1177,18 +1176,20 @@ void getTankDcDt(double t, double y[], int n, double deriv[])
+         for (i=1; i<=n; i++)
+         {
+             m = TankRateSpecies[i];
+-            deriv[i] = MSXerr_validate(F[m], m, TANK, RATE);                   
++            deriv[i] = validate(F[m], m, TANK, RATE);                   
+         }
+ 	    return;
+     }
+ 
+ // --- evaluate each tank reaction expression
+ 
++    evalDeps(TankExprs.slotExpr, TankExprs.rateDeps, TankExprs.nRateDeps,
++             ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = TankRateSpecies[i];
+-		x = mathexpr_eval(MSX.Species[m].tankExpr, getTankVariableValue);
+-        deriv[i] = MSXerr_validate(x, m, TANK, RATE);                          
++		x = mathexpr_evalVector(TankExprs.speciesExpr[m], ChemC1);
++        deriv[i] = validate(x, m, TANK, RATE);                          
+     }
+ }
+ 
+@@ -1228,18 +1229,20 @@ void getPipeEquil(double t, double y[], int n, double f[])
+         for (i=1; i<=n; i++)
+         {
+             m = PipeEquilSpecies[i];
+-		    f[i] = MSXerr_validate(F[m], m, LINK, EQUIL);                      
++		    f[i] = validate(F[m], m, LINK, EQUIL);                      
+         }
+     	return;
+     }
+ 
+ // --- evaluate each pipe equilibrium expression
+ 
++    evalDeps(PipeExprs.slotExpr, PipeExprs.equilDeps, PipeExprs.nEquilDeps,
++             ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = PipeEquilSpecies[i];
+-		x = mathexpr_eval(MSX.Species[m].pipeExpr, getPipeVariableValue);
+-		f[i] = MSXerr_validate(x, m, LINK, EQUIL);                             
++		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], ChemC1);
++		f[i] = validate(x, m, LINK, EQUIL);                             
+     }
+ }
+ 
+@@ -1279,18 +1282,320 @@ void getTankEquil(double t, double y[], int n, double f[])
+         for (i=1; i<=n; i++)
+         {
+             m = TankEquilSpecies[i];
+-		    f[i] = MSXerr_validate(F[m], m, TANK, EQUIL);                      
++		    f[i] = validate(F[m], m, TANK, EQUIL);                      
+         }
+ 	    return;
+     }
+ 
+ // --- evaluate each tank equilibrium expression
+ 
++    evalDeps(TankExprs.slotExpr, TankExprs.equilDeps, TankExprs.nEquilDeps,
++             ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = TankEquilSpecies[i];
+-		x = mathexpr_eval(MSX.Species[m].tankExpr, getTankVariableValue);
+-		f[i] = MSXerr_validate(x, m, TANK, EQUIL);                             
++		x = mathexpr_evalVector(TankExprs.speciesExpr[m], ChemC1);
++		f[i] = validate(x, m, TANK, EQUIL);                             
++    }
++}
++
++//=============================================================================
++
++int compileExprs(ChemExprs *ce, int forPipes)
++/*
++**  Purpose:
++**    compiles the chemistry expressions of pipes or of tanks.
++**
++**  Input:
++**    ce = structure that receives the compiled expressions
++**    forPipes = 1 for pipe chemistry, 0 for tank chemistry.
++**
++**  Returns:
++**    an error code or 0 if no error.
++**
++**  Note:
++**    a term or formula species that refers to itself (through other
++**    terms or formula species) is reported as an input error; it would
++**    otherwise send the evaluation of the expressions into an endless
++**    recursion.
++*/
++{
++    int i, m, type;
++    int errcode = 0;
++    char *mark;
++    MathExpr *expr;
++
++    ce->slotExpr = (MathExpr **)calloc(NumValues, sizeof(MathExpr *));
++    ce->speciesExpr = (MathExpr **)calloc(NumSpecies + 1, sizeof(MathExpr *));
++    ce->rateDeps = (int *)calloc(NumValues, sizeof(int));
++    ce->equilDeps = (int *)calloc(NumValues, sizeof(int));
++    ce->formulaDeps = (int *)calloc(NumValues, sizeof(int));
++    mark = (char *)calloc(NumValues, sizeof(char));
++    if ( !ce->slotExpr || !ce->speciesExpr || !ce->rateDeps ||
++         !ce->equilDeps || !ce->formulaDeps || !mark )
++    {
++        FREE(mark);
++        return ERR_MEMORY;
++    }
++
++// --- compile the expressions of intermediate terms
++
++    for (i = 1; i <= MSX.Nobjects[TERM]; i++)
++    {
++        expr = MSX.Term[i].expr;
++        if ( expr == NULL ) continue;
++        ce->slotExpr[LastIndex[SPECIES] + i] = compileExpr(expr, forPipes);
++        if ( ce->slotExpr[LastIndex[SPECIES] + i] == NULL ) errcode = ERR_MEMORY;
++    }
++
++// --- compile the expressions of species
++
++    for (m = 1; m <= NumSpecies; m++)
++    {
++        if ( forPipes ) expr = MSX.Species[m].pipeExpr;
++        else            expr = MSX.Species[m].tankExpr;
++        if ( expr == NULL ) continue;
++        ce->speciesExpr[m] = compileExpr(expr, forPipes);
++        if ( ce->speciesExpr[m] == NULL ) errcode = ERR_MEMORY;
++        if ( forPipes ) type = MSX.Species[m].pipeExprType;
++        else            type = MSX.Species[m].tankExprType;
++        if ( type == FORMULA ) ce->slotExpr[FormBase + m] = ce->speciesExpr[m];
++    }
++    if ( errcode )
++    {
++        FREE(mark);
++        return errcode;
++    }
++
++// --- find the terms and formulas needed by each type of expression
++
++    for (m = 1; m <= NumSpecies && !errcode; m++)
++    {
++        if ( forPipes ) type = MSX.Species[m].pipeExprType;
++        else            type = MSX.Species[m].tankExprType;
++        if ( type == RATE ) errcode = findDeps(ce, ce->speciesExpr[m],
++                                   ce->rateDeps, &ce->nRateDeps, mark);
++    }
++    memset(mark, 0, NumValues);
++    for (m = 1; m <= NumSpecies && !errcode; m++)
++    {
++        if ( forPipes ) type = MSX.Species[m].pipeExprType;
++        else            type = MSX.Species[m].tankExprType;
++        if ( type == EQUIL ) errcode = findDeps(ce, ce->speciesExpr[m],
++                                    ce->equilDeps, &ce->nEquilDeps, mark);
++    }
++    memset(mark, 0, NumValues);
++    for (m = 1; m <= NumSpecies && !errcode; m++)
++    {
++        if ( forPipes ) type = MSX.Species[m].pipeExprType;
++        else            type = MSX.Species[m].tankExprType;
++        if ( type == FORMULA ) errcode = addDep(ce, FormBase + m,
++                                  ce->formulaDeps, &ce->nFormulaDeps, mark);
++    }
++    FREE(mark);
++    return errcode;
++}
++
++//=============================================================================
++
++MathExpr* compileExpr(MathExpr *expr, int forPipes)
++/*
++**  Purpose:
++**    makes a copy of an expression whose variables refer to positions
++**    in the vector of variable values.
++**
++**  Input:
++**    expr = an expression
++**    forPipes = 1 for pipe chemistry, 0 for tank chemistry.
++**
++**  Returns:
++**    the compiled expression (NULL if out of memory).
++*/
++{
++    int j, i, type;
++    MathExpr *e = mathexpr_copy(expr);
++    if ( e == NULL ) return NULL;
++    for (j = 0; j < e->count; j++)
++    {
++        if ( e->node[j].opcode != 8 ) continue;
++        i = e->node[j].ivar;
++
++    // --- species: their concentration, or the value of their formula
++
++        if ( i >= 1 && i <= LastIndex[SPECIES] )
++        {
++            if ( forPipes ) type = MSX.Species[i].pipeExprType;
++            else            type = MSX.Species[i].tankExprType;
++            if ( type == FORMULA ) i += FormBase;
++        }
++
++    // --- terms, parameters & constants keep their index
++
++        else if ( i > LastIndex[SPECIES] && i <= LastIndex[CONSTANT] ) ;
++
++    // --- hydraulic variables (whose value is 0 in tanks)
++
++        else if ( forPipes && i > HydBase && i < HydBase + MAX_HYD_VARS ) ;
++
++    // --- anything else has a value of 0 (position 0 always holds 0)
++
++        else i = 0;
++        e->node[j].ivar = i;
+     }
++    return e;
+ }
+ 
++//=============================================================================
++
++int findDeps(ChemExprs *ce, MathExpr *expr, int *list, int *n, char *mark)
++/*
++**  Purpose:
++**    adds the terms and formula species that a compiled expression needs
++**    to a list, each after those that it needs itself.
++**
++**  Input:
++**    ce = compiled expressions
++**    expr = a compiled expression
++**    list = list of positions of terms and formula species
++**    n = number of items in list
++**    mark = status of each term or formula species (0 = not visited,
++**           1 = being visited, 2 = in the list).
++**
++**  Returns:
++**    an error code or 0 if no error.
++*/
++{
++    int j, i;
++    if ( expr == NULL ) return 0;
++    for (j = 0; j < expr->count; j++)
++    {
++        if ( expr->node[j].opcode != 8 ) continue;
++        i = expr->node[j].ivar;
++        if ( (i > LastIndex[SPECIES] && i <= LastIndex[TERM]) || i > FormBase )
++        {
++            if ( addDep(ce, i, list, n, mark) ) return ERR_MSX_INPUT;
++        }
++    }
++    return 0;
++}
++
++//=============================================================================
++
++int addDep(ChemExprs *ce, int i, int *list, int *n, char *mark)
++/*
++**  Purpose:
++**    adds a term or formula species (and those it needs) to a list.
++**
++**  Input:
++**    ce = compiled expressions
++**    i = position of the term or formula species
++**    list, n, mark = see findDeps.
++**
++**  Returns:
++**    an error code or 0 if no error.
++*/
++{
++    if ( mark[i] == 2 ) return 0;
++    if ( mark[i] == 1 ) return ERR_MSX_INPUT;
++    mark[i] = 1;
++    if ( findDeps(ce, ce->slotExpr[i], list, n, mark) ) return ERR_MSX_INPUT;
++    mark[i] = 2;
++    list[*n] = i;
++    (*n)++;
++    return 0;
++}
++
++//=============================================================================
++
++void freeExprs(ChemExprs *ce)
++/*
++**  Purpose:
++**    frees the memory used by compiled expressions.
++*/
++{
++    int i;
++    if ( ce->slotExpr )
++    {
++        for (i = LastIndex[SPECIES] + 1; i <= LastIndex[TERM]; i++)
++            mathexpr_delete(ce->slotExpr[i]);
++    }
++    if ( ce->speciesExpr )
++    {
++        for (i = 1; i <= NumSpecies; i++) mathexpr_delete(ce->speciesExpr[i]);
++    }
++    FREE(ce->slotExpr);
++    FREE(ce->speciesExpr);
++    FREE(ce->rateDeps);
++    FREE(ce->equilDeps);
++    FREE(ce->formulaDeps);
++    memset(ce, 0, sizeof(ChemExprs));
++}
++
++//=============================================================================
++
++void evalDeps(MathExpr **slotExpr, int *list, int n, double *val)
++/*
++**  Purpose:
++**    evaluates a list of terms and formula species.
++**
++**  Input:
++**    slotExpr = compiled expression of each term & formula species
++**    list = positions of the terms & formula species to evaluate, in
++**           order of dependency
++**    n = number of items in list
++**    val = vector of variable values.
++**
++**  Output:
++**    updated values of the terms & formula species in val.
++*/
++{
++    int j, i;
++    for (j = 0; j < n; j++)
++    {
++        i = list[j];
++        val[i] = mathexpr_evalVector(slotExpr[i], val);
++    }
++}
++
++//=============================================================================
++
++void setPipeValues(int k)
++/*
++**  Purpose:
++**    places the values of the parameters & constants of pipe k and of its
++**    hydraulic variables (from HydVar) in the vector of variable values.
++**
++**  Input:
++**    k = link index.
++*/
++{
++    int i;
++    double *val = ChemC1;
++    for (i = 1; i <= MSX.Nobjects[PARAMETER]; i++)
++        val[LastIndex[TERM] + i] = MSX.Link[k].param[i];
++    for (i = 1; i <= MSX.Nobjects[CONSTANT]; i++)
++        val[LastIndex[PARAMETER] + i] = MSX.Const[i].value;
++    for (i = 1; i < MAX_HYD_VARS; i++)
++        val[HydBase + i] = HydVar[i];
++}
++
++//=============================================================================
++
++void setTankValues()
++/*
++**  Purpose:
++**    places the values of the parameters & constants of the current tank
++**    node (TheNode) in the vector of variable values.
++*/
++{
++    int i, j;
++    double *val = ChemC1;
++    j = MSX.Node[TheNode].tank;
++    for (i = 1; i <= MSX.Nobjects[PARAMETER]; i++)
++    {
++        if ( j > 0 ) val[LastIndex[TERM] + i] = MSX.Tank[j].param[i];
++        else         val[LastIndex[TERM] + i] = 0.0;
++    }
++    for (i = 1; i <= MSX.Nobjects[CONSTANT]; i++)
++        val[LastIndex[PARAMETER] + i] = MSX.Const[i].value;
++}

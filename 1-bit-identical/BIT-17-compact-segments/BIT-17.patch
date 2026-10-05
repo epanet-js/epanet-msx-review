@@ -1,0 +1,145 @@
+BIT-17: Copy every pipe's segments into contiguous memory (more memory)
+
+Segments come from a last-in first-out free list, so a pipe's chain ends
+up scattered, and every step walks every chain. Once per hydraulic step,
+copy each pipe's segments into one contiguous block, in order. Peak memory
+grows by 30-80 % on the larger cases. Optional: the patches before it leave
+memory use unchanged or lower.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-16:
+    git apply --whitespace=nowarn BIT-17.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxqual.c b/src/solver/msxqual.c
+index 7d7e506..ab680f5 100644
+--- a/src/solver/msxqual.c
++++ b/src/solver/msxqual.c
+@@ -73,6 +73,11 @@ static int    *PlanStart;
+ static int    *PlanOutStart;
+ static double *PlanVolOut;
+ 
++// Once per hydraulic step the segments of every pipe and tank are copied,
++// in order, into a second memory pool (compactSegs), so that each pipe's
++// segments lie one after the other in memory when they are walked.
++static alloc_handle_t *SparePool;
++
+ //  Imported functions
+ //--------------------
+ int    MSXchem_open(void);
+@@ -130,6 +135,7 @@ static void evalnodeinflow(int, double, double*, double*);
+ static void evalnodeoutflow(int k, double* upnodequal, double tstep);
+ static int sortNodes();
+ static void buildTransportPlan(void);
++static void compactSegs(void);
+ static int selectnonstacknode(int numsorted, int* indegree);
+ static void findstoredmass(double* mass);
+ 
+@@ -174,6 +180,9 @@ int  MSXqual_open()
+ 
+     MSX.QualPool = AllocInit();
+     if (MSX.QualPool == NULL) return ERR_MEMORY;
++    SparePool = AllocInit();
++    if (SparePool == NULL) return ERR_MEMORY;
++    AllocSetPool(MSX.QualPool);
+ 
+ // --- allocate memory used for species concentrations
+ 
+@@ -456,6 +465,9 @@ int MSXqual_step(double *t, double *tleft)
+                         CALL(errcode, sortNodes());
+                     }
+                     buildTransportPlan();
++
++                    // --- lay out each pipe's segments contiguously again
++                    if (MSX.Qtime > 0) compactSegs();
+                 }
+             }
+ 
+@@ -625,6 +637,13 @@ int MSXqual_close()
+     {
+         AllocSetPool(MSX.QualPool);
+         AllocFreePool();
++        MSX.QualPool = NULL;
++    }
++    if ( SparePool )
++    {
++        AllocSetPool(SparePool);
++        AllocFreePool();
++        SparePool = NULL;
+     }
+     FREE(MSX.MassBalance.initial);
+     FREE(MSX.MassBalance.inflow);
+@@ -2003,6 +2022,71 @@ void MSXqual_reversesegs(int k)
+ 
+ 
+ 
++//=============================================================================
++
++void compactSegs(void)
++/*
++**   Purpose:
++**     copies the segments of every pipe and tank, from first to last,
++**     into the spare memory pool, which then becomes the pool in use.
++**
++**   Note:
++**     A segment is a block of memory, recycled through a last-in
++**     first-out list of free segments, so as pipes take new segments
++**     from that list their segments end up spread across the pool.
++**     After the copy, walking a pipe's segments (as the chemistry and
++**     transport routines do at every time step) reads memory in order.
++**     The copies have the same contents; only addresses change.
++*/
++{
++    int  k, n = MSX.Nobjects[LINK] + MSX.Nobjects[TANK];
++    long bytes = sizeof(struct Sseg) + 2*(MSX.Nobjects[SPECIES]+1)*sizeof(double);
++    Pseg seg, newseg, first, last;
++    alloc_handle_t *pool;
++
++    AllocSetPool(SparePool);
++    AllocReset();
++    for (k = 1; k <= n; k++)
++    {
++        // ... copy the chain (if memory runs out, both pools are kept and
++        //     the run stops with an error)
++        first = NULL;
++        last = NULL;
++        for (seg = MSX.FirstSeg[k]; seg != NULL; seg = seg->prev)
++        {
++            newseg = (struct Sseg *) Alloc(bytes);
++            if (newseg == NULL)
++            {
++                MSX.OutOfMemory = TRUE;
++                AllocSetPool(MSX.QualPool);
++                return;
++            }
++            memcpy(newseg, seg, bytes);
++            newseg->c = (double *) (newseg + 1);
++            newseg->lastc = newseg->c + MSX.Nobjects[SPECIES] + 1;
++            newseg->prev = NULL;
++            newseg->next = last;
++            if (last) last->prev = newseg;
++            else first = newseg;
++            last = newseg;
++        }
++
++        // ... switch the pipe or tank to its copied segments
++        if (first)
++        {
++            MSX.FirstSeg[k] = first;
++            MSX.LastSeg[k] = last;
++        }
++    }
++
++// --- the old pool's free segments are not needed any more
++
++    MSX.FreeSeg = NULL;
++    pool = MSX.QualPool;
++    MSX.QualPool = SparePool;
++    SparePool = pool;
++}
++
+ //=============================================================================
+ 
+ void MSXqual_removeSeg(Pseg seg)

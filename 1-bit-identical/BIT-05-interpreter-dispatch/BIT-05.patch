@@ -1,0 +1,1360 @@
+BIT-05: Fewer, cheaper interpreter dispatches
+
+After caching, most of the time is the interpreter's dispatch, one per
+token. Merge a number or variable operand into the operator that uses it,
+evaluate each set of expressions as one program, jump directly from one
+operation to the next, and rewrite expressions into equivalent forms that
+need fewer operations and give the same bits.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-04:
+    git apply --whitespace=nowarn BIT-05.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/mathexpr.c b/src/solver/mathexpr.c
+index a5fbc06..e3ae1e5 100644
+--- a/src/solver/mathexpr.c
++++ b/src/solver/mathexpr.c
+@@ -41,6 +41,18 @@
+ **	27 = log10
+ **  28 = step (x<=0 ? 0 : 1)
+ **	31 = ^
++**
++**   Codes used only in expressions processed by mathexpr_fuse, for a
++**   number (5x) or a variable (4x) that is the second operand of
++**	41, 51 = +
++**	42, 52 = - (subtraction)
++**	43, 53 = *
++**	44, 54 = /
++**	45, 55 = ^
++**   and in programs made by mathexpr_join, to store the value of an
++**   expression as a variable's value
++**  60 = store (a NaN value as 0)
++**  61 = store (as is)
+ ******************************************************************************/
+ #define _CRT_SECURE_NO_WARNINGS
+ 
+@@ -49,6 +61,7 @@
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <math.h>
++#include <setjmp.h>
+ 
+ #include "mathexpr.h"
+ 
+@@ -56,18 +69,28 @@
+ #define FAST_STACK_SIZE 64        // stack size used for well formed expressions
+ 
+ // --- keeps the compiler from inlining the general purpose evaluator (and
+-//     its large stack array) into the fast one, and has the fast one
+-//     inlined into each of its callers, so that each gets a version of
+-//     it specialized for the way it looks up variables
++//     its large stack array) into the fast one
+ #if defined(_MSC_VER)
+   #define NOINLINE __declspec(noinline)
+-  #define FORCEINLINE __forceinline
+ #elif defined(__GNUC__)
+   #define NOINLINE __attribute__((noinline))
+-  #define FORCEINLINE __inline__ __attribute__((always_inline))
+ #else
+   #define NOINLINE
+-  #define FORCEINLINE
++#endif
++
++// --- the fast evaluator jumps from the code of one operation straight
++//     to that of the next where the compiler supports it (GNU C's labels
++//     as values, also in clang), which saves time over a switch statement
++//     in a loop; OP marks the code of an operation and NEXT ends it (the
++//     node after the last one of an expression has code 0, which ends
++//     the evaluation)
++#if defined(__GNUC__) && !defined(MATHEXPR_NO_LABELS_AS_VALUES)
++  #define THREADED_CODE
++  #define OP(label, code)  label:
++  #define NEXT  node++; goto *dispatch[node->opcode]
++#else
++  #define OP(label, code)  case code:
++  #define NEXT  break
+ #endif
+ 
+ //***************************************************                         
+@@ -128,10 +151,12 @@ static ExprTree* getTree(void);
+ static int        countTree(ExprTree*);
+ static void       traverseTree(ExprTree*, ExprNode**);
+ static int        getMaxDepth(MathExpr*);
++static MathExpr*  newExpr(int);
++static void       setCount(MathExpr*, int);
+ static NOINLINE double evalGeneric(MathExpr*, double (*getVal) (int),
+                                    const double*, int);
+-static FORCEINLINE double evaluate(MathExpr*, double (*getVal) (int),
+-                                   const double*, int);
++static double     evaluate(MathExpr*, double (*getVal) (int),
++                                   double*, int);
+ static void       deleteTree(ExprTree*);
+ 
+ // Callback functions
+@@ -533,6 +558,34 @@ void traverseTree(ExprTree* tree, ExprNode** node)
+ 
+ //=============================================================================
+ 
++MathExpr* newExpr(int count)
++// Allocates an expression of count nodes (the nodes follow the MathExpr
++// header in the same memory block, with one more node with code 0 after
++// the last one, which ends the evaluation of the expression)
++{
++    MathExpr* expr;
++    expr = (MathExpr*)malloc(sizeof(MathExpr) + (count + 1) * sizeof(ExprNode));
++    if (expr == NULL) return NULL;
++    expr->node = (ExprNode*)(expr + 1);
++    expr->maxDepth = -1;
++    setCount(expr, count);
++    return expr;
++}
++
++//=============================================================================
++
++void setCount(MathExpr* expr, int count)
++// Sets the number of nodes of an expression (which can only shrink once
++// the expression has been allocated) and marks the end of its nodes
++{
++    expr->count = count;
++    expr->node[count].opcode = 0;
++    expr->node[count].ivar = 0;
++    expr->node[count].fvalue = 0.0;
++}
++
++//=============================================================================
++
+ int getMaxDepth(MathExpr* expr)
+ // Finds the largest depth that the evaluation stack reaches for an
+ // expression, or -1 if the expression is not well formed (i.e., an
+@@ -584,7 +637,7 @@ void deleteTree(ExprTree* tree)
+ 
+ double mathexpr_eval(MathExpr* expr, double (*getVariableValue) (int))
+ //  Evaluates an expression, getting the value of the variable with
+-//  index i from getVariableValue(i)
++//  index i from getVariableValue(i) (codes 41-61 must not be used)
+ {
+     return evaluate(expr, getVariableValue, NULL, 1);
+ }
+@@ -595,7 +648,7 @@ double mathexpr_evalVector(MathExpr* expr, const double* values)
+ //  Evaluates an expression whose variable with index i has the value
+ //  values[i]
+ {
+-    return evaluate(expr, NULL, values, 1);
++    return evaluate(expr, NULL, (double*)values, 1);
+ }
+ 
+ //=============================================================================
+@@ -605,23 +658,52 @@ double mathexpr_evalPart(MathExpr* expr, const double* values)
+ //  mathexpr_evalVector does, except that a NaN result is kept, as it
+ //  would be within the whole expression)
+ {
+-    return evaluate(expr, NULL, values, 0);
++    return evaluate(expr, NULL, (double*)values, 0);
++}
++
++//=============================================================================
++
++void mathexpr_run(MathExpr* prog, double* values)
++//  Runs a program made by mathexpr_join
++{
++    evaluate(prog, NULL, values, 0);
+ }
+ 
+ //=============================================================================
+ 
+ double evaluate(MathExpr* expr, double (*getVariableValue) (int),
+-                const double* values, int nanToZero)
++                double* values, int nanToZero)
+ //  Mathematical expression evaluation using a stack (variable values come
+ //  from the values array if it is not NULL or else from getVariableValue;
+-//  a NaN result is replaced by 0 if nanToZero is nonzero)
++//  a NaN result is replaced by 0 if nanToZero is nonzero; values are only
++//  written to by the store codes of programs made by mathexpr_join)
+ {
++#ifdef THREADED_CODE
++    // --- address of the code of each operation code
++    static const void* const dispatch[62] = {
++        &&op_end,  &&op_none, &&op_none, &&op_add,  &&op_sub,     // 0-4
++        &&op_mul,  &&op_div,  &&op_num,  &&op_var,  &&op_neg,     // 5-9
++        &&op_cos,  &&op_sin,  &&op_tan,  &&op_cot,  &&op_abs,     // 10-14
++        &&op_sgn,  &&op_sqrt, &&op_log,  &&op_exp,  &&op_asin,    // 15-19
++        &&op_acos, &&op_atan, &&op_acot, &&op_sinh, &&op_cosh,    // 20-24
++        &&op_tanh, &&op_coth, &&op_log10, &&op_step, &&op_none,   // 25-29
++        &&op_none, &&op_pow,  &&op_none, &&op_none, &&op_none,    // 30-34
++        &&op_none, &&op_none, &&op_none, &&op_none, &&op_none,    // 35-39
++        &&op_none, &&op_addv, &&op_subv, &&op_mulv, &&op_divv,    // 40-44
++        &&op_powv, &&op_none, &&op_none, &&op_none, &&op_none,    // 45-49
++        &&op_none, &&op_addn, &&op_subn, &&op_muln, &&op_divn,    // 50-54
++        &&op_pown, &&op_none, &&op_none, &&op_none, &&op_none,    // 55-59
++        &&op_store, &&op_storeraw };                              // 60-61
++#endif
++
+     // --- Note: the stack array must be declared locally and not globally
+     //     since this function can be called recursively.
+ 
+     double stack[FAST_STACK_SIZE];
+     ExprNode* node;
++#ifndef THREADED_CODE
+     ExprNode* end;
++#endif
+     double top, r1;
+     int sp;
+ 
+@@ -639,87 +721,136 @@ double evaluate(MathExpr* expr, double (*getVariableValue) (int),
+     top = 0.0;
+     sp = 0;
+     node = expr->node;
++
++#ifdef THREADED_CODE
++    goto *dispatch[node->opcode];
++#else
+     end = node + expr->count;
+     for (; node < end; node++)
+     {
+         switch (node->opcode)
+         {
+-        case 3:  top = stack[sp--] + top;  break;
+-        case 4:  top = stack[sp--] - top;  break;
+-        case 5:  top = stack[sp--] * top;  break;
+-        case 6:  top = stack[sp--] / top;  break;
++#endif
++        OP(op_add, 3)  top = stack[sp--] + top;  NEXT;
++        OP(op_sub, 4)  top = stack[sp--] - top;  NEXT;
++        OP(op_mul, 5)  top = stack[sp--] * top;  NEXT;
++        OP(op_div, 6)  top = stack[sp--] / top;  NEXT;
+ 
+-        case 7:
++        OP(op_num, 7)
+             stack[++sp] = top;
+             top = node->fvalue;
+-            break;
++            NEXT;
+ 
+-        case 8:
++        OP(op_var, 8)
+             stack[++sp] = top;
+             if (values != NULL)
+                 top = values[node->ivar];
+             else if (getVariableValue != NULL)
+                 top = getVariableValue(node->ivar);
+             else top = 0.0;
+-            break;
+-
+-        case 9:  top = -top;       break;
+-        case 10: top = cos(top);   break;
+-        case 11: top = sin(top);   break;
+-        case 12: top = tan(top);   break;
+-        case 13: top = 1.0 / tan(top);  break;
+-        case 14: top = fabs(top);  break;
+-
+-        case 15:
++            NEXT;
++
++        OP(op_addv, 41)  top = top + values[node->ivar];  NEXT;
++        OP(op_subv, 42)  top = top - values[node->ivar];  NEXT;
++        OP(op_mulv, 43)  top = top * values[node->ivar];  NEXT;
++        OP(op_divv, 44)  top = top / values[node->ivar];  NEXT;
++        OP(op_powv, 45)
++            r1 = values[node->ivar];
++            if (top <= 0.0) top = 0.0;
++            else top = pow(top, r1);
++            NEXT;
++
++        OP(op_addn, 51)  top = top + node->fvalue;  NEXT;
++        OP(op_subn, 52)  top = top - node->fvalue;  NEXT;
++        OP(op_muln, 53)  top = top * node->fvalue;  NEXT;
++        OP(op_divn, 54)  top = top / node->fvalue;  NEXT;
++        OP(op_pown, 55)
++            r1 = node->fvalue;
++            if (top <= 0.0) top = 0.0;
++            else top = pow(top, r1);
++            NEXT;
++
++        OP(op_store, 60)
++            if (top != top) values[node->ivar] = 0.0;
++            else values[node->ivar] = top;
++            sp = 0;
++            NEXT;
++
++        OP(op_storeraw, 61)
++            values[node->ivar] = top;
++            sp = 0;
++            NEXT;
++
++        OP(op_neg, 9)   top = -top;       NEXT;
++        OP(op_cos, 10)  top = cos(top);   NEXT;
++        OP(op_sin, 11)  top = sin(top);   NEXT;
++        OP(op_tan, 12)  top = tan(top);   NEXT;
++        OP(op_cot, 13)  top = 1.0 / tan(top);  NEXT;
++        OP(op_abs, 14)  top = fabs(top);  NEXT;
++
++        OP(op_sgn, 15)
+             if (top < 0.0) top = -1.0;
+             else if (top > 0.0) top = 1.0;
+             else top = 0.0;
+-            break;
++            NEXT;
+ 
+-        case 16: top = sqrt(top);  break;
+-        case 17: top = log(top);   break;
+-        case 18: top = exp(top);   break;
+-        case 19: top = asin(top);  break;
+-        case 20: top = acos(top);  break;
+-        case 21: top = atan(top);  break;
+-        case 22: top = 1.57079632679489661923 - atan(top);  break;
++        OP(op_sqrt, 16) top = sqrt(top);  NEXT;
++        OP(op_log, 17)  top = log(top);   NEXT;
++        OP(op_exp, 18)  top = exp(top);   NEXT;
++        OP(op_asin, 19) top = asin(top);  NEXT;
++        OP(op_acos, 20) top = acos(top);  NEXT;
++        OP(op_atan, 21) top = atan(top);  NEXT;
++        OP(op_acot, 22) top = 1.57079632679489661923 - atan(top);  NEXT;
+ 
+-        case 23:
++        OP(op_sinh, 23)
+             r1 = top;
+             top = (exp(r1) - exp(-r1)) / 2.0;
+-            break;
++            NEXT;
+ 
+-        case 24:
++        OP(op_cosh, 24)
+             r1 = top;
+             top = (exp(r1) + exp(-r1)) / 2.0;
+-            break;
++            NEXT;
+ 
+-        case 25:
++        OP(op_tanh, 25)
+             r1 = top;
+             top = (exp(r1) - exp(-r1)) / (exp(r1) + exp(-r1));
+-            break;
++            NEXT;
+ 
+-        case 26:
++        OP(op_coth, 26)
+             r1 = top;
+             top = (exp(r1) + exp(-r1)) / (exp(r1) - exp(-r1));
+-            break;
++            NEXT;
+ 
+-        case 27: top = log10(top);  break;
++        OP(op_log10, 27) top = log10(top);  NEXT;
+ 
+-        case 28:
++        OP(op_step, 28)
+             if (top <= 0.0) top = 0.0;
+             else            top = 1.0;
+-            break;
++            NEXT;
+ 
+-        case 31:
++        OP(op_pow, 31)
+             r1 = top;
+             top = stack[sp--];
+             if (top <= 0.0) top = 0.0;
+             else top = pow(top, r1);
++            NEXT;
++
++#ifdef THREADED_CODE
++        op_none:
++            NEXT;
++        op_end:
++            goto done;
++#else
++        default:
+             break;
+         }
+     }
++#endif
+ 
++#ifdef THREADED_CODE
++done:
++#endif
+     // Set result to 0 if it is NaN due to an illegal math op
+     if (nanToZero && top != top) top = 0.0;
+     return top;
+@@ -727,6 +858,116 @@ double evaluate(MathExpr* expr, double (*getVariableValue) (int),
+ 
+ //=============================================================================
+ 
++void mathexpr_fuse(MathExpr* expr)
++/*
++**  Purpose:
++**    merges each number or variable that is the second operand of an
++**    arithmetic operator or of ^ into the operator (which then takes it
++**    straight from the expression rather than from the evaluation stack).
++**
++**  Input:
++**    expr = a tokenized expression (changed in place).
++**
++**  Note:
++**    the operations carried out stay the same; an expression processed
++**    this way can only be evaluated by mathexpr_evalVector or by
++**    mathexpr_evalPart, and can no longer be split by mathexpr_split.
++*/
++{
++    int i, j = 0, op;
++    if (expr == NULL || expr->maxDepth < 0 ||
++        expr->maxDepth >= FAST_STACK_SIZE) return;
++    for (i = 0; i < expr->count; i++)
++    {
++        expr->node[j] = expr->node[i];
++        if ((expr->node[i].opcode == 7 || expr->node[i].opcode == 8) &&
++            i + 1 < expr->count)
++        {
++            op = expr->node[i+1].opcode;
++            if (op >= 3 && op <= 6) op = op - 2;
++            else if (op == 31) op = 5;
++            else op = 0;
++            if (op > 0)
++            {
++                if (expr->node[i].opcode == 8) expr->node[j].opcode = 40 + op;
++                else                           expr->node[j].opcode = 50 + op;
++                i++;
++            }
++        }
++        j++;
++    }
++    setCount(expr, j);
++}
++
++//=============================================================================
++
++MathExpr* mathexpr_join(int n, MathExpr** exprs, const int* dest,
++                        const char* raw)
++/*
++**  Purpose:
++**    makes a program that evaluates a list of expressions in turn and
++**    stores the value of each as the value of a variable.
++**
++**  Input:
++**    n = number of expressions
++**    exprs = the expressions (a NULL one has the value 0)
++**    dest = index of the variable that receives each expression's value
++**    raw = 0 if an expression's value is taken as mathexpr_evalVector
++**          returns it (a NaN as 0), 1 if as mathexpr_evalPart does.
++**
++**  Returns:
++**    the program, to be run by mathexpr_run (NULL if out of memory or
++**    if one of the expressions is not suited to it).
++**
++**  Note:
++**    each expression is evaluated by the same operations as when it is
++**    evaluated on its own, so the values stored are the same.
++*/
++{
++    int i, count = 0, maxDepth = 1;
++    MathExpr* prog;
++    ExprNode* node;
++
++    for (i = 0; i < n; i++)
++    {
++        if (exprs[i] == NULL)
++        {
++            count += 2;
++            continue;
++        }
++        if (exprs[i]->maxDepth < 0 || exprs[i]->maxDepth >= FAST_STACK_SIZE)
++            return NULL;
++        if (exprs[i]->maxDepth > maxDepth) maxDepth = exprs[i]->maxDepth;
++        count += exprs[i]->count + 1;
++    }
++    prog = newExpr(count);
++    if (prog == NULL) return NULL;
++    prog->maxDepth = maxDepth;
++    node = prog->node;
++    for (i = 0; i < n; i++)
++    {
++        if (exprs[i] == NULL)
++        {
++            node->opcode = 7;
++            node->ivar = -1;
++            node->fvalue = 0.0;
++            node++;
++        }
++        else
++        {
++            memcpy(node, exprs[i]->node, exprs[i]->count * sizeof(ExprNode));
++            node += exprs[i]->count;
++        }
++        node->opcode = raw[i] ? 61 : 60;
++        node->ivar = dest[i];
++        node->fvalue = 0.0;
++        node++;
++    }
++    return prog;
++}
++
++//=============================================================================
++
+ double evalGeneric(MathExpr* expr, double (*getVariableValue) (int),
+                    const double* values, int nanToZero)
+ //  Mathematical expression evaluation using a stack (general case)
+@@ -951,7 +1192,7 @@ MathExpr* mathexpr_copy(MathExpr* expr)
+     MathExpr* copy;
+     size_t size;
+     if (expr == NULL) return NULL;
+-    size = sizeof(MathExpr) + expr->count * sizeof(ExprNode);
++    size = sizeof(MathExpr) + (expr->count + 1) * sizeof(ExprNode);
+     copy = (MathExpr*)malloc(size);
+     if (copy == NULL) return NULL;
+     memcpy(copy, expr, size);
+@@ -1056,16 +1297,13 @@ int mathexpr_split(MathExpr* expr, const char* isFixed, int firstVar,
+             expr->node[j++] = expr->node[i++];
+             continue;
+         }
+-        parts[nparts] = (MathExpr*)malloc(sizeof(MathExpr) +
+-                                          (r - i + 1) * sizeof(ExprNode));
++        parts[nparts] = newExpr(r - i + 1);
+         if (parts[nparts] == NULL)
+         {
+             while (nparts > 0) free(parts[--nparts]);
+             nparts = -1;
+             goto done;
+         }
+-        parts[nparts]->count = r - i + 1;
+-        parts[nparts]->node = (ExprNode*)(parts[nparts] + 1);
+         memcpy(parts[nparts]->node, &expr->node[i],
+                (r - i + 1) * sizeof(ExprNode));
+         parts[nparts]->maxDepth = getMaxDepth(parts[nparts]);
+@@ -1076,7 +1314,7 @@ int mathexpr_split(MathExpr* expr, const char* isFixed, int firstVar,
+         nparts++;
+         i = r + 1;
+     }
+-    expr->count = j;
++    setCount(expr, j);
+     expr->maxDepth = getMaxDepth(expr);
+ 
+ done:
+@@ -1087,6 +1325,346 @@ done:
+     return nparts;
+ }
+ 
++//=============================================================================
++//  Rewriting an expression so that it takes fewer operations
++//=============================================================================
++
++//  Node of the tree form of an expression being rewritten (nodes are never
++//  changed once they are in use, so they can be shared by several trees)
++typedef struct SNode SNode;
++struct SNode
++{
++    int    opcode;                // operator code (as in ExprNode)
++    int    ivar;                  // variable index
++    double fvalue;                // numerical value
++    SNode* left;                  // first (or only) operand
++    SNode* right;                 // second operand
++    char   fixed;                 // 1 if the value depends only on numbers
++                                  // and on fixed variables
++    int    cost;                  // operations it takes (0 = not known yet)
++    SNode* pos;                   // cheapest tree with the same value
++    SNode* neg;                   // cheapest tree with the opposite value
++};
++
++typedef struct
++{
++    jmp_buf     fail;             // where to go when out of room
++    SNode*      node;             // room for nodes
++    int         nNodes, maxNodes;
++    const char* isFixed;          // flags of the fixed variables
++} Simplifier;
++
++static SNode* rewrite(Simplifier* s, SNode* t);
++
++//=============================================================================
++
++static int isArith(int opcode)
++//  1 for the operators that rewrite works through: + - * / and negation
++{
++    return (opcode >= 3 && opcode <= 6) || opcode == 9;
++}
++
++//=============================================================================
++
++static int isLeafLike(SNode* t)
++//  1 if t takes a single operation, or none as the second operand of an
++//  operator, once fixed parts are split off and operands are fused
++{
++    return t->fixed || t->opcode == 7 || t->opcode == 8;
++}
++
++//=============================================================================
++
++static SNode* snode(Simplifier* s, int opcode, SNode* left, SNode* right)
++{
++    SNode* t;
++    if (s->nNodes >= s->maxNodes) longjmp(s->fail, 1);
++    t = &s->node[s->nNodes++];
++    memset(t, 0, sizeof(SNode));
++    t->opcode = opcode;
++    t->ivar = -1;
++    t->left = left;
++    t->right = right;
++    t->pos = NULL;
++    t->neg = NULL;
++    if (left) t->fixed = left->fixed && (right == NULL || right->fixed);
++    return t;
++}
++
++//=============================================================================
++
++static SNode* snumber(Simplifier* s, double x)
++{
++    SNode* t = snode(s, 7, NULL, NULL);
++    t->fvalue = x;
++    t->fixed = 1;
++    return t;
++}
++
++//=============================================================================
++
++static int scost(SNode* t)
++//  number of operations taken by a tree
++{
++    int c;
++    if (t->cost > 0) return t->cost;
++    if (isLeafLike(t)) c = 1;
++    else if (t->right == NULL) c = scost(t->left) + 1;
++    else if (isLeafLike(t->right)) c = scost(t->left) + 1;
++    else c = scost(t->left) + scost(t->right) + 1;
++    t->cost = c;
++    return c;
++}
++
++//=============================================================================
++
++static SNode* cheaper(SNode* a, SNode* b)
++//  the tree that takes fewer operations (a if they take as many)
++{
++    return scost(b) < scost(a) ? b : a;
++}
++
++//=============================================================================
++
++static SNode* spos(Simplifier* s, SNode* t);
++
++static SNode* sneg(Simplifier* s, SNode* t)
++//  the cheapest tree found whose value is the opposite of t's, bit for
++//  bit (-(a+b) and -(a-b) are left as they are, since (-a)-b and b-a can
++//  differ from them in the sign of a zero result)
++{
++    SNode *r, *pa, *pb, *na, *nb;
++    if (t->neg) return t->neg;
++    if (t->opcode == 9 && !t->fixed) r = spos(s, t->left);
++    else if (isLeafLike(t) || !isArith(t->opcode)) r = snode(s, 9, t, NULL);
++    else
++    {
++        r = snode(s, 9, spos(s, t), NULL);
++        pa = spos(s, t->left);
++        pb = spos(s, t->right);
++        na = sneg(s, t->left);
++        nb = sneg(s, t->right);
++        switch (t->opcode)
++        {
++        case 5:
++            r = cheaper(r, snode(s, 5, na, pb));
++            r = cheaper(r, snode(s, 5, pb, na));
++            r = cheaper(r, snode(s, 5, pa, nb));
++            r = cheaper(r, snode(s, 5, nb, pa));
++            break;
++        case 6:
++            r = cheaper(r, snode(s, 6, na, pb));
++            r = cheaper(r, snode(s, 6, pa, nb));
++            break;
++        }
++    }
++    r->pos = r;
++    t->neg = r;
++    return r;
++}
++
++//=============================================================================
++
++static SNode* spos(Simplifier* s, SNode* t)
++//  the cheapest tree found whose value is t's, bit for bit: operands of
++//  + and * swapped, and signs moved, so that more operands can be fused
++//  into their operators and more negations become part of fixed parts
++{
++    SNode *r, *pa, *pb, *na, *nb;
++    if (t->pos) return t->pos;
++    if (isLeafLike(t) || !isArith(t->opcode)) r = t;
++    else if (t->opcode == 9) r = sneg(s, t->left);
++    else
++    {
++        pa = spos(s, t->left);
++        pb = spos(s, t->right);
++        na = sneg(s, t->left);
++        nb = sneg(s, t->right);
++        r = snode(s, t->opcode, pa, pb);
++        switch (t->opcode)
++        {
++        case 3:
++            r = cheaper(r, snode(s, 3, pb, pa));
++            r = cheaper(r, snode(s, 4, pa, nb));
++            r = cheaper(r, snode(s, 4, pb, na));
++            break;
++        case 4:
++            r = cheaper(r, snode(s, 3, pa, nb));
++            r = cheaper(r, snode(s, 3, nb, pa));
++            r = cheaper(r, snode(s, 4, nb, na));
++            break;
++        case 5:
++            r = cheaper(r, snode(s, 5, pb, pa));
++            r = cheaper(r, snode(s, 5, na, nb));
++            r = cheaper(r, snode(s, 5, nb, na));
++            break;
++        case 6:
++            r = cheaper(r, snode(s, 6, na, nb));
++            break;
++        }
++    }
++    r->pos = r;
++    t->pos = r;
++    return r;
++}
++
++//=============================================================================
++
++static void rewriteOperands(Simplifier* s, SNode* t)
++//  rewrites the operands of the functions and powers within a tree
++//  of arithmetic operators
++{
++    if (t->left)
++    {
++        if (!t->left->fixed && isArith(t->left->opcode))
++            rewriteOperands(s, t->left);
++        else t->left = rewrite(s, t->left);
++    }
++    if (t->right)
++    {
++        if (!t->right->fixed && isArith(t->right->opcode))
++            rewriteOperands(s, t->right);
++        else t->right = rewrite(s, t->right);
++    }
++}
++
++//=============================================================================
++
++static SNode* rewrite(Simplifier* s, SNode* t)
++//  the cheapest form found of a tree
++{
++    if (t->fixed) return t;
++    if (!isArith(t->opcode))
++    {
++        if (t->left) t->left = rewrite(s, t->left);
++        if (t->right) t->right = rewrite(s, t->right);
++        return t;
++    }
++    rewriteOperands(s, t);
++    return spos(s, t);
++}
++
++//=============================================================================
++
++static SNode* stree(Simplifier* s, MathExpr* expr, SNode** stack)
++//  tree form of an expression
++{
++    int i, sp = 0;
++    ExprNode* e;
++    SNode* t;
++    for (i = 0; i < expr->count; i++)
++    {
++        e = &expr->node[i];
++        switch (e->opcode)
++        {
++        case 7:
++            t = snumber(s, e->fvalue);
++            break;
++        case 8:
++            t = snode(s, 8, NULL, NULL);
++            t->ivar = e->ivar;
++            t->fixed = (s->isFixed[e->ivar] != 0);
++            break;
++        case 3: case 4: case 5: case 6: case 31:
++            sp -= 2;
++            t = snode(s, e->opcode, stack[sp], stack[sp+1]);
++            break;
++        default:
++            sp--;
++            t = snode(s, e->opcode, stack[sp], NULL);
++        }
++        stack[sp++] = t;
++    }
++    return stack[0];
++}
++
++//=============================================================================
++
++static int scount(SNode* t)
++{
++    return 1 + (t->left ? scount(t->left) : 0) + (t->right ? scount(t->right) : 0);
++}
++
++//=============================================================================
++
++static void spostfix(SNode* t, ExprNode** node)
++{
++    if (t->left) spostfix(t->left, node);
++    if (t->right) spostfix(t->right, node);
++    (*node)->opcode = t->opcode;
++    (*node)->ivar = t->ivar;
++    (*node)->fvalue = t->fvalue;
++    (*node)++;
++}
++
++//=============================================================================
++
++MathExpr* mathexpr_simplify(MathExpr* expr, const char* isFixed)
++/*
++**  Purpose:
++**    rewrites an expression so that it takes fewer operations to evaluate
++**    once its parts with fixed values are split off (see mathexpr_split)
++**    and its numbers and variables are fused into operators (see
++**    mathexpr_fuse), keeping its value bit for bit: the operands of + and
++**    * are swapped and signs moved (a+(-b) = a-b, (-a)*b = -(a*b), ...)
++**    so that more numbers and variables are second operands and more
++**    negations become part of fixed parts.
++**
++**  Input:
++**    expr = a tokenized expression (not fused)
++**    isFixed = flags of the variables whose values are fixed.
++**
++**  Returns:
++**    the rewritten expression, or NULL if no cheaper form was found (or
++**    out of memory).
++*/
++{
++    Simplifier s;
++    SNode** stack = NULL;
++    SNode *orig, *t;
++    MathExpr* result = NULL;
++    ExprNode* node;
++    int i, n;
++
++    if (expr == NULL || expr->maxDepth < 1 ||
++        expr->maxDepth >= FAST_STACK_SIZE) return NULL;
++    for (i = 0; i < expr->count; i++)
++    {
++        if (expr->node[i].opcode > 31) return NULL;
++    }
++    n = expr->count;
++    memset(&s, 0, sizeof(Simplifier));
++    s.isFixed = isFixed;
++    s.maxNodes = 16 * n + 64;
++    s.node = (SNode*)malloc(s.maxNodes * sizeof(SNode));
++    stack = (SNode**)malloc(n * sizeof(SNode*));
++    if (s.node == NULL || stack == NULL) ;
++    else if (setjmp(s.fail) == 0)
++    {
++        orig = stree(&s, expr, stack);
++        t = rewrite(&s, stree(&s, expr, stack));
++        if (scost(t) < scost(orig))
++        {
++            n = scount(t);
++            result = newExpr(n);
++            if (result)
++            {
++                node = result->node;
++                spostfix(t, &node);
++                result->maxDepth = getMaxDepth(result);
++                if (result->maxDepth < 0 || result->maxDepth >= FAST_STACK_SIZE)
++                {
++                    free(result);
++                    result = NULL;
++                }
++            }
++        }
++    }
++    free(s.node);
++    free(stack);
++    return result;
++}
++
+ //=============================================================================
+ 
+ MathExpr* mathexpr_create(char* formula, int (*getVar) (char*))
+@@ -1109,14 +1687,9 @@ MathExpr* mathexpr_create(char* formula, int (*getVar) (char*))
+         // --- store the tree's nodes in postfix order in an array that
+         //     follows the MathExpr header in a single memory block
+         n = countTree(tree);
+-        if (n > 0)
+-        {
+-            result = (MathExpr*)malloc(sizeof(MathExpr) + n * sizeof(ExprNode));
+-        }
++        if (n > 0) result = newExpr(n);
+         if (result)
+         {
+-            result->count = n;
+-            result->node = (ExprNode*)(result + 1);
+             node = result->node;
+             traverseTree(tree, &node);
+             result->maxDepth = getMaxDepth(result);
+diff --git a/src/solver/mathexpr.h b/src/solver/mathexpr.h
+index 7d704a9..676b393 100644
+--- a/src/solver/mathexpr.h
++++ b/src/solver/mathexpr.h
+@@ -22,7 +22,8 @@ struct ExprNode
+ typedef struct ExprNode ExprNode;
+ 
+ //  Tokenized math expression: its nodes in postfix order, stored
+-//  contiguously in the same memory block as this header
++//  contiguously in the same memory block as this header (followed by
++//  a node with operator code 0)
+ struct MathExpr
+ {
+     int       count;              // number of nodes
+@@ -53,6 +54,20 @@ int mathexpr_split(MathExpr* expr, const char* isFixed, int firstVar,
+ //  Evaluates a part of an expression split off by mathexpr_split
+ double mathexpr_evalPart(MathExpr* expr, const double* values);
+ 
++//  Rewrites an expression so that it takes fewer operations once the
++//  parts with fixed values are split off
++MathExpr* mathexpr_simplify(MathExpr* expr, const char* isFixed);
++
++//  Merges numbers & variables into the operators that use them
++void mathexpr_fuse(MathExpr* expr);
++
++//  Makes a program that evaluates several expressions, storing their values
++MathExpr* mathexpr_join(int n, MathExpr** exprs, const int* dest,
++                        const char* raw);
++
++//  Runs a program made by mathexpr_join
++void mathexpr_run(MathExpr* prog, double* values);
++
+ //  Deletes a tokenized math expression
+ void  mathexpr_delete(MathExpr* expr);
+ 
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index 4e057d3..1e7b43c 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -80,7 +80,9 @@ static ChemState *Chem;                // State of the calling thread
+ //  species computed by formulas have positions of their own (FormBase +
+ //  species index). The terms and formula species that a set of expressions
+ //  needs are evaluated once each, in order of dependency, before the
+-//  expressions themselves.
++//  expressions themselves, whose values are placed at OutBase + 1, ... .
++//  All of this is done by one program for each set of expressions (see
++//  mathexpr_join).
+ typedef struct
+ {
+     MathExpr **slotExpr;               // expression of each term & formula
+@@ -91,11 +93,17 @@ typedef struct
+     int        nEquilDeps;
+     int       *formulaDeps;            // ... needed by formulas
+     int        nFormulaDeps;
++    MathExpr  *rateProg;               // program computing rates (with the
++                                       // terms & formulas they need)
++    MathExpr  *equilProg;              // ... equilibrium expressions
++    MathExpr  *formulaProg;            // ... formulas
+ }  ChemExprs;
+ 
+ static int       NumValues;            // Size of a vector of variable values
+ static int       HydBase;              // Offset of hydraulic variables in it
+ static int       FormBase;             // Offset of formula species values
++static int       OutBase;              // Offset of values of rate & equil.
++                                       // expressions (OutBase + 1, ...)
+ static ChemExprs PipeExprs;            // Compiled pipe chemistry expressions
+ static ChemExprs TankExprs;            // Compiled tank chemistry expressions
+ 
+@@ -117,6 +125,7 @@ static int       InvBase;              // Position of the first part's value
+ static int       NumInvInputs;         // Number of inputs (parameters,
+                                        // constants & hydraulic variables)
+ static int       InvStride;            // Size of a pipe's cache entry
++static MathExpr *InvProg;              // Program computing the invariants
+ static double   *InvCache;             // Cache entry of each link
+ static char     *InvValid;             // 1 if a link's cache entry is filled
+ 
+@@ -153,11 +162,18 @@ static int    findDeps(ChemExprs *ce, MathExpr *expr, int *list, int *n,
+                        char *mark);
+ static int    addDep(ChemExprs *ce, int i, int *list, int *n, char *mark);
+ static void   freeExprs(ChemExprs *ce);
++static void   fuseExprs(ChemExprs *ce);
++static int    joinExprs(ChemExprs *ce, int forPipes);
++static MathExpr* joinGroup(ChemExprs *ce, int *deps, int nDeps,
++                           int *species, int n);
++static void   runGroup(ChemExprs *ce, MathExpr *prog, int *deps, int nDeps,
++                       int *species, int n, double *val);
+ static void   evalDeps(MathExpr **slotExpr, int *list, int n, double *val);
+ static void   setPipeValues(ChemState *cs, int k);
+ static void   setTankValues(ChemState *cs);
+ static int    splitInvariants(ChemExprs *ce);
+ static int    filterDeps(int *list, int n, char *isFixed);
++static void   simplifyExpr(MathExpr **expr, char *isFixed);
+ static void   setPipeInvariants(ChemState *cs, int k);
+ static void   getPipeDcDt(double t, double y[], int n, double deriv[],
+                           void *data);
+@@ -214,6 +230,7 @@ int  MSXchem_open()
+     InvDeps = NULL;
+     NumInvParts = 0;
+     InvParts = NULL;
++    InvProg = NULL;
+     InvCache = NULL;
+     InvValid = NULL;
+ 
+@@ -292,6 +309,15 @@ int  MSXchem_open()
+         if ( errcode ) return errcode;
+         errcode = splitInvariants(&PipeExprs);
+         if ( errcode ) return errcode;
++        fuseExprs(&PipeExprs);
++        fuseExprs(&TankExprs);
++        for (m = 0; m < NumInvParts; m++) mathexpr_fuse(InvParts[m]);
++        OutBase = NumValues;
++        NumValues += NumSpecies + 1;
++        errcode = joinExprs(&PipeExprs, 1);
++        if ( errcode ) return errcode;
++        errcode = joinExprs(&TankExprs, 0);
++        if ( errcode ) return errcode;
+     }
+ 
+ // --- each thread's own chemistry state
+@@ -382,6 +408,7 @@ void MSXchem_close()
+         for (m = 0; m < NumInvParts; m++) mathexpr_delete(InvParts[m]);
+     }
+     FREE(InvParts);
++    FREE(InvProg);
+     FREE(InvDeps);
+     FREE(InvCache);
+     FREE(InvValid);
+@@ -1082,8 +1109,8 @@ void evalPipeFormulas(ChemState *cs, double *c)
+     	return;
+     }
+ 
+-    evalDeps(PipeExprs.slotExpr, PipeExprs.formulaDeps,
+-             PipeExprs.nFormulaDeps, cs->ChemC1);
++    runGroup(&PipeExprs, PipeExprs.formulaProg, PipeExprs.formulaDeps,
++             PipeExprs.nFormulaDeps, NULL, 0, cs->ChemC1);
+     for (m=1; m<=NumSpecies; m++)
+     {
+         if ( MSX.Species[m].pipeExprType == FORMULA )
+@@ -1129,8 +1156,8 @@ void evalTankFormulas(ChemState *cs, double *c)
+     	return;
+     }
+ 
+-    evalDeps(TankExprs.slotExpr, TankExprs.formulaDeps,
+-             TankExprs.nFormulaDeps, cs->ChemC1);
++    runGroup(&TankExprs, TankExprs.formulaProg, TankExprs.formulaDeps,
++             TankExprs.nFormulaDeps, NULL, 0, cs->ChemC1);
+     for (m=1; m<=NumSpecies; m++)
+     {
+         if ( MSX.Species[m].tankExprType == FORMULA )
+@@ -1197,12 +1224,13 @@ void getPipeDcDt(double t, double y[], int n, double deriv[], void *data)
+ 
+ // --- evaluate each pipe reaction expression
+ 
+-    evalDeps(PipeExprs.slotExpr, PipeExprs.rateDeps, PipeExprs.nRateDeps,
++    runGroup(&PipeExprs, PipeExprs.rateProg, PipeExprs.rateDeps,
++             PipeExprs.nRateDeps, PipeRateSpecies, NumPipeRateSpecies,
+              cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = PipeRateSpecies[i];
+-		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], cs->ChemC1);
++		x = cs->ChemC1[OutBase + i];
+         deriv[i] = validate(x, m, LINK, RATE);                          
+     }
+ }
+@@ -1263,12 +1291,13 @@ void getTankDcDt(double t, double y[], int n, double deriv[], void *data)
+ 
+ // --- evaluate each tank reaction expression
+ 
+-    evalDeps(TankExprs.slotExpr, TankExprs.rateDeps, TankExprs.nRateDeps,
++    runGroup(&TankExprs, TankExprs.rateProg, TankExprs.rateDeps,
++             TankExprs.nRateDeps, TankRateSpecies, NumTankRateSpecies,
+              cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = TankRateSpecies[i];
+-		x = mathexpr_evalVector(TankExprs.speciesExpr[m], cs->ChemC1);
++		x = cs->ChemC1[OutBase + i];
+         deriv[i] = validate(x, m, TANK, RATE);                          
+     }
+ }
+@@ -1318,12 +1347,13 @@ void getPipeEquil(double t, double y[], int n, double f[], void *data)
+ 
+ // --- evaluate each pipe equilibrium expression
+ 
+-    evalDeps(PipeExprs.slotExpr, PipeExprs.equilDeps, PipeExprs.nEquilDeps,
++    runGroup(&PipeExprs, PipeExprs.equilProg, PipeExprs.equilDeps,
++             PipeExprs.nEquilDeps, PipeEquilSpecies, NumPipeEquilSpecies,
+              cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = PipeEquilSpecies[i];
+-		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], cs->ChemC1);
++		x = cs->ChemC1[OutBase + i];
+ 		f[i] = validate(x, m, LINK, EQUIL);                             
+     }
+ }
+@@ -1373,12 +1403,13 @@ void getTankEquil(double t, double y[], int n, double f[], void *data)
+ 
+ // --- evaluate each tank equilibrium expression
+ 
+-    evalDeps(TankExprs.slotExpr, TankExprs.equilDeps, TankExprs.nEquilDeps,
++    runGroup(&TankExprs, TankExprs.equilProg, TankExprs.equilDeps,
++             TankExprs.nEquilDeps, TankEquilSpecies, NumTankEquilSpecies,
+              cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = TankEquilSpecies[i];
+-		x = mathexpr_evalVector(TankExprs.speciesExpr[m], cs->ChemC1);
++		x = cs->ChemC1[OutBase + i];
+ 		f[i] = validate(x, m, TANK, EQUIL);                             
+     }
+ }
+@@ -1607,6 +1638,9 @@ void freeExprs(ChemExprs *ce)
+     {
+         for (i = 1; i <= NumSpecies; i++) mathexpr_delete(ce->speciesExpr[i]);
+     }
++    FREE(ce->rateProg);
++    FREE(ce->equilProg);
++    FREE(ce->formulaProg);
+     FREE(ce->slotExpr);
+     FREE(ce->speciesExpr);
+     FREE(ce->rateDeps);
+@@ -1617,6 +1651,172 @@ void freeExprs(ChemExprs *ce)
+ 
+ //=============================================================================
+ 
++void fuseExprs(ChemExprs *ce)
++/*
++**  Purpose:
++**    merges the numbers & variables of compiled expressions into the
++**    operators that use them (see mathexpr_fuse).
++*/
++{
++    int i;
++    for (i = LastIndex[SPECIES] + 1; i <= LastIndex[TERM]; i++)
++        mathexpr_fuse(ce->slotExpr[i]);
++    for (i = 1; i <= NumSpecies; i++) mathexpr_fuse(ce->speciesExpr[i]);
++}
++
++//=============================================================================
++
++int joinExprs(ChemExprs *ce, int forPipes)
++/*
++**  Purpose:
++**    makes the programs that compute each group of compiled expressions
++**    (and, for pipes, their invariants) in one go.
++**
++**  Input:
++**    ce = compiled expressions
++**    forPipes = 1 for pipe chemistry, 0 for tank chemistry.
++**
++**  Returns:
++**    an error code or 0 if no error.
++**
++**  Note:
++**    a group whose program cannot be made is computed one expression
++**    at a time (see runGroup).
++*/
++{
++    int i, n;
++    int *dest;
++    char *raw;
++    MathExpr **exprs;
++
++    if ( forPipes )
++    {
++        ce->rateProg = joinGroup(ce, ce->rateDeps, ce->nRateDeps,
++                                 PipeRateSpecies, NumPipeRateSpecies);
++        ce->equilProg = joinGroup(ce, ce->equilDeps, ce->nEquilDeps,
++                                  PipeEquilSpecies, NumPipeEquilSpecies);
++    }
++    else
++    {
++        ce->rateProg = joinGroup(ce, ce->rateDeps, ce->nRateDeps,
++                                 TankRateSpecies, NumTankRateSpecies);
++        ce->equilProg = joinGroup(ce, ce->equilDeps, ce->nEquilDeps,
++                                  TankEquilSpecies, NumTankEquilSpecies);
++    }
++    ce->formulaProg = joinGroup(ce, ce->formulaDeps, ce->nFormulaDeps,
++                                NULL, 0);
++    if ( !forPipes || NumInvDeps + NumInvParts == 0 ) return 0;
++
++// --- program computing the invariants of a pipe
++
++    n = NumInvDeps + NumInvParts;
++    exprs = (MathExpr **)calloc(n, sizeof(MathExpr *));
++    dest = (int *)calloc(n, sizeof(int));
++    raw = (char *)calloc(n, sizeof(char));
++    if ( exprs && dest && raw )
++    {
++        for (i = 0; i < NumInvDeps; i++)
++        {
++            exprs[i] = ce->slotExpr[InvDeps[i]];
++            dest[i] = InvDeps[i];
++        }
++        for (i = 0; i < NumInvParts; i++)
++        {
++            exprs[NumInvDeps + i] = InvParts[i];
++            dest[NumInvDeps + i] = InvBase + i;
++            raw[NumInvDeps + i] = 1;
++        }
++        InvProg = mathexpr_join(n, exprs, dest, raw);
++    }
++    FREE(exprs);
++    FREE(dest);
++    FREE(raw);
++    return 0;
++}
++
++//=============================================================================
++
++MathExpr* joinGroup(ChemExprs *ce, int *deps, int nDeps, int *species, int n)
++/*
++**  Purpose:
++**    makes the program that computes a group of compiled expressions.
++**
++**  Input:
++**    ce = compiled expressions
++**    deps = positions of the terms & formulas the group needs
++**    nDeps = number of them
++**    species = species whose expressions are in the group (species[1..n])
++**    n = number of species.
++**
++**  Returns:
++**    the program (NULL if it cannot be made).
++*/
++{
++    int i, count = nDeps + n;
++    int *dest;
++    char *raw;
++    MathExpr **exprs;
++    MathExpr *prog = NULL;
++
++    exprs = (MathExpr **)calloc(count + 1, sizeof(MathExpr *));
++    dest = (int *)calloc(count + 1, sizeof(int));
++    raw = (char *)calloc(count + 1, sizeof(char));
++    if ( exprs && dest && raw )
++    {
++        for (i = 0; i < nDeps; i++)
++        {
++            exprs[i] = ce->slotExpr[deps[i]];
++            dest[i] = deps[i];
++        }
++        for (i = 1; i <= n; i++)
++        {
++            exprs[nDeps + i - 1] = ce->speciesExpr[species[i]];
++            dest[nDeps + i - 1] = OutBase + i;
++        }
++        prog = mathexpr_join(count, exprs, dest, raw);
++    }
++    FREE(exprs);
++    FREE(dest);
++    FREE(raw);
++    return prog;
++}
++
++//=============================================================================
++
++void runGroup(ChemExprs *ce, MathExpr *prog, int *deps, int nDeps,
++              int *species, int n, double *val)
++/*
++**  Purpose:
++**    computes a group of compiled expressions: the terms & formulas the
++**    group needs and the expressions of species[1..n], whose values are
++**    placed in val[OutBase + 1..n].
++**
++**  Input:
++**    ce = compiled expressions
++**    prog = the group's program (or NULL)
++**    deps = positions of the terms & formulas the group needs
++**    nDeps = number of them
++**    species = species whose expressions are in the group
++**    n = number of species
++**    val = vector of variable values.
++**
++**  Output:
++**    updated values in val.
++*/
++{
++    int i;
++    if ( prog )
++    {
++        mathexpr_run(prog, val);
++        return;
++    }
++    evalDeps(ce->slotExpr, deps, nDeps, val);
++    for (i = 1; i <= n; i++)
++        val[OutBase + i] = mathexpr_evalVector(ce->speciesExpr[species[i]], val);
++}
++
++//=============================================================================
++
+ void evalDeps(MathExpr **slotExpr, int *list, int n, double *val)
+ /*
+ **  Purpose:
+@@ -1760,6 +1960,24 @@ int splitInvariants(ChemExprs *ce)
+     ce->nEquilDeps = filterDeps(ce->equilDeps, ce->nEquilDeps, isFixed);
+     ce->nFormulaDeps = filterDeps(ce->formulaDeps, ce->nFormulaDeps, isFixed);
+ 
++// --- rewrite the other terms & formulas and the rate & equilibrium
++//     expressions so that they take fewer operations (a formula's
++//     expression is also the species' expression)
++
++    for (j = 0; j < nAll; j++)
++    {
++        if ( isFixed[all[j]] ) continue;
++        simplifyExpr(&ce->slotExpr[all[j]], isFixed);
++        if ( all[j] > FormBase )
++            ce->speciesExpr[all[j] - FormBase] = ce->slotExpr[all[j]];
++    }
++    for (m = 1; m <= NumSpecies; m++)
++    {
++        type = MSX.Species[m].pipeExprType;
++        if ( type == RATE || type == EQUIL )
++            simplifyExpr(&ce->speciesExpr[m], isFixed);
++    }
++
+ // --- split the invariant parts off the other terms & formulas and off
+ //     the rate & equilibrium expressions
+ 
+@@ -1815,6 +2033,26 @@ done:
+ 
+ //=============================================================================
+ 
++void simplifyExpr(MathExpr **expr, char *isFixed)
++/*
++**  Purpose:
++**    replaces a compiled pipe expression by one that takes fewer
++**    operations once its invariant parts are split off, if there is one
++**    (see mathexpr_simplify).
++**
++**  Input:
++**    expr = the expression
++**    isFixed = 1 for the variables that are invariant within a pipe.
++*/
++{
++    MathExpr *e = mathexpr_simplify(*expr, isFixed);
++    if ( e == NULL ) return;
++    mathexpr_delete(*expr);
++    *expr = e;
++}
++
++//=============================================================================
++
+ int filterDeps(int *list, int n, char *isFixed)
+ /*
+ **  Purpose:
+@@ -1866,9 +2104,13 @@ void setPipeInvariants(ChemState *cs, int k)
+             val[InvBase + i] = cache[NumInvDeps + i];
+         return;
+     }
+-    evalDeps(PipeExprs.slotExpr, InvDeps, NumInvDeps, val);
+-    for (i = 0; i < NumInvParts; i++)
+-        val[InvBase + i] = mathexpr_evalPart(InvParts[i], val);
++    if ( InvProg ) mathexpr_run(InvProg, val);
++    else
++    {
++        evalDeps(PipeExprs.slotExpr, InvDeps, NumInvDeps, val);
++        for (i = 0; i < NumInvParts; i++)
++            val[InvBase + i] = mathexpr_evalPart(InvParts[i], val);
++    }
+     for (i = 0; i < NumInvDeps; i++) cache[i] = val[InvDeps[i]];
+     for (i = 0; i < NumInvParts; i++)
+         cache[NumInvDeps + i] = val[InvBase + i];

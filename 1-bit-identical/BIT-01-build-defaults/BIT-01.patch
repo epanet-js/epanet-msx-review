@@ -1,0 +1,63 @@
+BIT-01: Build optimised, with OpenMP on macOS, when following the README
+
+The README's `cmake -B build .` then `cmake --build build --config Release`
+compiles with no optimisation with the Makefile and Ninja generators, which
+ignore --config: about 1.8 times slower. Make Release the default build
+type for single-configuration generators. On macOS, Apple's compiler has no
+OpenMP and CMake does not find Homebrew's keg-only libomp, so the library
+was built without threads; look for libomp where Homebrew installs it.
+Only CMakeLists.txt files change.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02:
+    git apply --whitespace=nowarn BIT-01.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 200a729..741ea9d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -25,6 +25,14 @@ project(
+ # Append local dir to module search path
+ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+ 
++# Single-configuration generators (Makefiles, Ninja) compile with no optimisation
++# when no build type is given, and ignore "cmake --build --config Release";
++# make Release the default for them
++get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
++if(NOT IS_MULTI_CONFIG AND NOT CMAKE_BUILD_TYPE)
++    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
++endif()
++
+ # Sets default install prefix when cmakecache is initialized for first time
+ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
+diff --git a/src/solver/CMakeLists.txt b/src/solver/CMakeLists.txt
+index 8b42b64..5527428 100644
+--- a/src/solver/CMakeLists.txt
++++ b/src/solver/CMakeLists.txt
+@@ -9,6 +9,22 @@
+ 
+ find_package(OpenMP)
+ 
++# Apple's compiler ships without OpenMP, and Homebrew's libomp is not linked into
++# the default search paths, so look for it there before building without threads
++if(APPLE AND NOT OpenMP_C_FOUND)
++    find_program(BREW_EXECUTABLE brew)
++    if(BREW_EXECUTABLE)
++        execute_process(COMMAND ${BREW_EXECUTABLE} --prefix libomp
++            OUTPUT_VARIABLE LIBOMP_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
++    endif()
++    if(LIBOMP_PREFIX AND EXISTS "${LIBOMP_PREFIX}/include/omp.h")
++        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I${LIBOMP_PREFIX}/include")
++        set(OpenMP_C_LIB_NAMES "omp")
++        set(OpenMP_omp_LIBRARY "${LIBOMP_PREFIX}/lib/libomp.dylib")
++        find_package(OpenMP COMPONENTS C)
++    endif()
++endif()
++
+ 
+ set(EPANETMSX_PUBLIC_HEADERS
+     ${CMAKE_CURRENT_SOURCE_DIR}/include/epanetmsx.h

@@ -1,0 +1,91 @@
+BIT-11: Sum dispersed mass per link without locks, in link order
+
+segqual_update() added each link's dispersed mass to one shared total
+inside two `omp critical` sections per link; at 8 threads the main thread
+spent most of the function waiting for the lock. Store each link's mass and
+sum it afterwards in link order. The sum no longer depends on the thread
+schedule, so the dispersion mass balance is the same at any thread count.
+Concentrations are unchanged.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-10:
+    git apply --whitespace=nowarn BIT-11.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxdispersion.c b/src/solver/msxdispersion.c
+index 8daef39..8dc2638 100644
+--- a/src/solver/msxdispersion.c
++++ b/src/solver/msxdispersion.c
+@@ -33,9 +33,15 @@ static double* gam;
+ #pragma omp threadprivate(al, bl, cl, rl, sol, gam)
+ #endif
+ 
++static double* massdisp;                   //mass dispersed into each link through its downstream
++                                           //(2k-1) and upstream (2k) end in segqual_update (shared)
++
+ int dispersion_open()
+ {
+ 	int errcode=0;
++	FREE(massdisp);
++	massdisp = (double*)calloc(2 * MSX.Nobjects[LINK] + 2, sizeof(double));
++	ERRCODE(MEMCHECK(massdisp));
+ 	#ifdef USE_OPENMP
+ 	#pragma omp parallel
+ 	#endif
+@@ -65,6 +71,7 @@ int dispersion_open()
+ int dispersion_close()
+ {
+ 	int errcode = 0;
++	FREE(massdisp);
+ 	#ifdef USE_OPENMP
+ 	#pragma omp parallel
+ 	#endif
+@@ -429,6 +436,8 @@ void   segqual_update(int m, double tstep)
+ 		{
+ 			mass1 = 0;
+ 			mass2 = 0;
++			massdisp[2 * k - 1] = 0.0;
++			massdisp[2 * k] = 0.0;
+ 			ldispersion = MSX.Dispersion.pipeDispersionCoeff[k];
+ 			if (ldispersion <= 0.0)
+ 				continue;
+@@ -473,12 +482,7 @@ void   segqual_update(int m, double tstep)
+ 				massin = 2.0 * ldispersion * tstep * area * area * (MSX.Node[n2].c[m] - MSX.FirstSeg[k]->c[m]) * LperFT3 / MSX.FirstSeg[k]->v;
+ 				
+ 			}
+-			#ifdef USE_OPENMP
+-			#pragma omp critical
+-			#endif
+-			{
+-				dispersedin += massin;
+-			}
++			massdisp[2 * k - 1] = massin;
+ 			source = MSX.Node[n1].sources;
+ 			while (source != NULL)
+ 			{
+@@ -501,14 +505,17 @@ void   segqual_update(int m, double tstep)
+ 				massin = 2.0 * ldispersion * tstep * area * area * (MSX.Node[n1].c[m] - MSX.LastSeg[k]->c[m]) * LperFT3 / MSX.LastSeg[k]->v;
+ 				
+ 			}
+-			#ifdef USE_OPENMP
+-			#pragma omp critical
+-			#endif
+-			{
+-				dispersedin += massin;
+-			}
++			massdisp[2 * k] = massin;
+ 		}
+ 	}
++
++	// --- sum the dispersed mass serially in link order (the same order as a
++	//     single thread), so the result does not depend on the number of threads
++	for (k = 1; k <= MSX.Nobjects[LINK]; k++)
++	{
++		dispersedin += massdisp[2 * k - 1];
++		dispersedin += massdisp[2 * k];
++	}
+ 	MSX.MassBalance.indisperse[m] += dispersedin;
+ 
+ 

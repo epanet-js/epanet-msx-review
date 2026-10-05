@@ -1,0 +1,548 @@
+BIT-12: Factor once, solve into the segments, keep coefficients and segment lists
+
+For each dispersing pipe, species and step, the tridiagonal system was
+factored three times for its three right-hand sides, the responses were
+copied into the segments in three more list walks, the dispersion
+coefficient was recomputed from unchanged hydraulics, and the segment list
+was walked again after the nodal solve. Factor once, back-substitute
+straight into the segments, keep each pipe's coefficient while its
+hydraulics are unchanged, and keep the segment list between passes.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-11:
+    git apply --whitespace=nowarn BIT-12.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxdispersion.c b/src/solver/msxdispersion.c
+index 8dc2638..05f8b0c 100644
+--- a/src/solver/msxdispersion.c
++++ b/src/solver/msxdispersion.c
+@@ -26,22 +26,118 @@ static double* bl;                         //vector helping solve tridaigonal sy
+ static double* cl;                         //vector helping solve tridaigonal system of eqns.
+ static double* rl;                         //vector helping solve tridaigonal system of eqns.
+ static double* sol;                        //vector helping solve tridaigonal system of eqns.
++static double* sold;                       //solution for the downstream unit boundary condition
++static double* solu;                       //solution for the upstream unit boundary condition
+ 
+ static double* gam;
+ 
+ #ifdef USE_OPENMP
+-#pragma omp threadprivate(al, bl, cl, rl, sol, gam)
++#pragma omp threadprivate(al, bl, cl, rl, sol, sold, solu, gam)
+ #endif
+ 
+ static double* massdisp;                   //mass dispersed into each link through its downstream
+                                            //(2k-1) and upstream (2k) end in segqual_update (shared)
+ 
++typedef struct                             //hydraulic part of a link's dispersion coefficient
++{
++	REAL4  q, s, h1, h2;                   //link flow, status and end node heads it was computed for
++	double velocity;                       //flow velocity
++	double reynolds;                       //Reynolds number
++	double ldispersion;                    //longitudinal dispersion coefficient
++} SdispHyd;
++
++static SdispHyd** hydcache;                //for each dispersing species, one per link (shared)
++static int hydcacheN;                      //number of species hydcache was allocated for
++
++static Pseg** linkseg;                     //segments of each link with dispersion, downstream (1)
++                                           //to upstream, as found by dispersion_pipe (shared)
++static int* linksegn;                      //number of segments in linkseg[k]
++static int* linksegcap;                    //capacity of linkseg[k]
++static int linksegN;                       //number of links linkseg was allocated for
++
++static void linkhydraulics(int k, int m, double d0, SdispHyd *hc);
++
++static void tridiag3(int n, double *a, double *b, double *c, double *r, Pseg *seg);
++
++static void freelinkseg()
++{
++	int k;
++	if (linkseg)
++		for (k = 0; k <= linksegN; k++)
++			FREE(linkseg[k]);
++	FREE(linkseg);
++	FREE(linksegn);
++	FREE(linksegcap);
++	linksegN = 0;
++}
++
++static Pseg* growlinkseg(int k, int n)
++// makes room for segments 1..n+1 in linkseg[k]
++{
++	int cap = 2 * linksegcap[k];
++	Pseg* p;
++	if (cap < n + 2)
++		cap = n + 2;
++	if (cap < 32)
++		cap = 32;
++	p = (Pseg*)realloc(linkseg[k], cap * sizeof(Pseg));
++	if (p == NULL)
++	{
++		MSX.OutOfMemory = TRUE;
++		return NULL;
++	}
++	linkseg[k] = p;
++	linksegcap[k] = cap;
++	return p;
++}
++
++static void freehydcache()
++{
++	int m;
++	if (hydcache == NULL)
++		return;
++	for (m = 0; m <= hydcacheN; m++)
++		FREE(hydcache[m]);
++	FREE(hydcache);
++	hydcacheN = 0;
++}
++
+ int dispersion_open()
+ {
+ 	int errcode=0;
++	int m, k;
+ 	FREE(massdisp);
+ 	massdisp = (double*)calloc(2 * MSX.Nobjects[LINK] + 2, sizeof(double));
+ 	ERRCODE(MEMCHECK(massdisp));
++	freelinkseg();
++	linkseg = (Pseg**)calloc(MSX.Nobjects[LINK] + 1, sizeof(Pseg*));
++	linksegn = (int*)calloc(MSX.Nobjects[LINK] + 1, sizeof(int));
++	linksegcap = (int*)calloc(MSX.Nobjects[LINK] + 1, sizeof(int));
++	ERRCODE(MEMCHECK(linkseg));
++	ERRCODE(MEMCHECK(linksegn));
++	ERRCODE(MEMCHECK(linksegcap));
++	linksegN = MSX.Nobjects[LINK];
++
++	// --- cache of the hydraulic part of the dispersion coefficients, for each
++	//     dispersing species; NaN flows mark entries as not yet computed
++	freehydcache();
++	hydcache = (SdispHyd**)calloc(MSX.Nobjects[SPECIES] + 1, sizeof(SdispHyd*));
++	ERRCODE(MEMCHECK(hydcache));
++	if (hydcache)
++	{
++		hydcacheN = MSX.Nobjects[SPECIES];
++		for (m = 1; m <= MSX.Nobjects[SPECIES]; m++)
++		{
++			if (MSX.Dispersion.md[m] > 0 || MSX.Dispersion.ld[m] > 0)
++			{
++				hydcache[m] = (SdispHyd*)calloc(MSX.Nobjects[LINK] + 1, sizeof(SdispHyd));
++				ERRCODE(MEMCHECK(hydcache[m]));
++				if (hydcache[m])
++					for (k = 0; k <= MSX.Nobjects[LINK]; k++)
++						hydcache[m][k].q = (REAL4)NAN;
++			}
++		}
++	}
+ 	#ifdef USE_OPENMP
+ 	#pragma omp parallel
+ 	#endif
+@@ -51,6 +147,8 @@ int dispersion_open()
+ 		cl = (double*)calloc(MSX.MaxSegments + 2, sizeof(double));
+ 		rl = (double*)calloc(MSX.MaxSegments + 2, sizeof(double));
+ 		sol = (double*)calloc(MSX.MaxSegments + 2, sizeof(double));
++		sold = (double*)calloc(MSX.MaxSegments + 2, sizeof(double));
++		solu = (double*)calloc(MSX.MaxSegments + 2, sizeof(double));
+ 		gam = (double*)calloc(MSX.MaxSegments + 2, sizeof(double));
+ 		#ifdef USE_OPENMP
+ 		#pragma omp critical
+@@ -61,6 +159,8 @@ int dispersion_open()
+ 			ERRCODE(MEMCHECK(cl));
+ 			ERRCODE(MEMCHECK(rl));
+ 			ERRCODE(MEMCHECK(sol));
++			ERRCODE(MEMCHECK(sold));
++			ERRCODE(MEMCHECK(solu));
+ 			ERRCODE(MEMCHECK(gam));	
+ 		}
+ 	}
+@@ -72,6 +172,8 @@ int dispersion_close()
+ {
+ 	int errcode = 0;
+ 	FREE(massdisp);
++	freehydcache();
++	freelinkseg();
+ 	#ifdef USE_OPENMP
+ 	#pragma omp parallel
+ 	#endif
+@@ -81,24 +183,96 @@ int dispersion_close()
+ 		FREE(cl);
+ 		FREE(rl);
+ 		FREE(sol);
++		FREE(sold);
++		FREE(solu);
+ 		FREE(gam);
+ 	}
+ 	return errcode;
+ }
+ 
++// Compute the flow velocity, Reynolds number and longitudinal dispersion
++// coefficient of link k for species m (molecular diffusivity d0) from the
++// current hydraulic state, and record that state in hc.
++
++static void linkhydraulics(int k, int m, double d0, SdispHyd *hc)
++{
++	double ldispersion = 0.0;
++	double flowrate = 0.0, velocity = 0.0, area = 0.0;
++	double diam = 0.0;
++	double dh = 0.0, frictionfactor = 0.0;
++	double reynolds = 0, shearvelocity = 0;
++	double elpt = 0.0;
++
++	diam = MSX.Link[k].diam;
++	// Compute Reynolds No.
++	flowrate = (MSX.S[k] <= CLOSED) ? 0.0 : MSX.Q[k];
++	area = PI * diam * diam / 4.0;         // pipe area
++	if (area > 0.0 && MSX.Link[k].len > 0.0 && ABS(flowrate) > 0.0)
++	{
++		velocity = fabs(flowrate) / area;              // flow velocity
++		reynolds = velocity * diam / MSX.Dispersion.viscosity;     // Reynolds number  //#define   VISCOS    1.1E-5     // Kinematic viscosity of water // @ 20 deg C (sq ft/sec)
++		dh = ABS(MSX.H[MSX.Link[k].n1] - MSX.H[MSX.Link[k].n2]);
++		if (dh > 0.00001)
++			frictionfactor = 39.725 * dh * pow(diam, 5) / (MSX.Link[k].len * SQR(flowrate));
++		else
++			frictionfactor = 0.0;
++		shearvelocity = velocity * sqrt(frictionfactor / 8);
++
++		if (d0 < 0)
++		{
++			ldispersion = MSX.Dispersion.ld[m];
++		}
++		else if (reynolds > 2300) //Basha 2007
++		{
++			ldispersion = 0.5 * diam * shearvelocity * (10.1 + 577 * pow(reynolds / 1000.0, -2.2));
++
++		}
++/*		else   //Basha 2007
++		{
++			ldispersion = SQR(0.5 * diam * velocity) / (48 * d0);
++			elpt = MSX.Link[k].len / velocity;
++			ldispersion = ldispersion * (1 - exp(-12.425 * d0 * elpt / SQR(0.5 * diam)));
++			ldispersion += d0;
++		}*/
++		else  //Lee 2004 averaged
++		{ 
++			ldispersion = SQR(0.5 * diam * velocity) / (48 * d0);
++			elpt = MSX.Link[k].len / velocity;
++			double interv = 16.0 * d0 * elpt / (0.25 * diam * diam);
++			ldispersion = ldispersion * (1 - (1 - exp(-interv))/interv);
++			ldispersion += d0;
++
++		}
++	
++	}
++	else
++	{
++		ldispersion = 0;
++	}
++
++	hc->velocity = velocity;
++	hc->reynolds = reynolds;
++	hc->ldispersion = ldispersion;
++	hc->q = MSX.Q[k];
++	hc->s = MSX.S[k];
++	hc->h1 = MSX.H[MSX.Link[k].n1];
++	hc->h2 = MSX.H[MSX.Link[k].n2];
++}
++
+ void dispersion_pipe(int m, double tstep)
+ {
+ 
+ 	double cons = 0.0;
+ 	double ldispersion = 0.0;
+-	double flowrate = 0.0, velocity = 0.0, area = 0.0;
++	double velocity = 0.0, area = 0.0;
+ 	int nseg = 0, k;
+ 	double diam = 0.0;
+-	double vd = 0.0, vu = 0.0, vself = 0.0, asquare = 0.0, dh = 0.0, frictionfactor = 0.0;
+-	double reynolds=0, shearvelocity=0;
++	double vd = 0.0, vu = 0.0, vself = 0.0, asquare = 0.0;
++	double reynolds=0;
+ 	Pseg seg = NULL;
++	Pseg* segp;
++	SdispHyd *hc, hloc;
+ 
+-	double elpt = 0.0;
+ 	double d0 = 1.292e-8;   //molecular diffusivity 1.292e-8 ft^2/s   1.2e-9 m^2/s
+ 	
+ 	d0 = MSX.Dispersion.md[m];
+@@ -107,7 +281,7 @@ void dispersion_pipe(int m, double tstep)
+ 	#endif
+ 	{
+ 	#ifdef USE_OPENMP
+-	#pragma omp for private(seg, cons, vd, vu, vself, k, nseg, asquare, velocity, diam, area, flowrate, reynolds, dh, frictionfactor, shearvelocity, ldispersion, elpt)
++	#pragma omp for private(seg, segp, cons, vd, vu, vself, k, nseg, asquare, velocity, diam, area, reynolds, ldispersion, hc, hloc)
+ 	#endif
+ 		for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+ 		{
+@@ -116,51 +290,17 @@ void dispersion_pipe(int m, double tstep)
+ 			if (MSX.FirstSeg[k] == NULL)
+ 				continue;
+ 			diam = MSX.Link[k].diam;
+-			// Compute Reynolds No.
+-			flowrate = (MSX.S[k] <= CLOSED) ? 0.0 : MSX.Q[k];
+ 			area = PI * diam * diam / 4.0;         // pipe area
+-			if (area > 0.0 && MSX.Link[k].len > 0.0 && ABS(flowrate) > 0.0)
+-			{
+-				velocity = fabs(flowrate) / area;              // flow velocity
+-				reynolds = velocity * diam / MSX.Dispersion.viscosity;     // Reynolds number  //#define   VISCOS    1.1E-5     // Kinematic viscosity of water // @ 20 deg C (sq ft/sec)
+-				dh = ABS(MSX.H[MSX.Link[k].n1] - MSX.H[MSX.Link[k].n2]);
+-				if (dh > 0.00001)
+-					frictionfactor = 39.725 * dh * pow(diam, 5) / (MSX.Link[k].len * SQR(flowrate));
+-				else
+-					frictionfactor = 0.0;
+-				shearvelocity = velocity * sqrt(frictionfactor / 8);
+ 
+-				if (d0 < 0)
+-				{
+-					ldispersion = MSX.Dispersion.ld[m];
+-				}
+-				else if (reynolds > 2300) //Basha 2007
+-				{
+-					ldispersion = 0.5 * diam * shearvelocity * (10.1 + 577 * pow(reynolds / 1000.0, -2.2));
+-
+-				}
+-	/*			else   //Basha 2007
+-				{
+-					ldispersion = SQR(0.5 * diam * velocity) / (48 * d0);
+-					elpt = MSX.Link[k].len / velocity;
+-					ldispersion = ldispersion * (1 - exp(-12.425 * d0 * elpt / SQR(0.5 * diam)));
+-					ldispersion += d0;
+-				}*/
+-				else  //Lee 2004 averaged
+-				{ 
+-					ldispersion = SQR(0.5 * diam * velocity) / (48 * d0);
+-					elpt = MSX.Link[k].len / velocity;
+-					double interv = 16.0 * d0 * elpt / (0.25 * diam * diam);
+-					ldispersion = ldispersion * (1 - (1 - exp(-interv))/interv);
+-					ldispersion += d0;
+-
+-				}
+-			
+-			}
+-			else
+-			{
+-				ldispersion = 0;
+-			}
++			// --- flow velocity, Reynolds number and dispersion coefficient depend
++			//     only on the hydraulic state: reuse them while it is unchanged
++			hc = (hydcache && hydcache[m]) ? &hydcache[m][k] : &hloc;
++			if (hc == &hloc || hc->q != MSX.Q[k] || hc->s != MSX.S[k] ||
++				hc->h1 != MSX.H[MSX.Link[k].n1] || hc->h2 != MSX.H[MSX.Link[k].n2])
++				linkhydraulics(k, m, d0, hc);
++			velocity = hc->velocity;
++			reynolds = hc->reynolds;
++			ldispersion = hc->ldispersion;
+ 
+ 			if (ldispersion < 0.0)
+ 			{
+@@ -193,9 +333,21 @@ void dispersion_pipe(int m, double tstep)
+ 			rl[0] = 0.0;
+ 			nseg = 0;
+ 
+-			while (seg != NULL)
++			// --- the segments are kept in linkseg[k] for the back substitution
++			//     and for segqual_update
++			segp = linkseg[k];
++			if (linksegcap[k] < MSX.Link[k].nsegs + 2)
++				segp = growlinkseg(k, MSX.Link[k].nsegs);
++			while (seg != NULL && segp != NULL)
+ 			{
+ 				nseg++;
++				if (nseg + 1 >= linksegcap[k])
++				{
++					segp = growlinkseg(k, nseg);
++					if (segp == NULL)
++						break;
++				}
++				segp[nseg] = seg;
+ 				vself = seg->v;
+ 				rl[nseg] = seg->c[m];
+ 				seg = seg->prev;
+@@ -209,7 +361,8 @@ void dispersion_pipe(int m, double tstep)
+ 
+ 				vd = vself;
+ 			}
+-			if (nseg == 0)
++			linksegn[k] = (segp != NULL) ? nseg : 0;
++			if (nseg == 0 || segp == NULL)
+ 				continue;
+ 		
+ 
+@@ -217,63 +370,17 @@ void dispersion_pipe(int m, double tstep)
+ 			bl[nseg + 1] = 1.0;
+ 			rl[nseg + 1] = 0.0;
+ 
++			/*responses to the initial condition, downstream and upstream unit boundary conditions*/
+ 			if (reynolds >= 0)
+-				tridiag(nseg + 2, al, bl, cl, rl, sol); //nseg+2 <= 1000 here 
+-			else
+-			{
+-				for (int p = 0; p <= nseg + 1; p++)
+-					sol[p] = rl[p];
+-			}
+-
+-			seg = MSX.FirstSeg[k];   //downstream segment
+-			int segindex = 1;
+-			while (seg != NULL)
+-			{
+-				seg->hresponse = sol[segindex];
+-				seg = seg->prev;
+-				segindex++;
+-			}
+-			/*clear initial condition*/
+-			for (int p = 1; p < nseg + 1; p++)
+-				rl[p] = 0.0;
+-
+-			/*downstream unit boundary condition*/
+-			rl[0] = 1.0;
+-			if (reynolds >= 0)
+-				tridiag(nseg + 2, al, bl, cl, rl, sol);
++				tridiag3(nseg + 2, al, bl, cl, rl, segp);
+ 			else
+ 			{
+-				for (int p = 0; p <= nseg + 1; p++)
+-					sol[p] = rl[p];
+-			}
+-
+-			seg = MSX.FirstSeg[k];   //downstream
+-			segindex = 1;
+-			while (seg != NULL)
+-			{
+-				seg->dresponse = sol[segindex];
+-				seg = seg->prev;
+-				segindex++;
+-			}
+-
+-			/*upstream unit boundary condition*/
+-			rl[0] = 0.0;
+-			rl[nseg + 1] = 1.0;
+-			if (reynolds >= 0)
+-				tridiag(nseg + 2, al, bl, cl, rl, sol); //nseg+2 <= 100 here 
+-			else
+-			{
+-				for (int p = 0; p <= nseg + 1; p++)
+-					sol[p] = rl[p];
+-			}
+-
+-			seg = MSX.FirstSeg[k];   //downstream
+-			segindex = 1;
+-			while (seg != NULL)
+-			{
+-				seg->uresponse = sol[segindex];
+-				seg = seg->prev;
+-				segindex++;
++				for (int p = 1; p <= nseg; p++)
++				{
++					segp[p]->hresponse = rl[p];
++					segp[p]->dresponse = 0.0;
++					segp[p]->uresponse = 0.0;
++				}
+ 			}
+ 		}
+ 	}
+@@ -417,10 +524,9 @@ void   segqual_update(int m, double tstep)
+ {
+ 
+ 	Pseg seg = NULL;
++	Pseg* segp;
+ 	Psource source = NULL;
+-	int n1 = 0, n2 = 0, k;
+-	double mass1 = 0;
+-	double mass2 = 0;
++	int n1 = 0, n2 = 0, k, j, nseg;
+ 	double dispersedin = 0;
+ 	double ldispersion = 0, massin = 0;
+ 	double area = 0.0;
+@@ -430,12 +536,10 @@ void   segqual_update(int m, double tstep)
+ 	#endif
+ 	{
+ 		#ifdef USE_OPENMP
+-		#pragma omp for private(k, n1, n2, seg, source, mass1, mass2, ldispersion, massin, area)
++		#pragma omp for private(k, j, n1, n2, seg, segp, nseg, source, ldispersion, massin, area)
+ 		#endif
+ 		for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+ 		{
+-			mass1 = 0;
+-			mass2 = 0;
+ 			massdisp[2 * k - 1] = 0.0;
+ 			massdisp[2 * k] = 0.0;
+ 			ldispersion = MSX.Dispersion.pipeDispersionCoeff[k];
+@@ -449,17 +553,18 @@ void   segqual_update(int m, double tstep)
+ 				n1 = MSX.Link[k].n2;
+ 				n2 = MSX.Link[k].n1;
+ 			}
+-			seg = MSX.FirstSeg[k];
+-			while (seg != NULL)   //update segment concentration based on new up/down node quality
++			if (MSX.FirstSeg[k] == NULL)
++				continue;
++
++			// --- the link's segments as found by dispersion_pipe (the lists
++			//     have not changed since): no need to walk the linked list
++			segp = linkseg[k];
++			nseg = linksegn[k];
++			for (j = 1; j <= nseg; j++)   //update segment concentration based on new up/down node quality
+ 			{
+-				mass1 += seg->c[m] * seg->v;
++				seg = segp[j];
+ 				seg->c[m] = seg->hresponse + MSX.Node[n2].c[m] * seg->dresponse + MSX.Node[n1].c[m] * seg->uresponse;
+-
+-				mass2 += seg->c[m] * seg->v;
+-				seg = seg->prev;
+ 			}
+-			if (MSX.FirstSeg[k] == NULL)
+-				continue;
+ 
+ 			source = MSX.Node[n2].sources;
+ 			while (source != NULL)
+@@ -613,3 +718,49 @@ void tridiag(int n, double *a, double *b, double *c, double *r, double *y)
+ 		y[j] -= gam[j + 1] * y[j + 1];
+ 	}
+ }
++
++
++// Solve a pipe's tri-diagonal system of eqns. for three right-hand sides at once:
++// r (solution y1), the unit vector at the first (downstream) end (y2) and the
++// unit vector at the last (upstream) end (y3), and store the solutions of rows
++// 1..n-2 in the pipe's segments seg[1..n-2] (hresponse, dresponse, uresponse).
++// The forward elimination (gam, bet) is done once for all three and each solution
++// gets exactly the same floating point operations as a separate call of tridiag()
++// would give it.
++
++static void tridiag3(int n, double *a, double *b, double *c, double *r, Pseg *seg)
++{
++	int j;
++	double bet, r3;
++	double *y1 = sol, *y2 = sold, *y3 = solu;
++	double z1, z2, z3;
++
++	bet = b[0];
++	y1[0] = r[0] / bet;
++	y2[0] = 1.0 / bet;
++	y3[0] = 0.0 / bet;
++	for (j = 1; j < n; j++)
++	{
++		gam[j] = c[j - 1] / bet;
++		bet = b[j] - a[j] * gam[j];
++		r3 = (j == n - 1) ? 1.0 : 0.0;
++		y1[j] = (r[j] - a[j] * y1[j - 1]) / bet;
++		y2[j] = (0.0 - a[j] * y2[j - 1]) / bet;
++		y3[j] = (r3 - a[j] * y3[j - 1]) / bet;
++	}
++
++	// --- back substitution, from the upstream end (row n-1) to row 1
++	//     (row 0, the downstream boundary, is not needed)
++	z1 = y1[n - 1];
++	z2 = y2[n - 1];
++	z3 = y3[n - 1];
++	for (j = n - 2; j >= 1; j--)
++	{
++		z1 = y1[j] - gam[j + 1] * z1;
++		z2 = y2[j] - gam[j + 1] * z2;
++		z3 = y3[j] - gam[j + 1] * z3;
++		seg[j]->hresponse = z1;
++		seg[j]->dresponse = z2;
++		seg[j]->uresponse = z3;
++	}
++}

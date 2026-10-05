@@ -1,0 +1,1449 @@
+BIT-03: Read per-thread chemistry and solver state once
+
+The chemistry and the RK5, ROS2 and Newton solvers keep their working
+state in `#pragma omp threadprivate` globals. In a shared library on macOS
+every access is a call to the thread-local-variable thunk: 12-18 % of the
+unpatched run. Look the state up once per call and pass it down.
+
+Requires: FIX-01
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02, BIT-01 and BIT-02:
+    git apply --whitespace=nowarn BIT-03.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index b1ea14e..9841b34 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -34,10 +34,6 @@ int    NUMSIG = 3;                     // Number of significant digits in
+ 
+ //  Local variables
+ //-----------------
+-static Pseg   TheSeg;                  // Current water quality segment
+-static int    TheLink;                 // Index of current link
+-static int    TheNode;                 // Index of current node
+-static int    TheTank;                 // Index of current tank                
+ static int    NumSpecies;              // Total number of species
+ static int    NumPipeRateSpecies;      // Number of species with pipe rates
+ static int    NumTankRateSpecies;      // Number of species with tank rates
+@@ -52,13 +48,28 @@ static int    *TankEquilSpecies;       // Species governed by tank equilibria
+ static int    LastIndex[MAX_OBJECTS];  // Last index of given type of variable
+ static double *Atol;                   // Absolute concentration tolerances
+ static double *Rtol;                   // Relative concentration tolerances
+-static double *Yrate;                  // Rate species concentrations
+-static double *Yequil;                 // Equilibrium species concentrations
+-static double HydVar[MAX_HYD_VARS];    // Values of hydraulic variables
+-static double *F;                      // Function values                      
+-static double *ChemC1;                 // Values of variables (see below)
+ 
+-#pragma omp threadprivate(TheSeg, TheLink, TheNode, TheTank, Yrate, Yequil, HydVar, F, ChemC1)
++//  State of the chemistry computations of a thread
++//-------------------------------------------------
++//  Each thread has its own; it is passed from function to function (and
++//  through the ODE and equation solvers to the functions that evaluate
++//  the chemistry) since thread local variables are slow to get at.
++typedef struct
++{
++    Pseg   TheSeg;                     // Current water quality segment
++    int    TheLink;                    // Index of current link
++    int    TheNode;                    // Index of current node
++    int    TheTank;                    // Index of current tank
++    double *Yrate;                     // Rate species concentrations
++    double *Yequil;                    // Equilibrium species concentrations
++    double HydVar[MAX_HYD_VARS];       // Values of hydraulic variables
++    double *F;                         // Function values
++    double *ChemC1;                    // Values of variables (see below)
++}  ChemState;
++
++static ChemState *Chem;                // State of the calling thread
++
++#pragma omp threadprivate(Chem)
+ 
+ //  Compiled chemistry expressions
+ //--------------------------------
+@@ -107,14 +118,14 @@ double MSXerr_validate(double x, int index, int element, int exprType);
+ static void   setSpeciesChemistry(void);
+ static void   setTankChemistry(void);
+ //static void   evalHydVariables(int k);           
+-static int    evalPipeReactions(int k, double dt);
+-static int    evalTankReactions(int k, double dt);
+-static int    evalPipeEquil(double *c);
+-static int    evalTankEquil(double *c);
+-static int    pipeEquil(double *c);
+-static int    tankEquil(double *c);
+-static void   evalPipeFormulas(double *c);
+-static void   evalTankFormulas(double *c);
++static int    evalPipeReactions(ChemState *cs, int k, double dt);
++static int    evalTankReactions(ChemState *cs, int k, double dt);
++static int    evalPipeEquil(ChemState *cs, double *c);
++static int    evalTankEquil(ChemState *cs, double *c);
++static int    pipeEquil(ChemState *cs, double *c);
++static int    tankEquil(ChemState *cs, double *c);
++static void   evalPipeFormulas(ChemState *cs, double *c);
++static void   evalTankFormulas(ChemState *cs, double *c);
+ static int    compileExprs(ChemExprs *ce, int forPipes);
+ static MathExpr* compileExpr(MathExpr *expr, int forPipes);
+ static int    findDeps(ChemExprs *ce, MathExpr *expr, int *list, int *n,
+@@ -122,12 +133,16 @@ static int    findDeps(ChemExprs *ce, MathExpr *expr, int *list, int *n,
+ static int    addDep(ChemExprs *ce, int i, int *list, int *n, char *mark);
+ static void   freeExprs(ChemExprs *ce);
+ static void   evalDeps(MathExpr **slotExpr, int *list, int n, double *val);
+-static void   setPipeValues(int k);
+-static void   setTankValues(void);
+-static void   getPipeDcDt(double t, double y[], int n, double deriv[]);
+-static void   getTankDcDt(double t, double y[], int n, double deriv[]);
+-static void   getPipeEquil(double t, double y[], int n, double f[]);
+-static void   getTankEquil(double t, double y[], int n, double f[]);
++static void   setPipeValues(ChemState *cs, int k);
++static void   setTankValues(ChemState *cs);
++static void   getPipeDcDt(double t, double y[], int n, double deriv[],
++                          void *data);
++static void   getTankDcDt(double t, double y[], int n, double deriv[],
++                          void *data);
++static void   getPipeEquil(double t, double y[], int n, double f[],
++                           void *data);
++static void   getTankEquil(double t, double y[], int n, double f[],
++                           void *data);
+ static int    isValidNumber(double x);                                         //(L.Rossman - 11/03/10)
+ static double validate(double x, int index, int element, int exprType);
+ 
+@@ -195,8 +210,6 @@ int  MSXchem_open()
+     TankEquilSpecies = NULL;
+     Atol = NULL;
+     Rtol = NULL;
+-    Yrate = NULL;
+-    Yequil = NULL;
+     NumSpecies = MSX.Nobjects[SPECIES];
+     m = NumSpecies + 1;
+     PipeRateSpecies = (int*)calloc(m, sizeof(int));
+@@ -212,18 +225,29 @@ int  MSXchem_open()
+     CALL(errcode, MEMCHECK(Atol));
+     CALL(errcode, MEMCHECK(Rtol));
+ 
++// --- each thread's own chemistry state
++
+ #pragma omp parallel
+ {
+-    Yrate = (double*)calloc(m, sizeof(double));
+-    Yequil = (double*)calloc(m, sizeof(double));
+-    F = (double*)calloc(m, sizeof(double));                             
+-    ChemC1 = (double*)calloc(NumValues, sizeof(double));
++    ChemState *cs = (ChemState*)calloc(1, sizeof(ChemState));
++    Chem = cs;
++    if ( cs )
++    {
++        cs->Yrate = (double*)calloc(m, sizeof(double));
++        cs->Yequil = (double*)calloc(m, sizeof(double));
++        cs->F = (double*)calloc(m, sizeof(double));
++        cs->ChemC1 = (double*)calloc(NumValues, sizeof(double));
++    }
+ #pragma omp critical
+     {
+-        CALL(errcode, MEMCHECK(Yrate));
+-        CALL(errcode, MEMCHECK(Yequil));
+-        CALL(errcode, MEMCHECK(F));
+-        CALL(errcode, MEMCHECK(ChemC1));
++        CALL(errcode, MEMCHECK(cs));
++        if ( cs )
++        {
++            CALL(errcode, MEMCHECK(cs->Yrate));
++            CALL(errcode, MEMCHECK(cs->Yequil));
++            CALL(errcode, MEMCHECK(cs->F));
++            CALL(errcode, MEMCHECK(cs->ChemC1));
++        }
+     }
+ }
+     if ( errcode ) return errcode;
+@@ -321,10 +345,15 @@ void MSXchem_close()
+ 
+ #pragma omp parallel
+ {
+-    FREE(ChemC1);
+-    FREE(Yrate);
+-    FREE(Yequil);
+-    FREE(F);                                                                   
++    ChemState *cs = Chem;
++    if ( cs )
++    {
++        FREE(cs->ChemC1);
++        FREE(cs->Yrate);
++        FREE(cs->Yequil);
++        FREE(cs->F);
++        FREE(Chem);
++    }
+ }
+ 
+ }
+@@ -362,6 +391,7 @@ int MSXchem_react(double dt)
+ #pragma omp parallel
+ {
+     int ierr;
++    ChemState *cs = Chem;
+     #pragma omp for private(k)
+     for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+     {
+@@ -373,11 +403,11 @@ int MSXchem_react(double dt)
+ 
+         //evalHydVariables(k);
+         for (int hi = 1; hi < MAX_HYD_VARS; hi++)
+-            HydVar[hi] = MSX.Link[k].HydVar[hi];
++            cs->HydVar[hi] = MSX.Link[k].HydVar[hi];
+ 
+         // --- compute pipe reactions
+ 
+-        ierr = evalPipeReactions(k, dt);
++        ierr = evalPipeReactions(cs, k, dt);
+         if (ierr)
+         {
+             #pragma omp critical
+@@ -408,7 +438,7 @@ int MSXchem_react(double dt)
+ 
+     // --- compute tank reactions
+ 
+-        errcode = evalTankReactions(k, dt);
++        errcode = evalTankReactions(Chem, k, dt);
+         if ( errcode ) return errcode;
+     }
+     return errcode;
+@@ -434,27 +464,28 @@ int MSXchem_equil(int zone, int k, double *c)
+ */
+ {
+     int errcode = 0;
++    ChemState *cs = Chem;
+     if ( zone == LINK )
+     {
+-        TheLink = k;
++        cs->TheLink = k;
+         for (int vi = 1; vi < MAX_HYD_VARS; vi++)
+-            HydVar[vi] = MSX.Link[k].HydVar[vi];
+-        setPipeValues(k);
+-        errcode = pipeEquil(c);
++            cs->HydVar[vi] = MSX.Link[k].HydVar[vi];
++        setPipeValues(cs, k);
++        errcode = pipeEquil(cs, c);
+     }
+     if ( zone == NODE )
+     {
+-        TheTank = k;
+-        TheNode = MSX.Tank[k].node;
+-        setTankValues();
+-        errcode = tankEquil(c);
++        cs->TheTank = k;
++        cs->TheNode = MSX.Tank[k].node;
++        setTankValues(cs);
++        errcode = tankEquil(cs, c);
+     }
+     return errcode;
+ }
+ 
+ //=============================================================================
+ 
+-int pipeEquil(double *c)
++int pipeEquil(ChemState *cs, double *c)
+ /*
+ **  Purpose:
+ **    computes equilibrium concentrations and formulas for the
+@@ -472,14 +503,14 @@ int pipeEquil(double *c)
+ */
+ {
+     int errcode = 0;
+-    if ( NumPipeEquilSpecies > 0 ) errcode = evalPipeEquil(c);
+-    if ( NumPipeFormulaSpecies > 0 ) evalPipeFormulas(c);
++    if ( NumPipeEquilSpecies > 0 ) errcode = evalPipeEquil(cs, c);
++    if ( NumPipeFormulaSpecies > 0 ) evalPipeFormulas(cs, c);
+     return errcode;
+ }
+ 
+ //=============================================================================
+ 
+-int tankEquil(double *c)
++int tankEquil(ChemState *cs, double *c)
+ /*
+ **  Purpose:
+ **    computes equilibrium concentrations and formulas for the
+@@ -496,8 +527,8 @@ int tankEquil(double *c)
+ */
+ {
+     int errcode = 0;
+-    if ( NumTankEquilSpecies > 0 ) errcode = evalTankEquil(c);
+-    if ( NumTankFormulaSpecies > 0 ) evalTankFormulas(c);
++    if ( NumTankEquilSpecies > 0 ) errcode = evalTankEquil(cs, c);
++    if ( NumTankFormulaSpecies > 0 ) evalTankFormulas(cs, c);
+     return errcode;
+ }
+ 
+@@ -653,7 +684,7 @@ void setTankChemistry()
+ 
+ //=============================================================================
+ 
+-int evalPipeReactions(int k, double dt)
++int evalPipeReactions(ChemState *cs, int k, double dt)
+ /*
+ **  Purpose:
+ **    updates species concentrations in each WQ segment of a pipe
+@@ -680,15 +711,15 @@ int evalPipeReactions(int k, double dt)
+ 
+ // --- start with the most downstream pipe segment
+ 
+-    TheLink = k;
+-    setPipeValues(k);
+-    TheSeg = MSX.FirstSeg[TheLink];
+-    while ( TheSeg )
++    cs->TheLink = k;
++    setPipeValues(cs, k);
++    cs->TheSeg = MSX.FirstSeg[cs->TheLink];
++    while ( cs->TheSeg )
+     {
+         for (m = 1; m <= NumSpecies; m++)
+         {
+-            ChemC1[m] = TheSeg->c[m];
+-            TheSeg->lastc[m] = TheSeg->c[m];
++            cs->ChemC1[m] = cs->TheSeg->c[m];
++            cs->TheSeg->lastc[m] = cs->TheSeg->c[m];
+         }
+         ierr = 0;
+ 
+@@ -702,48 +733,48 @@ int evalPipeReactions(int k, double dt)
+             for (i=1; i<=NumPipeRateSpecies; i++)
+             {
+                 m = PipeRateSpecies[i];
+-                Yrate[i] = TheSeg->c[m];
++                cs->Yrate[i] = cs->TheSeg->c[m];
+             }
+         
+         // --- Euler integrator
+ 
+             if ( MSX.Solver == EUL )
+             {
+-                getPipeDcDt(0, Yrate, NumPipeRateSpecies, Yrate);
++                getPipeDcDt(0, cs->Yrate, NumPipeRateSpecies, cs->Yrate, cs);
+                 for (i=1; i<=NumPipeRateSpecies; i++)
+                 {
+                     m = PipeRateSpecies[i];
+-                    c = TheSeg->c[m] + Yrate[i]*tstep;
+-                    TheSeg->c[m] = MAX(c, 0.0);
++                    c = cs->TheSeg->c[m] + cs->Yrate[i]*tstep;
++                    cs->TheSeg->c[m] = MAX(c, 0.0);
+                 }
+             }
+ 
+         // --- other integrators
+             else
+             {
+-                dh = TheSeg->hstep;
++                dh = cs->TheSeg->hstep;
+ 
+             // --- Runge-Kutta integrator
+ 
+                 if ( MSX.Solver == RK5 )
+-                    ierr = rk5_integrate(Yrate, NumPipeRateSpecies, 0, tstep,
+-                                         &dh, Atol, Rtol, getPipeDcDt);
++                    ierr = rk5_integrate(cs->Yrate, NumPipeRateSpecies, 0, tstep,
++                                         &dh, Atol, Rtol, getPipeDcDt, cs);
+ 
+             // --- Rosenbrock integrator
+ 
+                 if ( MSX.Solver == ROS2 )
+-                    ierr = ros2_integrate(Yrate, NumPipeRateSpecies, 0, tstep,
+-                                          &dh, Atol, Rtol, getPipeDcDt);
++                    ierr = ros2_integrate(cs->Yrate, NumPipeRateSpecies, 0, tstep,
++                                          &dh, Atol, Rtol, getPipeDcDt, cs);
+ 
+             // --- save new concentration values of the species that reacted
+ 
+-                for (m=1; m<=NumSpecies; m++) TheSeg->c[m] = ChemC1[m];
++                for (m=1; m<=NumSpecies; m++) cs->TheSeg->c[m] = cs->ChemC1[m];
+                 for (i=1; i<=NumPipeRateSpecies; i++)
+                 {
+                     m = PipeRateSpecies[i];
+-                    TheSeg->c[m] = MAX(Yrate[i], 0.0);
++                    cs->TheSeg->c[m] = MAX(cs->Yrate[i], 0.0);
+                 }
+-                TheSeg->hstep = dh;
++                cs->TheSeg->hstep = dh;
+             }
+             if ( ierr < 0 ) return 
+                 ERR_INTEGRATOR;
+@@ -752,13 +783,13 @@ int evalPipeReactions(int k, double dt)
+             {
+                 if (MSX.Species[m].type == BULK)
+                 {
+-                    MSX.Link[k].reacted[m] += TheSeg->v * (TheSeg->c[m] - TheSeg->lastc[m]) * LperFT3;
++                    MSX.Link[k].reacted[m] += cs->TheSeg->v * (cs->TheSeg->c[m] - cs->TheSeg->lastc[m]) * LperFT3;
+                 }
+                 else if (MSX.Link[k].diam > 0)
+                 {
+-                    MSX.Link[k].reacted[m] += TheSeg->v * 4.0 / MSX.Link[k].diam * MSX.Ucf[AREA_UNITS] * (TheSeg->c[m] - TheSeg->lastc[m]);
++                    MSX.Link[k].reacted[m] += cs->TheSeg->v * 4.0 / MSX.Link[k].diam * MSX.Ucf[AREA_UNITS] * (cs->TheSeg->c[m] - cs->TheSeg->lastc[m]);
+                 }
+-                TheSeg->lastc[m] = TheSeg->c[m];
++                cs->TheSeg->lastc[m] = cs->TheSeg->c[m];
+             }
+         }
+ 
+@@ -767,19 +798,19 @@ int evalPipeReactions(int k, double dt)
+ 
+         if ( NumPipeEquilSpecies + NumPipeFormulaSpecies > 0 )
+         {
+-            errcode = pipeEquil(TheSeg->c);
++            errcode = pipeEquil(cs, cs->TheSeg->c);
+             if ( errcode ) return errcode;
+         }
+ 
+     // --- move to the segment upstream of the current one
+-        TheSeg = TheSeg->prev;
++        cs->TheSeg = cs->TheSeg->prev;
+     }
+     return errcode;
+ }
+ 
+ //=============================================================================
+ 
+-int evalTankReactions(int k, double dt)
++int evalTankReactions(ChemState *cs, int k, double dt)
+ /*
+ **  Purpose:
+ **    updates species concentrations in a given storage tank
+@@ -806,17 +837,17 @@ int evalTankReactions(int k, double dt)
+ 
+ // --- evaluate each volume segment in the tank
+ 
+-    TheTank = k;
+-    TheNode = MSX.Tank[k].node;
+-    setTankValues();
++    cs->TheTank = k;
++    cs->TheNode = MSX.Tank[k].node;
++    setTankValues(cs);
+     i = MSX.Nobjects[LINK] + k;
+-    TheSeg = MSX.FirstSeg[i];
+-    while ( TheSeg )
++    cs->TheSeg = MSX.FirstSeg[i];
++    while ( cs->TheSeg )
+     {
+         for (m = 1; m <= NumSpecies; m++)
+         {
+-            ChemC1[m] = TheSeg->c[m];
+-            TheSeg->lastc[m] = TheSeg->c[m];
++            cs->ChemC1[m] = cs->TheSeg->c[m];
++            cs->TheSeg->lastc[m] = cs->TheSeg->c[m];
+         }
+         ierr = 0;
+ 
+@@ -830,19 +861,19 @@ int evalTankReactions(int k, double dt)
+             {
+                 m = TankRateSpecies[i];
+   //              Yrate[i] = MSX.Tank[k].c[m];
+-                Yrate[i] = TheSeg->c[m];
++                cs->Yrate[i] = cs->TheSeg->c[m];
+             }
+ 
+         // --- Euler integrator
+ 
+             if ( MSX.Solver == EUL )
+             {
+-                getTankDcDt(0, Yrate, NumTankRateSpecies, Yrate);
++                getTankDcDt(0, cs->Yrate, NumTankRateSpecies, cs->Yrate, cs);
+                 for (i=1; i<=NumTankRateSpecies; i++)
+                 {
+                     m = TankRateSpecies[i];
+-                    c = TheSeg->c[m] + Yrate[i]*tstep;
+-                    TheSeg->c[m] = MAX(c, 0.0);
++                    c = cs->TheSeg->c[m] + cs->Yrate[i]*tstep;
++                    cs->TheSeg->c[m] = MAX(c, 0.0);
+                 }
+             }
+ 
+@@ -854,24 +885,24 @@ int evalTankReactions(int k, double dt)
+             // --- Runge-Kutta integrator
+ 
+                 if ( MSX.Solver == RK5 )
+-                    ierr = rk5_integrate(Yrate, NumTankRateSpecies, 0, tstep,
+-                                         &dh, Atol, Rtol, getTankDcDt);
++                    ierr = rk5_integrate(cs->Yrate, NumTankRateSpecies, 0, tstep,
++                                         &dh, Atol, Rtol, getTankDcDt, cs);
+ 
+             // --- Rosenbrock integrator
+ 
+                 if ( MSX.Solver == ROS2 )
+-                    ierr = ros2_integrate(Yrate, NumTankRateSpecies, 0, tstep,
+-                                          &dh, Atol, Rtol, getTankDcDt);
++                    ierr = ros2_integrate(cs->Yrate, NumTankRateSpecies, 0, tstep,
++                                          &dh, Atol, Rtol, getTankDcDt, cs);
+ 
+             // --- save new concentration values of the species that reacted
+ 
+-                for (m=1; m<=NumSpecies; m++) TheSeg->c[m] = ChemC1[m];
++                for (m=1; m<=NumSpecies; m++) cs->TheSeg->c[m] = cs->ChemC1[m];
+                 for (i=1; i<=NumTankRateSpecies; i++)
+                 {
+                     m = TankRateSpecies[i];
+-                    TheSeg->c[m] = MAX(Yrate[i], 0.0);
++                    cs->TheSeg->c[m] = MAX(cs->Yrate[i], 0.0);
+                 }
+-                TheSeg->hstep = dh;
++                cs->TheSeg->hstep = dh;
+             }
+             if ( ierr < 0 ) return 
+                 ERR_INTEGRATOR;
+@@ -879,7 +910,7 @@ int evalTankReactions(int k, double dt)
+ 
+     // --- compute new equilibrium concentrations within segment
+ 
+-        errcode = tankEquil(TheSeg->c);
++        errcode = tankEquil(cs, cs->TheSeg->c);
+         if ( errcode ) return errcode;
+ 
+     // --- move to the next tank segment
+@@ -887,19 +918,19 @@ int evalTankReactions(int k, double dt)
+         {
+             if (MSX.Species[m].type == BULK)
+             {
+-                MSX.Tank[k].reacted[m] += TheSeg->v * (TheSeg->c[m] - TheSeg->lastc[m]) * LperFT3;
++                MSX.Tank[k].reacted[m] += cs->TheSeg->v * (cs->TheSeg->c[m] - cs->TheSeg->lastc[m]) * LperFT3;
+             }
+-            TheSeg->lastc[m] = TheSeg->c[m];
++            cs->TheSeg->lastc[m] = cs->TheSeg->c[m];
+         }
+ 
+-        TheSeg = TheSeg->prev;
++        cs->TheSeg = cs->TheSeg->prev;
+     }
+     return errcode;
+ }
+ 
+ //=============================================================================
+ 
+-int evalPipeEquil(double *c)
++int evalPipeEquil(ChemState *cs, double *c)
+ /*
+ **  Purpose:
+ **    computes equilibrium concentrations for water in a pipe segment.
+@@ -916,20 +947,20 @@ int evalPipeEquil(double *c)
+ {
+     int i, m;
+     int errcode;
+-    for (m=1; m<=NumSpecies; m++) ChemC1[m] = c[m];
++    for (m=1; m<=NumSpecies; m++) cs->ChemC1[m] = c[m];
+     for (i=1; i<=NumPipeEquilSpecies; i++)
+     {
+         m = PipeEquilSpecies[i];
+-        Yequil[i] = c[m];
++        cs->Yequil[i] = c[m];
+     }
+-    errcode = newton_solve(Yequil, NumPipeEquilSpecies, MAXIT, NUMSIG,
+-                           getPipeEquil);
++    errcode = newton_solve(cs->Yequil, NumPipeEquilSpecies, MAXIT, NUMSIG,
++                           getPipeEquil, cs);
+     if ( errcode < 0 ) return ERR_NEWTON;
+     for (i=1; i<=NumPipeEquilSpecies; i++)
+     {
+         m = PipeEquilSpecies[i];
+-        c[m] = Yequil[i];
+-        ChemC1[m] = c[m];
++        c[m] = cs->Yequil[i];
++        cs->ChemC1[m] = c[m];
+     }
+     return 0;
+ }
+@@ -937,7 +968,7 @@ int evalPipeEquil(double *c)
+ 
+ //=============================================================================
+ 
+-int evalTankEquil(double *c)
++int evalTankEquil(ChemState *cs, double *c)
+ /*
+ **  Purpose:
+ **    computes equilibrium concentrations for water in a tank.
+@@ -954,27 +985,27 @@ int evalTankEquil(double *c)
+ {
+     int i, m;
+     int errcode;
+-    for (m=1; m<=NumSpecies; m++) ChemC1[m] = c[m];
++    for (m=1; m<=NumSpecies; m++) cs->ChemC1[m] = c[m];
+     for (i=1; i<=NumTankEquilSpecies; i++)
+     {
+         m = TankEquilSpecies[i];
+-        Yequil[i] = c[m];
++        cs->Yequil[i] = c[m];
+     }
+-    errcode = newton_solve(Yequil, NumTankEquilSpecies, MAXIT, NUMSIG,
+-                           getTankEquil);
++    errcode = newton_solve(cs->Yequil, NumTankEquilSpecies, MAXIT, NUMSIG,
++                           getTankEquil, cs);
+     if ( errcode < 0 ) return ERR_NEWTON;
+     for (i=1; i<=NumTankEquilSpecies; i++)
+     {
+         m = TankEquilSpecies[i];
+-        c[m] = Yequil[i];
+-        ChemC1[m] = c[m];
++        c[m] = cs->Yequil[i];
++        cs->ChemC1[m] = c[m];
+     }
+     return 0;
+ }
+ 
+ //=============================================================================
+ 
+-void evalPipeFormulas(double *c)
++void evalPipeFormulas(ChemState *cs, double *c)
+ /*
+ **  Purpose:
+ **    evaluates species concentrations in a pipe segment that are simple
+@@ -992,27 +1023,27 @@ void evalPipeFormulas(double *c)
+     int m;
+     double x;
+     
+-    for (m=1; m<=NumSpecies; m++) ChemC1[m] = c[m];
++    for (m=1; m<=NumSpecies; m++) cs->ChemC1[m] = c[m];
+ // --- use compiled functions if available                                     
+ 
+     if ( MSX.Compiler )
+     {
+-	    MSXgetPipeFormulas(ChemC1, MSX.K, MSX.Link[TheLink].param, HydVar);
++	    MSXgetPipeFormulas(cs->ChemC1, MSX.K, MSX.Link[cs->TheLink].param, cs->HydVar);
+         for (m=1; m<=NumSpecies; m++)
+         {
+             if (MSX.Species[m].pipeExprType == FORMULA)
+-                c[m] = validate(ChemC1[m], m, LINK, FORMULA);
++                c[m] = validate(cs->ChemC1[m], m, LINK, FORMULA);
+         }
+     	return;
+     }
+ 
+     evalDeps(PipeExprs.slotExpr, PipeExprs.formulaDeps,
+-             PipeExprs.nFormulaDeps, ChemC1);
++             PipeExprs.nFormulaDeps, cs->ChemC1);
+     for (m=1; m<=NumSpecies; m++)
+     {
+         if ( MSX.Species[m].pipeExprType == FORMULA )
+         {
+-            x = ChemC1[FormBase + m];
++            x = cs->ChemC1[FormBase + m];
+ 			c[m] = validate(x, m, LINK, FORMULA);
+         }
+     }
+@@ -1020,7 +1051,7 @@ void evalPipeFormulas(double *c)
+ 
+ //=============================================================================
+ 
+-void evalTankFormulas(double *c)
++void evalTankFormulas(ChemState *cs, double *c)
+ /*
+ **  Purpose:
+ **    evaluates species concentrations in a tank that are simple
+@@ -1038,28 +1069,28 @@ void evalTankFormulas(double *c)
+     int m;
+     double x;
+ 
+-    for (m=1; m<=NumSpecies; m++) ChemC1[m] = c[m];
++    for (m=1; m<=NumSpecies; m++) cs->ChemC1[m] = c[m];
+ 
+ // --- use compiled functions if available                                    
+ 
+     if ( MSX.Compiler )
+     {
+-	    MSXgetTankFormulas(ChemC1, MSX.K, MSX.Link[TheLink].param, HydVar);
++	    MSXgetTankFormulas(cs->ChemC1, MSX.K, MSX.Link[cs->TheLink].param, cs->HydVar);
+         for (m=1; m<=NumSpecies; m++)
+         {
+             if (MSX.Species[m].tankExprType == FORMULA)
+-                c[m] = validate(ChemC1[m], m, TANK, FORMULA);
++                c[m] = validate(cs->ChemC1[m], m, TANK, FORMULA);
+         }
+     	return;
+     }
+ 
+     evalDeps(TankExprs.slotExpr, TankExprs.formulaDeps,
+-             TankExprs.nFormulaDeps, ChemC1);
++             TankExprs.nFormulaDeps, cs->ChemC1);
+     for (m=1; m<=NumSpecies; m++)
+     {
+         if ( MSX.Species[m].tankExprType == FORMULA )
+         {
+-            x = ChemC1[FormBase + m];
++            x = cs->ChemC1[FormBase + m];
+ 			c[m] = validate(x, m, TANK, FORMULA);
+         }
+     }
+@@ -1067,7 +1098,7 @@ void evalTankFormulas(double *c)
+ 
+ //=============================================================================
+ 
+-void getPipeDcDt(double t, double y[], int n, double deriv[])
++void getPipeDcDt(double t, double y[], int n, double deriv[], void *data)
+ /*
+ **  Purpose:
+ **    finds reaction rate (dC/dt) for each reacting species in a pipe.
+@@ -1075,12 +1106,14 @@ void getPipeDcDt(double t, double y[], int n, double deriv[])
+ **  Input:
+ **    t = current time (not used)
+ **    y[] = vector of reacting species concentrations
+-**    n = number of reacting species.
++**    n = number of reacting species
++**    data = the chemistry state of the thread (a ChemState).
+ **
+ **  Output:
+ **    deriv[] = vector of reaction rates of each reacting species.
+ */
+ {
++    ChemState *cs = (ChemState*)data;
+     int i, m;
+ 	double x;
+ 
+@@ -1090,14 +1123,14 @@ void getPipeDcDt(double t, double y[], int n, double deriv[])
+     for (i=1; i<=n; i++)
+     {
+         m = PipeRateSpecies[i];
+-        ChemC1[m] = y[i];
++        cs->ChemC1[m] = y[i];
+     }
+ 
+ // --- update equilibrium species if full coupling in use
+ 
+     if ( MSX.Coupling == FULL_COUPLING )
+     {
+-        if ( pipeEquil(ChemC1) > 0 )     // check for error condition
++        if ( pipeEquil(cs, cs->ChemC1) > 0 )     // check for error condition
+         {
+             for (i=1; i<=n; i++) deriv[i] = 0.0;
+             return;
+@@ -1108,11 +1141,11 @@ void getPipeDcDt(double t, double y[], int n, double deriv[])
+ 
+     if ( MSX.Compiler )
+     {
+-	    MSXgetPipeRates(ChemC1, MSX.K, MSX.Link[TheLink].param, HydVar, F);
++	    MSXgetPipeRates(cs->ChemC1, MSX.K, MSX.Link[cs->TheLink].param, cs->HydVar, cs->F);
+         for (i=1; i<=n; i++)
+         {
+             m = PipeRateSpecies[i];
+-            deriv[i] = validate(F[m], m, LINK, RATE);                   
++            deriv[i] = validate(cs->F[m], m, LINK, RATE);                   
+         }
+ 	    return;
+     }
+@@ -1120,18 +1153,18 @@ void getPipeDcDt(double t, double y[], int n, double deriv[])
+ // --- evaluate each pipe reaction expression
+ 
+     evalDeps(PipeExprs.slotExpr, PipeExprs.rateDeps, PipeExprs.nRateDeps,
+-             ChemC1);
++             cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = PipeRateSpecies[i];
+-		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], ChemC1);
++		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], cs->ChemC1);
+         deriv[i] = validate(x, m, LINK, RATE);                          
+     }
+ }
+ 
+ //=============================================================================
+ 
+-void getTankDcDt(double t, double y[], int n, double deriv[])
++void getTankDcDt(double t, double y[], int n, double deriv[], void *data)
+ /*
+ **  Purpose:
+ **    finds reaction rate (dC/dt) for each reacting species in a tank.
+@@ -1139,12 +1172,14 @@ void getTankDcDt(double t, double y[], int n, double deriv[])
+ **  Input:
+ **    t = current time (not used)
+ **    y[] = vector of reacting species concentrations
+-**    n = number of reacting species.
++**    n = number of reacting species
++**    data = the chemistry state of the thread (a ChemState).
+ **
+ **  Output:
+ **    deriv[] = vector of reaction rates of each reacting species.
+ */
+ {
++    ChemState *cs = (ChemState*)data;
+     int i, m;
+ 	double x;
+ 
+@@ -1154,14 +1189,14 @@ void getTankDcDt(double t, double y[], int n, double deriv[])
+     for (i=1; i<=n; i++)
+     {
+         m = TankRateSpecies[i];
+-        ChemC1[m] = y[i];
++        cs->ChemC1[m] = y[i];
+     }
+ 
+ // --- update equilibrium species if full coupling in use
+ 
+     if ( MSX.Coupling == FULL_COUPLING )
+     {
+-        if ( tankEquil(ChemC1) > 0 )     // check for error condition
++        if ( tankEquil(cs, cs->ChemC1) > 0 )     // check for error condition
+         {
+             for (i=1; i<=n; i++) deriv[i] = 0.0;
+             return;
+@@ -1172,11 +1207,11 @@ void getTankDcDt(double t, double y[], int n, double deriv[])
+ 
+     if ( MSX.Compiler )
+     {
+-	    MSXgetTankRates(ChemC1, MSX.K, MSX.Tank[TheTank].param, HydVar, F);
++	    MSXgetTankRates(cs->ChemC1, MSX.K, MSX.Tank[cs->TheTank].param, cs->HydVar, cs->F);
+         for (i=1; i<=n; i++)
+         {
+             m = TankRateSpecies[i];
+-            deriv[i] = validate(F[m], m, TANK, RATE);                   
++            deriv[i] = validate(cs->F[m], m, TANK, RATE);                   
+         }
+ 	    return;
+     }
+@@ -1184,18 +1219,18 @@ void getTankDcDt(double t, double y[], int n, double deriv[])
+ // --- evaluate each tank reaction expression
+ 
+     evalDeps(TankExprs.slotExpr, TankExprs.rateDeps, TankExprs.nRateDeps,
+-             ChemC1);
++             cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = TankRateSpecies[i];
+-		x = mathexpr_evalVector(TankExprs.speciesExpr[m], ChemC1);
++		x = mathexpr_evalVector(TankExprs.speciesExpr[m], cs->ChemC1);
+         deriv[i] = validate(x, m, TANK, RATE);                          
+     }
+ }
+ 
+ //=============================================================================
+ 
+-void getPipeEquil(double t, double y[], int n, double f[])
++void getPipeEquil(double t, double y[], int n, double f[], void *data)
+ /*
+ **  Purpose:
+ **    evaluates equilibrium expressions for pipe chemistry.
+@@ -1203,12 +1238,14 @@ void getPipeEquil(double t, double y[], int n, double f[])
+ **  Input:
+ **    t = current time (not used)
+ **    y[] = vector of equilibrium species concentrations
+-**    n = number of equilibrium species.
++**    n = number of equilibrium species
++**    data = the chemistry state of the thread (a ChemState).
+ **
+ **  Output:
+ **    f[] = vector of equilibrium function values.
+ */
+ {
++    ChemState *cs = (ChemState*)data;
+     int i, m;
+ 	double x;
+ 
+@@ -1218,18 +1255,18 @@ void getPipeEquil(double t, double y[], int n, double f[])
+     for (i=1; i<=n; i++)
+     {
+         m = PipeEquilSpecies[i];
+-        ChemC1[m] = y[i];
++        cs->ChemC1[m] = y[i];
+     }
+ 
+ // --- use compiled functions if available                                     
+ 
+     if ( MSX.Compiler )
+     {
+-	    MSXgetPipeEquil(ChemC1, MSX.K, MSX.Link[TheLink].param, HydVar, F);
++	    MSXgetPipeEquil(cs->ChemC1, MSX.K, MSX.Link[cs->TheLink].param, cs->HydVar, cs->F);
+         for (i=1; i<=n; i++)
+         {
+             m = PipeEquilSpecies[i];
+-		    f[i] = validate(F[m], m, LINK, EQUIL);                      
++		    f[i] = validate(cs->F[m], m, LINK, EQUIL);                      
+         }
+     	return;
+     }
+@@ -1237,18 +1274,18 @@ void getPipeEquil(double t, double y[], int n, double f[])
+ // --- evaluate each pipe equilibrium expression
+ 
+     evalDeps(PipeExprs.slotExpr, PipeExprs.equilDeps, PipeExprs.nEquilDeps,
+-             ChemC1);
++             cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = PipeEquilSpecies[i];
+-		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], ChemC1);
++		x = mathexpr_evalVector(PipeExprs.speciesExpr[m], cs->ChemC1);
+ 		f[i] = validate(x, m, LINK, EQUIL);                             
+     }
+ }
+ 
+ //=============================================================================
+ 
+-void getTankEquil(double t, double y[], int n, double f[])
++void getTankEquil(double t, double y[], int n, double f[], void *data)
+ /*
+ **  Purpose:
+ **    evaluates equilibrium expressions for tank chemistry.
+@@ -1257,11 +1294,13 @@ void getTankEquil(double t, double y[], int n, double f[])
+ **    t = current time (not used)
+ **    y[] = vector of equilibrium species concentrations
+ **    n = number of equilibrium species
++**    data = the chemistry state of the thread (a ChemState).
+ **
+ **  Output:
+ **    f[] = vector of equilibrium function values.
+ */
+ {
++    ChemState *cs = (ChemState*)data;
+     int i, m;
+     double x;
+ 
+@@ -1271,18 +1310,18 @@ void getTankEquil(double t, double y[], int n, double f[])
+     for (i=1; i<=n; i++)
+     {
+         m = TankEquilSpecies[i];
+-        ChemC1[m] = y[i];
++        cs->ChemC1[m] = y[i];
+     }
+ 
+ // --- use compiled functions if available                                     
+ 
+     if ( MSX.Compiler )
+     {
+-	    MSXgetTankEquil(ChemC1, MSX.K, MSX.Tank[TheTank].param, HydVar, F);
++	    MSXgetTankEquil(cs->ChemC1, MSX.K, MSX.Tank[cs->TheTank].param, cs->HydVar, cs->F);
+         for (i=1; i<=n; i++)
+         {
+             m = TankEquilSpecies[i];
+-		    f[i] = validate(F[m], m, TANK, EQUIL);                      
++		    f[i] = validate(cs->F[m], m, TANK, EQUIL);                      
+         }
+ 	    return;
+     }
+@@ -1290,11 +1329,11 @@ void getTankEquil(double t, double y[], int n, double f[])
+ // --- evaluate each tank equilibrium expression
+ 
+     evalDeps(TankExprs.slotExpr, TankExprs.equilDeps, TankExprs.nEquilDeps,
+-             ChemC1);
++             cs->ChemC1);
+     for (i=1; i<=n; i++)
+     {
+         m = TankEquilSpecies[i];
+-		x = mathexpr_evalVector(TankExprs.speciesExpr[m], ChemC1);
++		x = mathexpr_evalVector(TankExprs.speciesExpr[m], cs->ChemC1);
+ 		f[i] = validate(x, m, TANK, EQUIL);                             
+     }
+ }
+@@ -1559,7 +1598,7 @@ void evalDeps(MathExpr **slotExpr, int *list, int n, double *val)
+ 
+ //=============================================================================
+ 
+-void setPipeValues(int k)
++void setPipeValues(ChemState *cs, int k)
+ /*
+ **  Purpose:
+ **    places the values of the parameters & constants of pipe k and of its
+@@ -1570,18 +1609,18 @@ void setPipeValues(int k)
+ */
+ {
+     int i;
+-    double *val = ChemC1;
++    double *val = cs->ChemC1;
+     for (i = 1; i <= MSX.Nobjects[PARAMETER]; i++)
+         val[LastIndex[TERM] + i] = MSX.Link[k].param[i];
+     for (i = 1; i <= MSX.Nobjects[CONSTANT]; i++)
+         val[LastIndex[PARAMETER] + i] = MSX.Const[i].value;
+     for (i = 1; i < MAX_HYD_VARS; i++)
+-        val[HydBase + i] = HydVar[i];
++        val[HydBase + i] = cs->HydVar[i];
+ }
+ 
+ //=============================================================================
+ 
+-void setTankValues()
++void setTankValues(ChemState *cs)
+ /*
+ **  Purpose:
+ **    places the values of the parameters & constants of the current tank
+@@ -1589,8 +1628,8 @@ void setTankValues()
+ */
+ {
+     int i, j;
+-    double *val = ChemC1;
+-    j = MSX.Node[TheNode].tank;
++    double *val = cs->ChemC1;
++    j = MSX.Node[cs->TheNode].tank;
+     for (i = 1; i <= MSX.Nobjects[PARAMETER]; i++)
+     {
+         if ( j > 0 ) val[LastIndex[TERM] + i] = MSX.Tank[j].param[i];
+diff --git a/src/solver/msxutils.c b/src/solver/msxutils.c
+index b6caf6b..2e81f37 100644
+--- a/src/solver/msxutils.c
++++ b/src/solver/msxutils.c
+@@ -450,7 +450,7 @@ void solve(double **a, int n, int *indx, double b[])
+ //=============================================================================
+ 
+ void jacobian(double *x, int n, double *f, double *w, double **a,
+-              void (*func)(double, double*, int, double*))
++              void (*func)(double, double*, int, double*, void*), void* data)
+ /*
+ **  Purpose: 
+ **    computes Jacobian matrix of F(t,X) at given X
+@@ -461,7 +461,8 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+ **    f[1..n] = a work vector
+ **    w[1..n] = a work vector
+ **    func = user supplied routine that computes the function
+-**           values at x.
++**           values at x
++**    data = pointer passed on to func.
+ **
+ **  Output:
+ **    f[1..n] = function values at x
+@@ -472,7 +473,8 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+ **      t = independent variable (not used)
+ **      x[1..n] = vector of dependent variables
+ **      n = number of functions
+-**      f[1..n] = function values at x.
++**      f[1..n] = function values at x
++**      data = the data pointer given to jacobian.
+ **  
+ **  2. The arrays and matrices used in this function are 1-based, so
+ **     they must have been sized to n+1 when first created.
+@@ -486,7 +488,7 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+     {
+         temp = x[j];
+         x[j] = temp + eps;
+-        func(0.0, x, n, f);
++        func(0.0, x, n, f, data);
+         if ( temp == 0.0 )
+         {
+             x[j] = temp;
+@@ -497,7 +499,7 @@ void jacobian(double *x, int n, double *f, double *w, double **a,
+             x[j] = temp - eps;
+             eps2 = 2.0*eps;
+         }
+-        func(0.0, x, n, w);
++        func(0.0, x, n, w, data);
+         for (i=1; i<=n; i++) a[i][j] = (f[i] - w[i]) / eps2;
+         x[j] = temp;
+     }
+diff --git a/src/solver/msxutils.h b/src/solver/msxutils.h
+index 84fde29..d3b65e1 100644
+--- a/src/solver/msxutils.h
++++ b/src/solver/msxutils.h
+@@ -51,6 +51,6 @@ void solve(double **a, int n, int *indx, double b[]);
+ 
+ // Computes the Jacobian matrix of a set of functions
+ void jacobian(double *x, int n, double *f, double *w, double **a,
+-              void (*func)(double, double*, int, double*));
++              void (*func)(double, double*, int, double*, void*), void* data);
+ 
+ #endif
+\ No newline at end of file
+diff --git a/src/solver/newton.c b/src/solver/newton.c
+index 43eea49..95b9792 100644
+--- a/src/solver/newton.c
++++ b/src/solver/newton.c
+@@ -90,7 +90,8 @@ void newton_close()
+ //=============================================================================
+ 
+ int newton_solve(double x[], int n, int maxit, int numsig, 
+-                 void (*func)(double, double*, int, double*))
++                 void (*func)(double, double*, int, double*, void*),
++                 void* data)
+ /*
+ **  Purpose:
+ **    uses newton-raphson iterations to solve n nonlinear eqns.
+@@ -100,7 +101,8 @@ int newton_solve(double x[], int n, int maxit, int numsig,
+ **    n = number of equations
+ **    maxit = max. number of iterations allowed
+ **    numsig = number of significant digits in error
+-**    func = pointer to the function that returns the function values at x.
++**    func = pointer to the function that returns the function values at x
++**    data = pointer passed on to func.
+ **
+ **  Returns:
+ **    number of iterations if successful, -1 if Jacobian is singular,
+@@ -111,15 +113,23 @@ int newton_solve(double x[], int n, int maxit, int numsig,
+ **      t = a time value (not used here)
+ **      x = vector of unknowns being solved for
+ **      n = number of unknowns
+-**      f = vector of function values evaluated at x.
++**      f = vector of function values evaluated at x
++**      data = the data pointer given to newton_solve.
+ */
+ {
+     int i, k;
+ 	double errx, errmax, cscal, relconvg = pow(10.0, -numsig);
+ 
++    // --- the calling thread's work arrays (held in locals since the
++    //     solver struct is thread local storage, slow to get at)
++
++    MSXNewton *nw = &MSXNewtonSolver;
++    double *F = nw->F, *W = nw->W, **J = nw->J;
++    int    *Indx = nw->Indx;
++
+     // --- check that system was sized adequetely
+ 
+-    if ( n > MSXNewtonSolver.Nmax ) return -3;
++    if ( n > nw->Nmax ) return -3;
+ 
+     // --- use up to maxit iterations to find a solution
+ 
+@@ -127,16 +137,16 @@ int newton_solve(double x[], int n, int maxit, int numsig,
+ 	{
+         // --- evaluate the Jacobian matrix
+ 
+-        jacobian(x, n, MSXNewtonSolver.F, MSXNewtonSolver.W, MSXNewtonSolver.J, func);
++        jacobian(x, n, F, W, J, func, data);
+ 
+         // --- factorize the Jacobian
+ 
+-        if ( !factorize(MSXNewtonSolver.J, n, MSXNewtonSolver.W, MSXNewtonSolver.Indx) ) return -1;
++        if ( !factorize(J, n, W, Indx) ) return -1;
+ 
+         // --- solve for the updates to x (returned in F)
+ 
+-		for (i=1; i<=n; i++) MSXNewtonSolver.F[i] = -MSXNewtonSolver.F[i];
+-        solve(MSXNewtonSolver.J, n, MSXNewtonSolver.Indx, MSXNewtonSolver.F);
++		for (i=1; i<=n; i++) F[i] = -F[i];
++        solve(J, n, Indx, F);
+ 		
+ 		// --- update solution x & check for convergence
+ 
+@@ -145,8 +155,8 @@ int newton_solve(double x[], int n, int maxit, int numsig,
+         {
+ 			cscal = x[i];
+             if (cscal < relconvg) cscal = relconvg;
+-			x[i] += MSXNewtonSolver.F[i];
+-            errx = fabs(MSXNewtonSolver.F[i]/cscal);
++			x[i] += F[i];
++            errx = fabs(F[i]/cscal);
+             if (errx > errmax) errmax = errx;
+         }
+ 		if (errmax <= relconvg) return k;
+diff --git a/src/solver/newton.h b/src/solver/newton.h
+index 7ce8fe4..042a11e 100644
+--- a/src/solver/newton.h
++++ b/src/solver/newton.h
+@@ -29,6 +29,7 @@ void newton_close(void);
+ 
+ // Applies the solver to a specific system of equations
+ int  newton_solve(double x[], int n, int maxit, int numsig,  
+-                  void (*func)(double, double*, int, double*));
++                  void (*func)(double, double*, int, double*, void*),
++                  void* data);
+ 
+ #endif
+\ No newline at end of file
+diff --git a/src/solver/rk5.c b/src/solver/rk5.c
+index dc81574..7a96d1c 100644
+--- a/src/solver/rk5.c
++++ b/src/solver/rk5.c
+@@ -98,7 +98,8 @@ void rk5_close()
+ 
+ int rk5_integrate(double y[], int n, double t, double tnext,
+                   double* htry, double atol[], double rtol[],
+-                  void (*func)(double, double*, int, double*))
++                  void (*func)(double, double*, int, double*, void*),
++                  void* data)
+ /*
+ **  Purpose:
+ **    Integrates system of equations dY/dt = F(t,Y) over a
+@@ -114,6 +115,7 @@ int rk5_integrate(double y[], int n, double t, double tnext,
+ **    rtol[] =  relative error tolerance on each dependent variable
+ **    func   =  pointer to function that evaluates dY/dt at given
+ **              values of t and Y.
++**    data   =  pointer passed on to func.
+ **
+ **  Output:
+ **    y[]    =  values of dependent variables at end of interval
+@@ -158,11 +160,20 @@ int rk5_integrate(double y[], int n, double t, double tnext,
+     int    naccpt = 0;
+     int    nrejct = 0;
+     int    reject = 0;
+-    int    adjust = MSXRungeKuttaSolver.Adjust;
++
++// --- the calling thread's work arrays (held in locals since the
++//     solver struct is thread local storage, slow to get at)
++
++    MSXRungeKutta *rk = &MSXRungeKuttaSolver;
++    int    adjust = rk->Adjust;
++    int    itmax = rk->Itmax;
++    double *K1 = rk->K1, *K2 = rk->K2, *K3 = rk->K3, *K4 = rk->K4,
++           *K5 = rk->K5, *K6 = rk->K6, *Ynew = rk->Ynew;
++    void   (*report)(double, double*, int) = rk->Report;
+ 
+ // --- initial function evaluation
+ 
+-    func(t, y, n, MSXRungeKuttaSolver.K1);
++    func(t, y, n, K1, data);
+     nfcn++;
+ 
+ // --- initial step size
+@@ -175,8 +186,8 @@ int rk5_integrate(double y[], int n, double t, double tnext,
+         for (i=1; i<=n; i++)
+         {
+             ytol = atol[i] + rtol[i]*fabs(y[i]);
+-            if (MSXRungeKuttaSolver.K1[i] != 0.0)
+-                h = fmin(h, (ytol/fabs(MSXRungeKuttaSolver.K1[i])));
++            if (K1[i] != 0.0)
++                h = fmin(h, (ytol/fabs(K1[i])));
+         }
+     }
+     h = fmax(1.e-8, h);
+@@ -193,34 +204,34 @@ int rk5_integrate(double y[], int n, double t, double tnext,
+ 
+         tnew = t + c2*h;
+         for (i=1; i<=n; i++)
+-            MSXRungeKuttaSolver.Ynew[i] = y[i] + h*a21* MSXRungeKuttaSolver.K1[i];
+-        func(tnew, MSXRungeKuttaSolver.Ynew, n, MSXRungeKuttaSolver.K2);
++            Ynew[i] = y[i] + h*a21* K1[i];
++        func(tnew, Ynew, n, K2, data);
+ 
+         tnew = t + c3*h;
+         for (i=1; i<=n; i++)
+-            MSXRungeKuttaSolver.Ynew[i] = y[i] + h*(a31* MSXRungeKuttaSolver.K1[i] + a32* MSXRungeKuttaSolver.K2[i]);
+-        func(tnew, MSXRungeKuttaSolver.Ynew, n, MSXRungeKuttaSolver.K3);
++            Ynew[i] = y[i] + h*(a31* K1[i] + a32* K2[i]);
++        func(tnew, Ynew, n, K3, data);
+ 
+         tnew = t + c4*h;
+         for (i=1; i<=n; i++)
+-            MSXRungeKuttaSolver.Ynew[i]=y[i] + h*(a41* MSXRungeKuttaSolver.K1[i] + a42* MSXRungeKuttaSolver.K2[i] + a43* MSXRungeKuttaSolver.K3[i]);
+-        func(tnew, MSXRungeKuttaSolver.Ynew, n, MSXRungeKuttaSolver.K4);
++            Ynew[i]=y[i] + h*(a41* K1[i] + a42* K2[i] + a43* K3[i]);
++        func(tnew, Ynew, n, K4, data);
+ 
+         tnew = t + c5*h;
+         for (i=1; i<=n; i++)
+-            MSXRungeKuttaSolver.Ynew[i] = y[i] + h*(a51* MSXRungeKuttaSolver.K1[i] + a52* MSXRungeKuttaSolver.K2[i] + a53* MSXRungeKuttaSolver.K3[i]+a54* MSXRungeKuttaSolver.K4[i]);
+-        func(tnew, MSXRungeKuttaSolver.Ynew, n, MSXRungeKuttaSolver.K5);
++            Ynew[i] = y[i] + h*(a51* K1[i] + a52* K2[i] + a53* K3[i]+a54* K4[i]);
++        func(tnew, Ynew, n, K5, data);
+ 
+         tnew = t + h;
+         for (i=1; i<=n; i++)
+-            MSXRungeKuttaSolver.Ynew[i] = y[i] + h*(a61* MSXRungeKuttaSolver.K1[i] + a62* MSXRungeKuttaSolver.K2[i] +
+-	                  a63* MSXRungeKuttaSolver.K3[i] + a64* MSXRungeKuttaSolver.K4[i] + a65* MSXRungeKuttaSolver.K5[i]);
+-        func(tnew, MSXRungeKuttaSolver.Ynew, n, MSXRungeKuttaSolver.K6);
++            Ynew[i] = y[i] + h*(a61* K1[i] + a62* K2[i] +
++	                  a63* K3[i] + a64* K4[i] + a65* K5[i]);
++        func(tnew, Ynew, n, K6, data);
+ 
+         for (i=1; i<=n; i++)
+-            MSXRungeKuttaSolver.Ynew[i] = y[i] + h*(a71* MSXRungeKuttaSolver.K1[i] + a73* MSXRungeKuttaSolver.K3[i] +
+-	                  a74* MSXRungeKuttaSolver.K4[i] + a75* MSXRungeKuttaSolver.K5[i] + a76* MSXRungeKuttaSolver.K6[i]);
+-        func(tnew, MSXRungeKuttaSolver.Ynew, n, MSXRungeKuttaSolver.K2);
++            Ynew[i] = y[i] + h*(a71* K1[i] + a73* K3[i] +
++	                  a74* K4[i] + a75* K5[i] + a76* K6[i]);
++        func(tnew, Ynew, n, K2, data);
+         nfcn += 6;
+ 
+     // --- step size adjustment
+@@ -230,13 +241,13 @@ int rk5_integrate(double y[], int n, double t, double tnext,
+         if (adjust)
+         {
+             for (i=1; i<=n; i++)
+-                MSXRungeKuttaSolver.K4[i] = (e1* MSXRungeKuttaSolver.K1[i] + e3* MSXRungeKuttaSolver.K3[i] + e4* MSXRungeKuttaSolver.K4[i] + e5* MSXRungeKuttaSolver.K5[i] +
+-                         e6* MSXRungeKuttaSolver.K6[i] + e7* MSXRungeKuttaSolver.K2[i])*h;
++                K4[i] = (e1* K1[i] + e3* K3[i] + e4* K4[i] + e5* K5[i] +
++                         e6* K6[i] + e7* K2[i])*h;
+  
+             for (i=1; i<=n; i++)
+             {
+-                sk = atol[i] + rtol[i]*fmax(fabs(y[i]), fabs(MSXRungeKuttaSolver.Ynew[i]));
+-                sk = MSXRungeKuttaSolver.K4[i]/sk;
++                sk = atol[i] + rtol[i]*fmax(fabs(y[i]), fabs(Ynew[i]));
++                sk = K4[i]/sk;
+                 err = err + (sk*sk);
+             }
+             err = sqrt(err/n);
+@@ -256,15 +267,15 @@ int rk5_integrate(double y[], int n, double t, double tnext,
+             naccpt++;
+             for (i=1; i<=n; i++)
+             {
+-                MSXRungeKuttaSolver.K1[i] = MSXRungeKuttaSolver.K2[i];
+-                y[i] = MSXRungeKuttaSolver.Ynew[i];
++                K1[i] = K2[i];
++                y[i] = Ynew[i];
+             }
+             t = t + h;
+             if ( adjust && t <= tnext ) *htry = h;
+             if (fabs(hnew) > hmax) hnew = hmax; 
+             if (reject) hnew = fmin(fabs(hnew), fabs(h));
+             reject = 0;
+-            if (MSXRungeKuttaSolver.Report) MSXRungeKuttaSolver.Report(t, y, n);
++            if (report) report(t, y, n);
+         } 
+   
+     // --- step is rejected
+@@ -281,7 +292,7 @@ int rk5_integrate(double y[], int n, double t, double tnext,
+         h = hnew;
+         if ( adjust ) *htry = h;
+         nstep++;
+-        if (nstep >= MSXRungeKuttaSolver.Itmax) return -1;
++        if (nstep >= itmax) return -1;
+     }
+     return nfcn;
+ }
+diff --git a/src/solver/rk5.h b/src/solver/rk5.h
+index dd4954b..a8e86f0 100644
+--- a/src/solver/rk5.h
++++ b/src/solver/rk5.h
+@@ -34,6 +34,7 @@ void rk5_close(void);
+ // Applies the solver to integrate a specific system of ODEs
+ int  rk5_integrate(double y[], int n, double t, double tnext,
+                    double* htry, double atol[], double rtol[],
+-                   void (*func)(double, double*, int, double*));
++                   void (*func)(double, double*, int, double*, void*),
++                   void* data);
+ 
+ #endif
+\ No newline at end of file
+diff --git a/src/solver/ros2.c b/src/solver/ros2.c
+index 9647032..5e62ff9 100644
+--- a/src/solver/ros2.c
++++ b/src/solver/ros2.c
+@@ -99,7 +99,8 @@ void ros2_close()
+       
+ int ros2_integrate(double y[], int n, double t, double tnext,
+                    double* htry, double atol[], double rtol[],
+-                   void (*func)(double, double*, int, double*))
++                   void (*func)(double, double*, int, double*, void*),
++                   void* data)
+ /*
+ **  Purpose:
+ **    integrates a system of ODEs over a specified time interval.
+@@ -114,6 +115,7 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+ **    atol[1..n] = vector of absolute tolerances on the variables y
+ **    rtol[1..n] = vector of relative tolerances on the variables y
+ **    func = name of the function that computes dy/dt for each y
++**    data = pointer passed on to func
+ **
+ **  Output:
+ **    htry = size of the last full time step taken.
+@@ -128,7 +130,8 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+ **      t = current time
+ **      y[1..n] = vector of dependent variable values
+ **      n = number of dependent variables
+-**      dfdy[1..n] = vector of derivative values computed.
++**      dfdy[1..n] = vector of derivative values computed
++**      data = the data pointer given to ros2_integrate.
+ **
+ **  2. The arrays used in this function are 1-based, so
+ **     they must have been sized to n+1 when first created.
+@@ -140,7 +143,15 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+     double ej, err, factor, facmax;
+     int    nfcn, njac, naccept, nreject, j;
+     int    isReject;
+-	int    adjust = MSXRosenbrockSolver.Adjust;
++
++// --- the calling thread's work arrays (held in locals since the
++//     solver struct is thread local storage, slow to get at)
++
++    MSXRosenbrock *ros = &MSXRosenbrockSolver;
++	int    adjust = ros->Adjust;
++    double *K1 = ros->K1, *K2 = ros->K2, *Ynew = ros->Ynew;
++    double **A = ros->A;
++    int    *Jindx = ros->Jindx;
+ 
+ // --- Initialize counters, etc.
+ 
+@@ -160,14 +171,14 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+     h = *htry;
+     if ( h == 0.0 )
+     {
+-        func(t, y, n, MSXRosenbrockSolver.K1);
++        func(t, y, n, K1, data);
+         nfcn += 1;
+         adjust = 1;
+         h = tnext - t;
+         for (j=1; j<=n; j++)
+         {
+             ytol = atol[j] + rtol[j]*fabs(y[j]);
+-            if (MSXRosenbrockSolver.K1[j] != 0.0) h = fmin(h, (ytol/fabs(MSXRosenbrockSolver.K1[j])));
++            if (K1[j] != 0.0) h = fmin(h, (ytol/fabs(K1[j])));
+         }
+     }
+     h = fmax(hmin, h);
+@@ -194,7 +205,7 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+ 
+         if ( isReject == 0 )
+         {
+-            jacobian(y, n, MSXRosenbrockSolver.K1, MSXRosenbrockSolver.K2, MSXRosenbrockSolver.A, func);
++            jacobian(y, n, K1, K2, A, func, data);
+             njac++;
+             nfcn += 2*n;
+             ghinv1 = 0.0;
+@@ -206,37 +217,37 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+         dghinv = ghinv - ghinv1;
+         for (j=1; j<=n; j++)
+         {
+-            MSXRosenbrockSolver.A[j][j] += dghinv;
++            A[j][j] += dghinv;
+         }
+         ghinv1 = ghinv;
+-        if ( !factorize(MSXRosenbrockSolver.A, n, MSXRosenbrockSolver.K1, MSXRosenbrockSolver.Jindx) ) return -1;
++        if ( !factorize(A, n, K1, Jindx) ) return -1;
+ 
+     // --- Stage 1 solution
+ 
+-        func(t, y, n, MSXRosenbrockSolver.K1);
++        func(t, y, n, K1, data);
+         nfcn += 1;
+-        for (j=1; j<=n; j++) MSXRosenbrockSolver.K1[j] *= ghinv;
+-        solve(MSXRosenbrockSolver.A, n, MSXRosenbrockSolver.Jindx, MSXRosenbrockSolver.K1);
++        for (j=1; j<=n; j++) K1[j] *= ghinv;
++        solve(A, n, Jindx, K1);
+ 
+     // --- Stage 2 solution
+ 
+         for (j=1; j<=n; j++)
+         {
+-            MSXRosenbrockSolver.Ynew[j] = y[j] + h* MSXRosenbrockSolver.K1[j];
++            Ynew[j] = y[j] + h* K1[j];
+         }
+-        func(t, MSXRosenbrockSolver.Ynew, n, MSXRosenbrockSolver.K2);
++        func(t, Ynew, n, K2, data);
+         nfcn += 1;
+         for (j=1; j<=n; j++)
+         {
+-            MSXRosenbrockSolver.K2[j] = (MSXRosenbrockSolver.K2[j] - 2.0* MSXRosenbrockSolver.K1[j])*ghinv;
++            K2[j] = (K2[j] - 2.0* K1[j])*ghinv;
+         }
+-        solve(MSXRosenbrockSolver.A, n, MSXRosenbrockSolver.Jindx, MSXRosenbrockSolver.K2);
++        solve(A, n, Jindx, K2);
+ 
+     // --- Overall solution
+ 
+         for (j=1; j<=n; j++)
+         {
+-            MSXRosenbrockSolver.Ynew[j] = y[j] + 1.5*h* MSXRosenbrockSolver.K1[j] + 0.5*h* MSXRosenbrockSolver.K2[j];
++            Ynew[j] = y[j] + 1.5*h* K1[j] + 0.5*h* K2[j];
+         }
+ 
+     // --- Error estimation
+@@ -247,8 +258,8 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+         {
+             for (j=1; j<=n; j++)
+             {
+-                ytol = atol[j] + rtol[j]*fabs(MSXRosenbrockSolver.Ynew[j]);
+-	            ej = fabs(MSXRosenbrockSolver.Ynew[j] - y[j] - h* MSXRosenbrockSolver.K1[j])/ytol;
++                ytol = atol[j] + rtol[j]*fabs(Ynew[j]);
++	            ej = fabs(Ynew[j] - y[j] - h* K1[j])/ytol;
+                 err = err + ej*ej; 
+             }
+             err = sqrt(err/n);
+@@ -278,7 +289,7 @@ int ros2_integrate(double y[], int n, double t, double tnext,
+             isReject = 0;
+             for (j=1; j<=n; j++)
+             {
+-                y[j] = MSXRosenbrockSolver.Ynew[j];
++                y[j] = Ynew[j];
+                 if ( y[j] <= UROUND ) y[j] = 0.0;
+             }
+             if ( adjust ) *htry = h;
+diff --git a/src/solver/ros2.h b/src/solver/ros2.h
+index c191046..71d6696 100644
+--- a/src/solver/ros2.h
++++ b/src/solver/ros2.h
+@@ -30,6 +30,7 @@ void ros2_close(void);
+ // Applies the solver to integrate a specific system of ODEs
+ int  ros2_integrate(double y[], int n, double t, double tnext,
+                     double* htry, double atol[], double rtol[],
+-                    void (*func)(double, double*, int, double*));
++                    void (*func)(double, double*, int, double*, void*),
++                    void* data);
+ 
+ #endif
+\ No newline at end of file

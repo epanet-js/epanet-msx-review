@@ -1,0 +1,63 @@
+BIT-13: Hand pipes to threads dynamically in the reaction and dispersion loops
+
+The reaction loop and the two dispersion loops gave each thread an equal
+block of pipes, but a pipe's work is proportional to its number of
+segments (1 to over 300), and two of an M1 Pro's cores are slower. Use a
+dynamic schedule, a few pipes at a time. Each pipe's arithmetic is
+unchanged, so results do not depend on which thread does it.
+
+Requires: none
+Results: identical (every concentration, the output file and the report are unchanged)
+
+Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-12:
+    git apply --whitespace=nowarn BIT-13.patch
+or use tools/build-msx.sh, which applies the series in order.
+
+diff --git a/src/solver/msxchem.c b/src/solver/msxchem.c
+index ca1b6c1..a8e0a6e 100644
+--- a/src/solver/msxchem.c
++++ b/src/solver/msxchem.c
+@@ -514,14 +514,16 @@ int MSXchem_react(double dt)
+     }
+ 
+ // --- examine each link
+-//     (the largest error code found is returned whatever the number
++//     (links are handed out to threads in small chunks since the
++//     number of segments, and so the work, varies a lot between links;
++//     the largest error code found is returned whatever the number
+ //     of threads, as the order in which links are done may vary)
+ 
+ #pragma omp parallel
+ {
+     int ierr;
+     ChemState *cs = Chem;
+-    #pragma omp for private(k)
++    #pragma omp for private(k) schedule(dynamic, 2)
+     for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+     {
+         // --- skip non-pipe links
+diff --git a/src/solver/msxdispersion.c b/src/solver/msxdispersion.c
+index 05f8b0c..1f5b090 100644
+--- a/src/solver/msxdispersion.c
++++ b/src/solver/msxdispersion.c
+@@ -280,8 +280,10 @@ void dispersion_pipe(int m, double tstep)
+ 	#pragma omp parallel
+ 	#endif
+ 	{
++	// --- the work per link varies with its number of segments (and links
++	//     without dispersion are skipped), so links are handed out dynamically
+ 	#ifdef USE_OPENMP
+-	#pragma omp for private(seg, segp, cons, vd, vu, vself, k, nseg, asquare, velocity, diam, area, reynolds, ldispersion, hc, hloc)
++	#pragma omp for private(seg, segp, cons, vd, vu, vself, k, nseg, asquare, velocity, diam, area, reynolds, ldispersion, hc, hloc) schedule(dynamic, 8)
+ 	#endif
+ 		for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+ 		{
+@@ -536,7 +538,7 @@ void   segqual_update(int m, double tstep)
+ 	#endif
+ 	{
+ 		#ifdef USE_OPENMP
+-		#pragma omp for private(k, j, n1, n2, seg, segp, nseg, source, ldispersion, massin, area)
++		#pragma omp for private(k, j, n1, n2, seg, segp, nseg, source, ldispersion, massin, area) schedule(dynamic, 8)
+ 		#endif
+ 		for (k = 1; k <= MSX.Nobjects[LINK]; k++)
+ 		{
