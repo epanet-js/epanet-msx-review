@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Chemistry (expression interpreter, Euler integrator) |
-| **Results** | <!-- results:BIT-08 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-08 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `mathexpr.c`, `mathexpr.h`, `msxchem.c` (+400 / -0 lines) |
 | **Patch** | [`BIT-08.patch`](BIT-08.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-07 ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none beyond the series order: it runs [BIT-05](../BIT-05-interpreter-dispatch/)'s joined rate program, and gives identical segments their results with [BIT-06](../BIT-06-identical-segments-once/)'s copy |

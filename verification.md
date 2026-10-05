@@ -15,30 +15,30 @@ A cell gives the number of runs whose results are byte-for-byte the same as 85a3
 <!-- verification -->
 | Patch | Step, 1 thread | Step, 8 threads | Solve, 1 thread | Solve, 8 threads | Read, 1 thread | Read, 8 threads | No OpenMP, 1 thread |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [FIX-01](3-bug-fixes/FIX-01-reaction-loop-error-race/) | 7/7 | 7/7 | - | - | - | - | - |
-| [FIX-02](3-bug-fixes/FIX-02-zero-flow-segment-leak/) | 7/7 | 7/7 | - | - | - | - | - |
-| [FIX-03](3-bug-fixes/FIX-03-tempfile-descriptor-leak/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-01](1-bit-identical/BIT-01-build-defaults/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-02](1-bit-identical/BIT-02-terms-evaluated-once/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-03](1-bit-identical/BIT-03-thread-state-without-tls/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-04](1-bit-identical/BIT-04-pipe-invariant-cache/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-05](1-bit-identical/BIT-05-interpreter-dispatch/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-06](1-bit-identical/BIT-06-identical-segments-once/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-07](1-bit-identical/BIT-07-solver-shortcuts/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-08](1-bit-identical/BIT-08-euler-lanes/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-09](1-bit-identical/BIT-09-segment-advection/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-10](1-bit-identical/BIT-10-transport-plan-prefetch/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-12](1-bit-identical/BIT-12-dispersion-solve/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-13](1-bit-identical/BIT-13-dynamic-omp-schedules/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-14](1-bit-identical/BIT-14-report-and-output-file/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-15](1-bit-identical/BIT-15-link-averages-once/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-16](1-bit-identical/BIT-16-epanet-savehydfile-block-copy/) | 7/7 | 7/7 | - | - | - | - | - |
-| [BIT-17](1-bit-identical/BIT-17-compact-segments/) | 7/7 | 7/7 | - | - | - | - | - |
-| [only:NEAR-01](2-near-identical/NEAR-01-reassociate-expressions/) | 1/7 | 1/7 | - | - | - | - | - |
-| [only:NEAR-02](2-near-identical/NEAR-02-forward-difference-jacobians/) | 6/7 | 6/7 | - | - | - | - | - |
-| [only:NEAR-03](2-near-identical/NEAR-03-dispersion-pivot-chain/) | 6/7 | 6/7 | - | - | - | - | - |
-| `near` | 0/7 | 0/7 | - | - | - | - | - |
+| [FIX-01](3-bug-fixes/FIX-01-reaction-loop-error-race/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [FIX-02](3-bug-fixes/FIX-02-zero-flow-segment-leak/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [FIX-03](3-bug-fixes/FIX-03-tempfile-descriptor-leak/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-01](1-bit-identical/BIT-01-build-defaults/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-02](1-bit-identical/BIT-02-terms-evaluated-once/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-03](1-bit-identical/BIT-03-thread-state-without-tls/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-04](1-bit-identical/BIT-04-pipe-invariant-cache/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-05](1-bit-identical/BIT-05-interpreter-dispatch/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-06](1-bit-identical/BIT-06-identical-segments-once/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-07](1-bit-identical/BIT-07-solver-shortcuts/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-08](1-bit-identical/BIT-08-euler-lanes/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-09](1-bit-identical/BIT-09-segment-advection/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-10](1-bit-identical/BIT-10-transport-plan-prefetch/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-12](1-bit-identical/BIT-12-dispersion-solve/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-13](1-bit-identical/BIT-13-dynamic-omp-schedules/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-14](1-bit-identical/BIT-14-report-and-output-file/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-15](1-bit-identical/BIT-15-link-averages-once/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-16](1-bit-identical/BIT-16-epanet-savehydfile-block-copy/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [BIT-17](1-bit-identical/BIT-17-compact-segments/) | 9/9 | 9/9 | 9/9 | 9/9 | 2/2 | 2/2 | 9/9 |
+| [only:NEAR-01](2-near-identical/NEAR-01-reassociate-expressions/) | 3/9 | 3/9 | 3/9 | 3/9 | 2/2 | 2/2 | 3/9 |
+| [only:NEAR-02](2-near-identical/NEAR-02-forward-difference-jacobians/) | 7/9 | 7/9 | 7/9 | 7/9 | 1/2 | 1/2 | 7/9 |
+| [only:NEAR-03](2-near-identical/NEAR-03-dispersion-pivot-chain/) | 8/9 | 8/9 | 8/9 | 8/9 | 2/2 | 2/2 | 8/9 |
+| `near` | 1/9 | 1/9 | 1/9 | 1/9 | 1/2 | 1/2 | 1/9 |
 <!-- /verification -->
 
 For the near-identical changes, how far the results move, and why that is acceptable, is in [the acceptance table](2-near-identical/README.md#the-acceptance-table). Their results do not depend on the thread count either: each gives the same bits at 1, 8 and 10 threads and built without OpenMP ([the thread check](2-near-identical/README.md#results-do-not-depend-on-the-thread-count)).

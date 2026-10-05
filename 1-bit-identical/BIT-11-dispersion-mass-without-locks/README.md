@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Dispersion (multithreading) |
-| **Results** | <!-- results:BIT-11 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-11 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxdispersion.c` (+19 / -12 lines) |
 | **Patch** | [`BIT-11.patch`](BIT-11.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-10 ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none |
@@ -16,7 +16,7 @@ For each species that disperses, MSX ends every quality step with three passes (
 
 `segqual_update()` also adds up the mass that dispersion carries into each pipe through its two ends, for the mass balance. Every thread added its pipes' contributions to one shared total, inside two `#pragma omp critical` sections per pipe ([`msxdispersion.c` L476-L481](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxdispersion.c#L476-L481) and [L504-L509](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxdispersion.c#L504-L509)). On KY8 about 1,100 pipes pass the Peclet test, so each call took the lock about 2,200 times.
 
-In a profile of the unpatched code at 8 threads, 568 of the main thread's 741 samples in `segqual_update()` were waits for that lock. Timed inside the code, the function took 0.83 s per KY8 run at 8 threads, against 0.31 s with one thread. This, not the chemistry, is why the KY8 case stopped getting faster beyond 4 threads.
+In a profile of the unpatched code at 8 threads, 568 of the main thread's 741 samples in `segqual_update()` were waits for that lock. Timed inside the code, the function took 0.83 s per KY8 run at 8 threads, against 0.31 s with one thread. Once the chemistry was fast (BIT-02 to BIT-08), this, not the chemistry, is what kept the KY8 case from getting faster beyond 4 threads; the unpatched code, whose chemistry dominates, still gains up to 8 threads.
 
 ## What the change does
 
@@ -32,7 +32,7 @@ Concentrations are not touched. The loop computes every segment as before; only 
 
 The total uses the same additions, in the same order, as the unpatched code on one thread. The only extra additions are the zeros of pipes that do not disperse. Adding +0.0 leaves any sum unchanged except -0.0, and a sum that starts at +0.0 can never become -0.0 in round-to-nearest arithmetic. So the dispersed mass now equals the unpatched one-thread value bit for bit, at any thread count.
 
-This was checked at 1, 2, 4 and 8 threads, with repeated runs at 4 and 8, on five dispersion models: the KY8 benchmark case, and four more on KY8, Net3 and Richmond that cover two dispersing species, a fixed dispersion coefficient, and setpoint and mass boosters at junctions.
+This was checked at 1, 2, 4 and 8 threads, with repeated runs at 4 and 8, on five dispersion models on KY8, Net3 and Richmond that cover two dispersing species, a fixed dispersion coefficient, and setpoint and mass boosters at junctions (the models are described in [BIT-12](../BIT-12-dispersion-solve/#why-the-results-are-unchanged)).
 
 ### What it also fixes
 

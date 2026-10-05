@@ -114,7 +114,7 @@ def replace(text, name, body, closing=None):
     pat = re.compile(r"(<!-- %s -->)(.*?)(<!-- /%s -->)" % (re.escape(name), re.escape(closing)), re.S)
     if not pat.search(text):
         return text
-    inline = name.split(":")[0] in ("summary", "results", "machine")
+    inline = name.split(":")[0] in ("summary", "results", "machine", "hl")
     if inline:
         return pat.sub(lambda m: m.group(1) + body.strip() + m.group(3), text)
     return pat.sub(lambda m: m.group(1) + "\n" + body.strip("\n") + "\n" + m.group(3), text)
@@ -187,12 +187,25 @@ def summary_text(pid, stats):
     return "; ".join(parts) if parts else "within noise on these cases"
 
 
+def counted(parts):
+    """what a count of runs covers, from the result files it came from"""
+    what = []
+    if "series" in parts: what.append("the 7 main cases in step mode at 1 and 8 threads")
+    if "solve" in parts: what.append("9 cases in solve mode at 1 and 8 threads")
+    if "output" in parts: what.append("the 2 output-heavy cases in step and read mode at 1 and 8 threads")
+    if "noomp" in parts: what.append("9 cases built without OpenMP")
+    return "; ".join(what)
+
+
 def results_text(pid, build, series, vsolve, vout, vnoomp, near=None):
     """how many runs are identical to 85a303d's"""
     n = same = 0
-    for data, b in ((series, build), (near, build), (vsolve, build), (vout, build), (vnoomp, build + "@noomp")):
+    parts = set()
+    for key, data, b in (("series", series, build), ("series", near, build), ("solve", vsolve, build),
+                         ("output", vout, build), ("noomp", vnoomp, build + "@noomp")):
         if not data or b not in data["builds"]:
             continue
+        parts.add(key)
         ref = data["builds"][0]
         for r in data["results"]:
             if b not in r["builds"]:
@@ -202,7 +215,7 @@ def results_text(pid, build, series, vsolve, vout, vnoomp, near=None):
             same += sig(r, b) == sig(r, ref)
     if not n:
         return None
-    what = "9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP"
+    what = counted(parts)
     if same == n:
         return f"Identical to 85a303d in all {n} runs ({what})"
     return f"Differs from 85a303d in {n - same} of {n} runs ({what})"
@@ -259,11 +272,10 @@ def per_change(docs):
                     body += ("\n\n**Output-heavy cases**: every node, link and species reported every 5 minutes. "
                              f"Solve mode runs as `runepanetmsx` does; read mode reads every value with `MSXgetqual` "
                              f"after every step. {conditions(og, 'solve and read mode')}\n\n" + otab)
-                    good = sorted([o for o in out if o[0]], key=lambda o: -o[0])
+                    good = sorted([o for o in out if o[0] and o[1]["threads"] == 1], key=lambda o: -o[0])
                     if pid in ("BIT-14", "BIT-15") and good:
-                        summaries[pid] = "output-heavy cases: " + ", ".join(
-                            f"{o[1]['name'].split(',')[0]} {o[1]['mode']} {fsp(o[0])}"
-                            + (f" at {o[1]['threads']} threads" if o[1]['threads'] != 1 else "") for o in good[:2])
+                        summaries[pid] = "output-heavy cases, one thread: " + ", ".join(
+                            f"{o[1]['name'].split(',')[0]} {o[1]['mode']} mode {fsp(o[0])}" for o in good[:2])
                 if pid == "BIT-16":
                     ptab, m, t = phase_table(series, before, pid, "H", "MSXsolveH")
                     body += "\n\n**`MSXsolveH`** (EPANET's hydraulics and the copy of its file), one thread:\n\n" + ptab
@@ -271,7 +283,12 @@ def per_change(docs):
                                      summary_text(pid, stats).replace("within noise on these cases", "within noise")
                 if pid == "BIT-01":
                     body, summaries[pid] = flavours_block(flav, head)
-                    cmd = "tools/bench.py --builds base,base@O0,base@noomp --threads 1"
+                    cmd = ("tools/bench.py --builds base,base@O0,base@noomp --threads 1    # the first three columns\n"
+                           "tools/bench.py --builds base --threads 8                       # OpenMP at 8 threads")
+                elif pid in OUTPUT_GROUPS:
+                    cmd = f"tools/try.py {pid} --against {before} --cases main,output --modes step,solve,read"
+                    if pid == "BIT-16":
+                        cmd += "\n# MSXsolveH is the H field of each run in the .json file it writes"
                 else:
                     cmd = (f"tools/try.py {pid}" if pid.startswith("FIX-") else f"tools/try.py {pid} --against {before}")
                 new = replace(new, f"measured:{pid}", measured_block(pid, body, series, cmd), "measured")
@@ -350,9 +367,12 @@ def moves_table(build, ys, ysr):
 
 def near_results_text(build, near, vsolve, vout, vnoomp, ys):
     n = d = 0
-    for data, b in ((near, build), (vsolve, build), (vout, build), (vnoomp, build + "@noomp")):
+    parts = set()
+    for key, data, b in (("series", near, build), ("solve", vsolve, build), ("output", vout, build),
+                         ("noomp", vnoomp, build + "@noomp")):
         if not data or b not in data["builds"]:
             continue
+        parts.add(key)
         ref = data["builds"][0]
         for r in data["results"]:
             if b in r["builds"]:
@@ -364,7 +384,8 @@ def near_results_text(build, near, vsolve, vout, vnoomp, ys):
     passes = sum(1 for x in j.values() if x[0] == "PASS")
     tail = f"; every case passes the acceptance rule" if j and passes == len(j) else \
         (f"; {passes} of {len(j)} cases pass the acceptance rule" if j else "")
-    return f"Differs from 85a303d in {d} of {n} runs, by rounding{tail} (see [the acceptance check](../README.md#the-acceptance-table))"
+    return (f"Differs from 85a303d in {d} of {n} runs ({counted(parts)}), by rounding{tail} "
+            f"(see [the acceptance check](../README.md#the-acceptance-table))")
 
 
 def sample_title(b):
@@ -503,6 +524,35 @@ def headline(text):
                  f"{fmt(n8)} | {fsp(x[2])} | {fsp(x[3])} |")
     P.append(f"| **Median** | | | **{fsp(median(c1))}** | | **{fsp(median(c2))}** | | | **{fsp(median(c3))}** | **{fsp(median(c4))}** |")
     text = replace(text, "permodel", "\n".join(P))
+    # numbers quoted in the README's prose
+    r1 = {r["case"]: r for r in rows(hs, "step", 1)}
+    r8 = {r["case"]: r for r in rows(hs, "step", 8)}
+    def ratio(a, ab, b, bb):
+        return [sp(best(r1[c] if a == 1 else r8[c], ab), best(r1[c] if b == 1 else r8[c], bb)) for c in r1 if c in r8]
+    def rng(xs):
+        xs = [x for x in xs if x]
+        return f"{min(xs):.1f}-{max(xs):.0f}x" if xs else "-"
+    def x1(v):
+        return f"{v:.1f}x" if v else "-"
+    vals = {"hl:bit1": x1(median(ratio(1, "base", 1, "bit"))), "hl:bit8": x1(median(ratio(8, "base", 8, "bit"))),
+            "hl:near1": x1(median(ratio(1, "base", 1, "near"))), "hl:near8": x1(median(ratio(8, "base", 8, "near"))),
+            "hl:cross": x1(median(ratio(1, "base", 8, "near"))), "hl:crossrange": rng(ratio(1, "base", 8, "near")),
+            "hl:crossbit": x1(median(ratio(1, "base", 8, "bit")))}
+    one = sorted([(sp(best(r, "base"), best(r, "bit")), r["name"]) for r in r1.values()], key=lambda x: x[0] or 0)
+    if len(one) >= 4:
+        vals["hl:extremes"] = (f"At one thread the bit-identical gain is smallest on {one[0][1]} ({fsp(one[0][0])}) and "
+                               f"{one[1][1]} ({fsp(one[1][0])}), and largest on {one[-1][1]} ({fsp(one[-1][0])}) and "
+                               f"{one[-2][1]} ({fsp(one[-2][0])}).")
+    shares = []
+    for r in r1.values():
+        d = r["builds"]["bit"]
+        t = min([x for x in d["times"] + [d["check"]] if x.get("rc") == 0], key=lambda x: x["total"])
+        shares.append((t["H"] / t["total"], r["name"]))
+    if shares:
+        lo, hi = min(shares), max(shares)
+        vals["hl:solveh"] = f"{100 * lo[0]:.1f}-{100 * hi[0]:.0f} % of a run with the bit-identical changes, one thread ({hi[1]}: {100 * hi[0]:.0f} %)"
+    for k, v in vals.items():
+        text = replace(text, k, v)
     return text
 
 
@@ -533,9 +583,7 @@ def index(text):
     if real:
         text = replace(text, "real", simple_three(real) + f"\n\n{conditions(real)}")
     if priv:
-        intro = "\n".join(f"- Utility model {k}: {describe(v)}" for k, v in sorted(priv.get("models", {}).items()))
-        text = replace(text, "private", (intro + "\n\n" if intro else "") + simple_three(priv, private=True) +
-                       f"\n\n{conditions(priv)}")
+        text = replace(text, "private", simple_three(priv, private=True) + f"\n\n{conditions(priv)}")
     sc = load("scaling")
     if sc:
         ths = sc["threads"]
@@ -546,6 +594,20 @@ def index(text):
                 L.append(f"| {r1['name']} | {names.get(b, b)} | " +
                          " | ".join(fmt(best(rec(sc, r1['case'], 'step', t), b)) for t in ths) + " |")
         text = replace(text, "scaling", "\n".join(L) + f"\n\n{conditions(sc)}")
+        if 1 in ths and 8 in ths:
+            sx = []
+            for r1 in rows(sc, "step", 1):
+                r8 = rec(sc, r1["case"], "step", 8)
+                sx.append((sp(best(r1, "bit"), best(r8, "bit")), sp(best(r1, "base"), best(r8, "base")), r1["name"]))
+            sx = sorted([x for x in sx if x[0]], key=lambda x: -x[0])
+            if len(sx) >= 4:
+                t1, t2, b1, b2 = sx[0], sx[1], sx[-2], sx[-1]
+                text = replace(text, "hl:scaling",
+                               f"From one to eight threads the bit-identical build speeds up {t1[0]:.1f}x on {t1[2]} and "
+                               f"{t2[0]:.1f}x on {t2[2]}, against {t1[1]:.1f}x and {t2[1]:.1f}x for the unpatched code. "
+                               f"Where the chemistry is now cheap it scales less, because the serial parts (moving water "
+                               f"through the nodes, tanks, hydraulics) are a larger share: {b1[0]:.1f}x on {b1[2]} and "
+                               f"{b2[0]:.1f}x on {b2[2]}.")
     fl = load("flavours")
     if fl:
         cols = [("base@O0", "`-O0` (plain `cmake`)"), ("base", "`-O3`, OpenMP (unpatched)"), ("base@noomp", "`-O3`, no OpenMP"),
@@ -637,6 +699,17 @@ def main():
         if path.endswith("/README.md") and os.path.dirname(path) == HERE:
             new = headline(new)
             new = index(new)
+            ids = [k for k in results if k.startswith(("FIX-", "BIT-"))]
+            if ids:
+                same = [k for k in ids if results[k].startswith("Identical")]
+                m = re.search(r"in all (\d+) runs \((.*)\)", results[ids[0]])
+                if len(same) == len(ids) and m:
+                    v = (f"Every one of the {len(ids)} fixes and bit-identical groups gave results identical to "
+                         f"85a303d's in all of its {m.group(1)} runs: {m.group(2)}.")
+                else:
+                    v = (f"{len(same)} of the {len(ids)} fixes and bit-identical groups gave results identical to "
+                         f"85a303d's in every run; see verification.md.")
+                new = replace(new, "hl:verify", v)
         if "2-near-identical" in path:
             new = near_page(new, near)
         if path.endswith("verification.md"):

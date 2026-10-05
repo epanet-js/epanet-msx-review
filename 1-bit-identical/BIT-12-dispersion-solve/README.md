@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Dispersion |
-| **Results** | <!-- results:BIT-12 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-12 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxdispersion.c` (+270 / -119 lines) |
 | **Patch** | [`BIT-12.patch`](BIT-12.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-11 ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none |
@@ -29,7 +29,7 @@ Four kinds of work were redundant:
 
 ## What the change does
 
-1. **Factor once for the three right-hand sides.** A new `tridiag3()` does the forward elimination once, carrying the three right-hand sides through the same loop as three independent recurrences, then back-substitutes all three in one loop. The unit right-hand sides are written as the constants they were (`0.0`, and `1.0` in the boundary row). The three recurrences overlap in the processor, so three solves cost little more than one: 5.1 ns per row in a micro-benchmark, against 11.7 ns for three calls of `tridiag()`.
+1. **Factor once for the three right-hand sides.** A new `tridiag3()` does the forward elimination once, carrying the three right-hand sides through the same loop as three independent recurrences, then back-substitutes all three in one loop. The unit right-hand sides are written as the constants they were (`0.0`, and `1.0` in the boundary row). The three recurrences overlap in the processor, so three solves cost little more than one: 5.1 ns per row in a micro-benchmark on synthetic systems, against 11.7 ns for three calls of `tridiag()`. (On 2,061 systems taken from KY8, the measure [NEAR-03](../../2-near-identical/NEAR-03-dispersion-pivot-chain/) uses, the same solve takes 6.4 ns per row.)
 
 2. **Back-substitute straight into the segments.** The walk that builds the system records each segment's pointer in an array. The back substitution, which runs from the upstream end, stores the three responses (`hresponse`, `dresponse`, `uresponse`) directly in the segments, so the three copy walks are gone. Row 0, the downstream boundary, was computed but never read, and is no longer back-substituted.
 

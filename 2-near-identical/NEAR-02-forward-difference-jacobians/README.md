@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Near-identical](../README.md): results change at the level of rounding, by less than the unpatched code's own results differ between platforms |
 | **Area** | Chemistry (Rosenbrock integrator and equilibrium solver) |
-| **Results** | <!-- results:NEAR-02 -->Differs from 85a303d in 2 of 14 runs, by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
+| **Results** | <!-- results:NEAR-02 -->Differs from 85a303d in 12 of 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP), by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
 | **Files** | `msxutils.c`, `msxutils.h`, `newton.c`, `ros2.c` (+87 / -8 lines) |
 | **Patch** | [`NEAR-02.patch`](NEAR-02.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-17, on its own: the other near-identical changes are not needed ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none beyond the bit-identical series: the new helper skips the Jacobian columns that [BIT-07](../../1-bit-identical/BIT-07-solver-shortcuts/) found unused, as `jacobian()` does after it |

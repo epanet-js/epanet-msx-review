@@ -36,7 +36,7 @@ The pipe counts include only pipes; MSX also routes water through pumps and valv
 
 ## Where the files come from
 
-The networks were downloaded in September 2026 and are byte-identical to their sources apart from the lines listed below (checked in October 2026). The edited copies of BWSN2, KY8 and Richmond were first made for [epanet-performance](https://github.com/epanet-js/epanet-performance), whose [models/README.md](https://github.com/epanet-js/epanet-performance/blob/main/models/README.md) lists those edits; the only further change here is a shorter `Duration`, so that each main case takes 2-16 seconds unpatched on one thread.
+The networks were downloaded in September 2026 and are byte-identical to their sources apart from the lines listed below (checked in October 2026). The edited copies of BWSN2, KY8 and Richmond were first made for [epanet-performance](https://github.com/epanet-js/epanet-performance), whose [models/README.md](https://github.com/epanet-js/epanet-performance/blob/main/models/README.md) lists those edits; the only further change here is a shorter `Duration`, so that each shortened case takes 10-16 seconds unpatched on one thread.
 
 | File | Network | Origin | Changed here | Licence or terms |
 |---|---|---|---|---|

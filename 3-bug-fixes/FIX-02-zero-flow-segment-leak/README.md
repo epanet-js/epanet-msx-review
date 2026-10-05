@@ -7,7 +7,7 @@
 | **Reached from** | Any run with a link that has no flow in some step: dead ends, closed pipes and valves, idle pumps, and links whose flow is below 0.005 gpm, which MSX sets to zero; through `runepanetmsx` or the toolkit |
 | **Where** | `advectSegs()` in [`src/solver/msxqual.c:887`](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxqual.c#L887) and `evalnodeoutflow()` in [`src/solver/msxqual.c:1356`](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxqual.c#L1356) |
 | **Since** | EPANET-MSX 2.0: commit [98d0af2](https://github.com/USEPA/EPANETMSX/commit/98d0af2b12b814fd240534e9a481adb764caf940) (2021), whose topological routing replaced `release()`. MSX 1.1's `release()` returned the segment to the pool for a link without flow. |
-| **Results** | <!-- results:FIX-02 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:FIX-02 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxqual.c` (+10 / -0 lines) |
 | **Patch** | [`FIX-02.patch`](FIX-02.patch), second in the series; it applies on its own to 85a303d ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none |

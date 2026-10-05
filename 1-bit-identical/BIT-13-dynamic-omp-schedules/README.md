@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Multithreading (chemistry and dispersion) |
-| **Results** | <!-- results:BIT-13 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-13 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxchem.c`, `msxdispersion.c` (+8 / -4 lines) |
 | **Patch** | [`BIT-13.patch`](BIT-13.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-12 ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none outside the series; the argument for unchanged results uses [FIX-01](../../3-bug-fixes/FIX-01-reaction-loop-error-race/) and [BIT-11](../BIT-11-dispersion-mass-without-locks/), which come before it |

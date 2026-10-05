@@ -16,7 +16,7 @@ A network `X.inp` is run with every reaction file whose name starts with `X` (`X
 
 ## Reporting back
 
-The summary is safe to share as it stands. It labels your models `Private model 1`, `Private model 2` and so on, in alphabetical order of file name, with the kind of reactions and the solver ("Private model 1, chloramine (ROS2)"), and contains no IDs, file names, paths or concentrations: only times, whether the results matched, and for near-identical builds how far each species moved. `tools/bench.py --cases private` also describes each model by its size and settings, rounded to one significant figure (about 5,000 pipes; 24 h; hydraulic step 1 h). Pass `--names` if you would rather see your file names, and do not share that output.
+The summary is safe to share as it stands. It labels your models `Private model 1`, `Private model 2` and so on, in alphabetical order of file name, with the kind of reactions and the solver ("Private model 1, chloramine (ROS2)"), and contains no IDs, file names, paths or concentrations: only times, whether the results matched, and for near-identical builds how far each species moved. `tools/bench.py --cases private` also describes each model by its size and settings, rounded to one significant figure (for example: about 20,000 pipes; 72 h; hydraulic step 15 min). Pass `--names` if you would rather see your file names, and do not share that output.
 
 Please open an issue with the summary, especially when:
 

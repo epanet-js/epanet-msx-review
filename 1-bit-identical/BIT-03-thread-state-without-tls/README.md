@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Chemistry and its solvers (multithreading) |
-| **Results** | <!-- results:BIT-03 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-03 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxchem.c`, `msxutils.c`, `msxutils.h`, `newton.c`, `newton.h`, `rk5.c`, `rk5.h`, `ros2.c`, `ros2.h` (+304 / -228 lines) |
 | **Patch** | [`BIT-03.patch`](BIT-03.patch), applied after FIX-01, FIX-02, BIT-01 and BIT-02 ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | [FIX-01](../../3-bug-fixes/FIX-01-reaction-loop-error-race/): it rewrites the reaction loop in `MSXchem_react` that FIX-01 changes, and does not apply without it |

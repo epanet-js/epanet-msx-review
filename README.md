@@ -4,14 +4,14 @@ Oct 5, 2026 · @Luke
 
 ## Summary
 
-On seven test cases built from the reaction systems in the EPANET-MSX manual, the 17 groups of bit-identical changes here make the median case **TBD faster with one thread and TBD faster with eight**, and every concentration at every step, the binary output file and the report are **bit-for-bit the same** as before. Three near-identical changes take the median to **TBD and TBD**; they move results by less than the unpatched code already varies between platforms. With threads, the patched code is TBD faster than the unpatched code on one thread in the median case (TBD-TBD). Three bug fixes found on the way come first in the series; they leave every benchmark result unchanged.
+On seven test cases built from the reaction systems in the EPANET-MSX manual, the 17 groups of bit-identical changes here make the median case **<!-- hl:bit1 -->15.7x<!-- /hl:bit1 --> faster with one thread and <!-- hl:bit8 -->9.1x<!-- /hl:bit8 --> faster with eight**, and every concentration at every step, the binary output file and the report are **bit-for-bit the same** as before. Three near-identical changes take the median to **<!-- hl:near1 -->17.0x<!-- /hl:near1 --> and <!-- hl:near8 -->10.7x<!-- /hl:near8 -->**; they move results by less than the unpatched code already varies between platforms. On eight threads, the patched code is <!-- hl:cross -->40.3x<!-- /hl:cross --> faster than the unpatched code on one thread in the median case (<!-- hl:crossrange -->3.2-93x<!-- /hl:crossrange -->; <!-- hl:crossbit -->38.4x<!-- /hl:crossbit --> with the bit-identical changes alone). Three bug fixes found on the way come first in the series; they leave every benchmark result unchanged.
 
 The numerical methods are unchanged: the same Lagrangian transport, the same integrators (Euler, RK5, ROS2), the same Newton solver for equilibria, the same dispersion model. The time was going into the work around the math:
 
 - **The expression interpreter re-did work.** Every `[TERMS]` entry was evaluated again each time it was referenced, recursively, in every segment of every pipe at every step, including terms such as `Re^0.88` that change only when the hydraulics do. Two-thirds to three-quarters of the unpatched run time was the interpreter.
 - **Identical segments were integrated one by one.** Every pipe starts as 100 segments of the same water, and many stay identical, but each was integrated on its own, every step. On BWSN2 that was most of what was left after the interpreter was fixed.
 - **Per-thread variables were expensive.** OpenMP's `threadprivate` variables cost a function call on each access in a shared library on macOS (12-18 % of the time).
-- **Threads waited on each other.** A lock taken twice per pipe in the dispersion code stopped the dispersion case from getting faster beyond four threads, and the reaction loop gave each thread an equal number of pipes rather than an equal amount of work.
+- **Threads waited on each other.** A lock taken twice per pipe in the dispersion code, once the chemistry was fast, kept the dispersion case from getting faster beyond four threads, and the reaction loop gave each thread an equal number of pipes rather than an equal amount of work.
 - **Files were read and written one value at a time**, and the hydraulics and output files were copied one byte at a time.
 - **The build itself**: following the README with the default CMake generator compiles with no optimisation, and on macOS without OpenMP.
 
@@ -32,19 +32,37 @@ tools/try.py bit near --quick        # 85a303d against the patches, on this mach
 
 ## Headline numbers
 
-The figures are the median speed-up per case over the seven main cases, each build against the unpatched code at the same thread count, so no single case can inflate them. Times are whole runs: opening the files, hydraulics and water quality. <!-- machine -->-<!-- /machine -->.
+The figures are the median speed-up per case over the seven main cases, each build against the unpatched code at the same thread count, so no single case can inflate them. Times are whole runs: opening the files, hydraulics and water quality. <!-- machine -->Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG` with OpenMP, measured 2026-10-05<!-- /machine -->.
 
 <!-- headline -->
+| How MSX is run | Median, bit-identical | Median, plus near-identical | Range, bit-identical | Range, plus near-identical |
+| --- | ---: | ---: | ---: | ---: |
+| Step (`MSXstep` loop), 1 thread | 15.72x | 16.98x | 3.38x-21.42x | 3.39x-26.83x |
+| Step (`MSXstep` loop), 8 threads | 9.07x | 10.65x | 2.06x-16.74x | 2.07x-19.65x |
+| Step (`MSXstep` loop), all cores (default) | 9.84x | 9.49x | 2.03x-20.00x | 2.11x-19.86x |
+| Solve (as `runepanetmsx`), 1 thread | 16.89x | 16.99x | 3.41x-21.54x | 3.47x-25.30x |
+| Solve (as `runepanetmsx`), 8 threads | 9.01x | 9.10x | 2.22x-19.40x | 2.20x-20.63x |
+| Solve (as `runepanetmsx`), all cores (default) | 10.11x | 10.90x | 2.09x-118.99x | 2.10x-132.15x |
 <!-- /headline -->
 
-**These tables come from one quick pass** (`QUICK=1 tools/run-all.sh`: one timed run per build, on a machine in use, with the load average recorded), so single values can be a few per cent off at one thread and more at eight. `tools/run-all.sh` remakes every table as the best of 5 interleaved runs (about 6 hours), and `tools/update-docs.py` writes them into these pages.
+**These tables come from one quick pass** (`QUICK=1 tools/run-all.sh`: one timed run per build, on a machine in use, with the load average recorded), so single values can be a few per cent off at one thread and more at eight. `tools/run-all.sh` remakes every table as the best of a checked run and 5 timed runs, interleaved (about 6 hours), and `tools/update-docs.py` writes them into these pages. One value in this pass is not noise: in solve mode with all 10 cores, while the machine was busy (load average about 18), the unpatched KY8 dispersion case took 30-35 s instead of about 2.4 s at 8 threads. Its dispersion code takes a lock twice per pipe ([BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/)), and the likely cause is that when the system takes a core away from the thread holding the lock, every other thread waits for it; the patched builds, which take no lock there, ran normally in the same minutes. That is the top of the range in the last row.
 
 Per case, step mode:
 
 <!-- permodel -->
+| Case | Unpatched, 1 thread (s) | Bit-identical | Speed-up | Plus near-identical | Speed-up | Unpatched, 8 threads | Plus near-identical | Speed-up | Plus near-identical, 8 threads, against unpatched, 1 thread |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| BWSN2, two-source chlorine | 13.1 | 0.831 | 15.72x | 0.770 | 16.98x | 3.46 | 0.324 | 10.65x | 40.27x |
+| Net6, chlorine bulk + wall | 10.9 | 0.510 | 21.42x | 0.498 | 21.93x | 2.90 | 0.377 | 7.69x | 28.94x |
+| KY8, chlorine + dispersion | 10.1 | 0.520 | 19.52x | 0.378 | 26.83x | 2.40 | 0.192 | 12.45x | 52.76x |
+| Richmond, bacterial regrowth | 15.5 | 0.728 | 21.32x | 0.607 | 25.55x | 3.27 | 0.167 | 19.65x | 93.10x |
+| Net3, chloramine decay | 11.5 | 1.25 | 9.17x | 0.878 | 13.05x | 2.89 | 0.199 | 14.54x | 57.68x |
+| Net3, arsenic adsorption | 2.58 | 0.438 | 5.90x | 0.411 | 6.28x | 0.678 | 0.139 | 4.88x | 18.56x |
+| MSX example (4 nodes) | 0.214 | 63.2 ms | 3.38x | 63.0 ms | 3.39x | 0.137 | 66.2 ms | 2.07x | 3.23x |
+| **Median** | | | **15.72x** | | **16.98x** | | | **10.65x** | **40.27x** |
 <!-- /permodel -->
 
-TBD: sentence on smallest/largest gains.
+<!-- hl:extremes -->At one thread the bit-identical gain is smallest on MSX example (4 nodes) (3.38x) and Net3, arsenic adsorption (5.90x), and largest on Net6, chlorine bulk + wall (21.42x) and Richmond, bacterial regrowth (21.32x).<!-- /hl:extremes -->
 
 ## Test cases
 
@@ -83,7 +101,7 @@ Each group performs the same floating-point operations in the same order. Every 
 <!-- bit-index -->
 | ID | What changes | Area | Measured, this change alone |
 |---|---|---|---|
-| [BIT-01](1-bit-identical/BIT-01-build-defaults/) | Release build by default; find Homebrew's libomp on macOS | Build | <!-- summary:BIT-01 -->build options; see build flavours<!-- /summary --> |
+| [BIT-01](1-bit-identical/BIT-01-build-defaults/) | Release build by default; find Homebrew's libomp on macOS | Build | <!-- summary:BIT-01 -->no optimisation to `-O3`: 1.84x median; no OpenMP to 8 threads: 3.54x median<!-- /summary --> |
 | [BIT-02](1-bit-identical/BIT-02-terms-evaluated-once/) | Terms and formulas evaluated once per rate evaluation, not per reference | Chemistry | <!-- summary:BIT-02 -->2.50x median, up to 3.00x (Net6, chlorine bulk + wall)<!-- /summary --> |
 | [BIT-03](1-bit-identical/BIT-03-thread-state-without-tls/) | Thread-local chemistry and solver state looked up once per call | Chemistry, threads | <!-- summary:BIT-03 -->within noise on these cases<!-- /summary --> |
 | [BIT-04](1-bit-identical/BIT-04-pipe-invariant-cache/) | Terms and sub-expressions that depend only on hydraulics, cached per pipe | Chemistry | <!-- summary:BIT-04 -->up to 3.39x (Net6, chlorine bulk + wall)<!-- /summary --> |
@@ -96,8 +114,8 @@ Each group performs the same floating-point operations in the same order. Every 
 | [BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/) | Dispersed mass summed per pipe after the loop, without locks | Dispersion | <!-- summary:BIT-11 -->at 8 threads up to 1.60x (KY8, chlorine + dispersion)<!-- /summary --> |
 | [BIT-12](1-bit-identical/BIT-12-dispersion-solve/) | One factorisation per pipe, solved into segments; coefficients and segment lists kept | Dispersion | <!-- summary:BIT-12 -->up to 1.67x (KY8, chlorine + dispersion); at 8 threads up to 1.42x (KY8, chlorine + dispersion)<!-- /summary --> |
 | [BIT-13](1-bit-identical/BIT-13-dynamic-omp-schedules/) | Dynamic OpenMP schedules for the pipe reaction and dispersion loops | Multithreading | <!-- summary:BIT-13 -->at 8 threads up to 1.37x (Net3, chloramine decay)<!-- /summary --> |
-| [BIT-14](1-bit-identical/BIT-14-report-and-output-file/) | Report and output file in blocks; numbers formatted without printf | Output and report files | <!-- summary:BIT-14 -->within noise on these cases<!-- /summary --> |
-| [BIT-15](1-bit-identical/BIT-15-link-averages-once/) | One segment walk per link when saving results and in MSXgetqual | Output and toolkit | <!-- summary:BIT-15 -->up to 1.07x (KY8, chlorine + dispersion); at 8 threads 1.06x median, up to 1.11x (BWSN2, two-source chlorine)<!-- /summary --> |
+| [BIT-14](1-bit-identical/BIT-14-report-and-output-file/) | Report and output file in blocks; numbers formatted without printf | Output and report files | <!-- summary:BIT-14 -->output-heavy cases, one thread: BWSN2 solve mode 3.70x, Net3 chloramine solve mode 2.01x<!-- /summary --> |
+| [BIT-15](1-bit-identical/BIT-15-link-averages-once/) | One segment walk per link when saving results and in MSXgetqual | Output and toolkit | <!-- summary:BIT-15 -->output-heavy cases, one thread: BWSN2 read mode 1.27x, BWSN2 solve mode 1.22x<!-- /summary --> |
 | [BIT-16](1-bit-identical/BIT-16-epanet-savehydfile-block-copy/) | EN_savehydfile copies the hydraulics file 64 KB at a time | EPANET 2.2 | <!-- summary:BIT-16 -->MSXsolveH 3.35x median, up to 3.95x (Net6, chlorine bulk + wall); whole run up to 1.26x (Net6, chlorine bulk + wall)<!-- /summary --> |
 | [BIT-17](1-bit-identical/BIT-17-compact-segments/) | Segments copied into contiguous memory once per hydraulic step (more memory) | Transport | <!-- summary:BIT-17 -->up to 1.38x (KY8, chlorine + dispersion); at 8 threads 1.07x median, up to 1.16x (Richmond, bacterial regrowth)<!-- /summary --> |
 <!-- /bit-index -->
@@ -116,7 +134,7 @@ Each group performs the same floating-point operations in the same order. Every 
 
 ## Bug fixes (3)
 
-These come first in the series. Each applies on its own to 85a303d and leaves every benchmark result unchanged. [The category page](3-bug-fixes/README.md) also lists two bugs fixed as part of a performance change and the bugs found but not yet written up.
+These come first in the series. Each applies on its own to 85a303d and leaves every benchmark result unchanged. [The category page](3-bug-fixes/README.md) also lists three bugs fixed as part of a performance change and the bugs found but not yet written up.
 
 <!-- fix-index -->
 | ID | What changes | Area | Measured, this change alone |
@@ -136,17 +154,42 @@ MSX parallelises three things with OpenMP: the reaction loop over pipes (`MSXche
 
 - **No threads at all on macOS** ([BIT-01](1-bit-identical/BIT-01-build-defaults/)): CMake does not find Homebrew's keg-only libomp, so the library is built single-threaded.
 - **Per-thread variables cost a call on every access** ([BIT-03](1-bit-identical/BIT-03-thread-state-without-tls/)): in a shared library on macOS, each access to a `threadprivate` variable goes through `_tlv_get_addr`, and the chemistry and the three integrators touched them in their innermost loops (12-18 % of all samples). With BIT-02 and BIT-03 the OpenMP build at one thread is as fast as a build without OpenMP; unpatched it was about 8 % slower.
-- **A lock taken twice per pipe in the dispersion code** ([BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/)): every thread added its pipes' dispersed mass to one total inside `#pragma omp critical`. At 8 threads the main thread spent three-quarters of `segqual_update` waiting for the lock. This, not the chemistry, is why the KY8 case stopped getting faster beyond 4 threads. Summing per pipe in pipe order also makes the mass balance the same at any thread count.
+- **A lock taken twice per pipe in the dispersion code** ([BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/)): every thread added its pipes' dispersed mass to one total inside `#pragma omp critical`. At 8 threads the main thread spent three-quarters of `segqual_update` waiting for the lock. Once the chemistry was fast, this, not the chemistry, is what kept the KY8 case from getting faster beyond 4 threads. Summing per pipe in pipe order also makes the mass balance the same at any thread count.
 - **Equal numbers of pipes, unequal work** ([BIT-13](1-bit-identical/BIT-13-dynamic-omp-schedules/)): the loops used OpenMP's default static schedule, but the work per pipe is proportional to its number of water parcels, from 1 to over 300, and two of an M1 Pro's ten cores are slower efficiency cores. A dynamic schedule hands out a few pipes at a time.
 - **A data race on the reaction loop's error code** ([FIX-01](3-bug-fixes/FIX-01-reaction-loop-error-race/)): every thread wrote the shared `errcode`, so an error in one pipe could be overwritten by the next pipe's success.
 
-TBD: where it stands now (scaling numbers).
+**Where it stands now.** <!-- hl:scaling -->From one to eight threads the bit-identical build speeds up 4.5x on Net3, chloramine decay and 3.7x on Richmond, bacterial regrowth, against 3.9x and 4.6x for the unpatched code. Where the chemistry is now cheap it scales less, because the serial parts (moving water through the nodes, tanks, hydraulics) are a larger share: 1.4x on Net6, chlorine bulk + wall and 1.0x on MSX example (4 nodes).<!-- /hl:scaling --> With the dynamic schedules, 8 and 10 threads give much the same times; OpenMP uses every core by default (10 on an M1 Pro, two of them efficiency cores).
 
 ### Thread scaling
 
 Whole runs, seconds, step mode. "Unpatched" is 85a303d built with OpenMP; macOS users following its README got the 1-thread column whatever their thread count, because OpenMP was not found.
 
 <!-- scaling -->
+| Case | Build | 1 thr | 2 thr | 4 thr | 6 thr | 8 thr | 10 thr |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BWSN2, two-source chlorine | unpatched | 12.8 | 7.64 | 5.23 | 3.85 | 3.46 | 3.35 |
+| BWSN2, two-source chlorine | bit-identical | 0.757 | 0.566 | 0.410 | 0.370 | 0.368 | 0.332 |
+| BWSN2, two-source chlorine | plus near-identical | 0.757 | 0.535 | 0.402 | 0.361 | 0.399 | 0.365 |
+| Net6, chlorine bulk + wall | unpatched | 11.3 | 6.41 | 3.93 | 3.27 | 3.00 | 2.86 |
+| Net6, chlorine bulk + wall | bit-identical | 0.523 | 0.401 | 0.373 | 0.380 | 0.383 | 0.398 |
+| Net6, chlorine bulk + wall | plus near-identical | 0.506 | 0.392 | 0.356 | 0.362 | 0.366 | 0.395 |
+| KY8, chlorine + dispersion | unpatched | 10.6 | 5.64 | 3.26 | 2.45 | 2.00 | 2.77 |
+| KY8, chlorine + dispersion | bit-identical | 0.535 | 0.321 | 0.237 | 0.206 | 0.209 | 0.224 |
+| KY8, chlorine + dispersion | plus near-identical | 0.397 | 0.254 | 0.195 | 0.178 | 0.176 | 0.194 |
+| Richmond, bacterial regrowth | unpatched | 15.3 | 9.00 | 5.68 | 4.02 | 3.36 | 3.26 |
+| Richmond, bacterial regrowth | bit-identical | 0.712 | 0.400 | 0.246 | 0.222 | 0.194 | 0.185 |
+| Richmond, bacterial regrowth | plus near-identical | 0.599 | 0.346 | 0.222 | 0.182 | 0.173 | 0.172 |
+| Net3, chloramine decay | unpatched | 11.5 | 6.64 | 3.77 | 4.15 | 2.93 | 2.86 |
+| Net3, chloramine decay | bit-identical | 1.26 | 0.655 | 0.392 | 0.333 | 0.277 | 0.273 |
+| Net3, chloramine decay | plus near-identical | 0.884 | 0.462 | 0.284 | 0.237 | 0.201 | 0.206 |
+| Net3, arsenic adsorption | unpatched | 2.58 | 1.49 | 0.894 | 0.818 | 0.684 | 0.675 |
+| Net3, arsenic adsorption | bit-identical | 0.444 | 0.268 | 0.155 | 0.181 | 0.146 | 0.158 |
+| Net3, arsenic adsorption | plus near-identical | 0.411 | 0.238 | 0.153 | 0.153 | 0.161 | 0.147 |
+| MSX example (4 nodes) | unpatched | 0.215 | 0.181 | 0.129 | 0.138 | 0.148 | 0.154 |
+| MSX example (4 nodes) | bit-identical | 64.1 ms | 50.0 ms | 50.2 ms | 59.8 ms | 65.4 ms | 72.1 ms |
+| MSX example (4 nodes) | plus near-identical | 64.0 ms | 49.2 ms | 49.5 ms | 60.3 ms | 63.1 ms | 72.8 ms |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, best of two runs per build (a checked run and a timed run); load average 8.4 at the start and 20.3 at the end; measured 2026-10-05.
 <!-- /scaling -->
 
 ### Build flavours
@@ -154,6 +197,17 @@ Whole runs, seconds, step mode. "Unpatched" is 85a303d built with OpenMP; macOS 
 One thread, whole runs, seconds. `-O0` is what a plain `cmake -B build .` with the Makefile generator compiles ([BIT-01](1-bit-identical/BIT-01-build-defaults/)).
 
 <!-- flavours -->
+| Case | `-O0` (plain `cmake`) | `-O3`, OpenMP (unpatched) | `-O3`, no OpenMP | Bit-identical, no OpenMP | Bit-identical, OpenMP | Plus near-identical, no OpenMP | Plus near-identical, OpenMP |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| BWSN2, two-source chlorine | 23.3 | 12.7 | 11.8 | 0.739 | 0.737 | 0.721 | 0.737 |
+| Net6, chlorine bulk + wall | 20.3 | 10.9 | 10.3 | 0.508 | 0.533 | 0.495 | 0.506 |
+| KY8, chlorine + dispersion | 18.7 | 10.1 | 9.56 | 0.487 | 0.523 | 0.377 | 0.381 |
+| Richmond, bacterial regrowth | 26.3 | 15.1 | 14.4 | 0.710 | 0.706 | 0.586 | 0.603 |
+| Net3, chloramine decay | 19.7 | 11.3 | 10.4 | 1.26 | 1.24 | 0.878 | 0.876 |
+| Net3, arsenic adsorption | 4.77 | 2.55 | 2.36 | 0.431 | 0.436 | 0.407 | 0.408 |
+| MSX example (4 nodes) | 0.417 | 0.213 | 0.198 | 62.4 ms | 63.0 ms | 60.8 ms | 61.9 ms |
+
+One thread. Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, best of two runs per build (a checked run and a timed run); load average 6.5 at the start and 8.4 at the end; measured 2026-10-05.
 <!-- /flavours -->
 
 ## Output-heavy cases
@@ -161,9 +215,21 @@ One thread, whole runs, seconds. `-O0` is what a plain `cmake -B build .` with t
 Every node, link and species reported every 5 minutes. **solve** runs as `runepanetmsx` does (`MSXreport`, `MSXsaveoutfile`); **read** reads every node and link value with `MSXgetqual` after every step, as many toolkit programs do. Whole runs and the report-and-save phase, seconds.
 
 <!-- output -->
+| Case | Mode | Threads | Unpatched (s) | Bit-identical | Plus near-identical | Speed-up | Report and save, unpatched | Bit-identical | Identical |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| BWSN2, 2 species, every node and link every 5 min | solve | 1 | 10.2 | 1.31 | 1.41 | 7.22x | 6.66 | 0.304 | yes |
+| BWSN2, 2 species, every node and link every 5 min | solve | 8 | 8.79 | 1.00 | 0.963 | 9.13x | 6.59 | 0.304 | yes |
+| BWSN2, 2 species, every node and link every 5 min | read | 1 | 3.89 | 1.14 | 1.15 | 3.39x |  |  | yes |
+| BWSN2, 2 species, every node and link every 5 min | read | 8 | 2.62 | 0.807 | 0.797 | 3.29x |  |  | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | solve | 1 | 12.8 | 1.29 | 0.933 | 13.68x | 1.38 | 33.2 ms | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | solve | 8 | 4.31 | 0.327 | 0.260 | 16.59x | 1.35 | 40.3 ms | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | read | 1 | 11.5 | 1.25 | 0.901 | 12.76x |  |  | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | read | 8 | 3.06 | 0.302 | 0.233 | 13.12x |  |  | yes |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; solve and read mode, best of two runs per build (a checked run and a timed run); load average 12.9 at the start and 6.5 at the end; measured 2026-10-05.
 <!-- /output -->
 
-TBD: output sentence.
+Most of the gain in solve mode on BWSN2 is [BIT-14](1-bit-identical/BIT-14-report-and-output-file/): reading the results back for the report in blocks, and formatting them without `printf`, takes the report-and-save phase from several seconds to a few tenths of a second (the last two columns). In read mode, [BIT-15](1-bit-identical/BIT-15-link-averages-once/) lets `MSXgetqual` average each link's segments once for all species. On Net3 chloramine, with 14 species and a small network, the chemistry still dominates, so the gain follows the main cases.
 
 ## Larger networks
 
@@ -202,14 +268,16 @@ For every group in the series, on all nine cases, the patched build was compared
 - **solve mode, 1 and 8 threads:** the same hash, plus the MD5 of the binary output file and of the report (EPANET's date and time stamps removed);
 - **built without OpenMP**, step mode.
 
-TBD: counts. [verification.md](verification.md) has the table. The unpatched code itself gives the same concentrations at any thread count. During development each area was checked further:
+<!-- hl:verify -->Every one of the 20 fixes and bit-identical groups gave results identical to 85a303d's in all of its 49 runs: the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP.<!-- /hl:verify --> [verification.md](verification.md) has the table. The unpatched code itself gives the same concentrations at any thread count. During development each area was checked further:
 
 - *Chemistry:* a model on Net3 in six variants (Euler, RK5 and ROS2, each with full and no coupling) covering terms that use formulas, formulas that use formulas, tank expressions that use hydraulic variables, every math function, and a NaN inside a cached sub-expression; a program that calls `MSXsetconstant` and `MSXsetparameter` part way through a run and then runs `MSXinit` again; and the compiled-chemistry option.
 - *Transport:* Net3 with two-compartment, FIFO and LIFO tanks, which no benchmark case uses.
 - *Dispersion:* five more dispersion cases (two species, a fixed coefficient, junction sources, setpoint and mass boosters), at 1 and 8 threads and without OpenMP (the dispersed mass at 1, 2, 4 and 8 threads), and with fused multiply-add turned off against the unpatched code built the same way.
 - *Output:* 18 report-heavy variants: every node, link and species, hourly and 5-minute reporting, the four statistic options, and MSX's own report file.
 
-**Behaviour changes, in error cases only:** with FIX-01 the largest error code is returned when several pipes fail in one step, and errors that were lost now stop the run; with BIT-02 a cycle of formula species is error 506 instead of a crash. [BIT-15](1-bit-identical/BIT-15-link-averages-once/) assumes concentrations change only in `MSXinit` and `MSXstep`, which is true of every toolkit function today.
+The models and programs of these development checks are not in this repository; what is in it are the benchmark cases and the runs in [results/](results/README.md), which anyone can repeat.
+
+**Behaviour changes, in error cases only:** with FIX-01 the largest error code is returned when several pipes fail in one step, and errors that were lost now stop the run; with BIT-02 a cycle of formula species or terms is error 506 instead of a crash; with BIT-09, running out of memory for segments is error 501 instead of a write through a null pointer; and BIT-12 allocates per-pipe arrays during a run, so a run can also stop with error 501 there if memory runs out. [BIT-15](1-bit-identical/BIT-15-link-averages-once/) assumes concentrations change only in `MSXinit` and `MSXstep`, which is true of every toolkit function today.
 
 The patches were written by four agents working in parallel, each on its own area, and integrated into one series; all timings here were then measured together on one machine, an Apple M1 Pro (8 performance and 2 efficiency cores) that was in use at the time (an editor, a browser, a video call and, at times, another program's test suite), which is why the 8-thread numbers vary more than the 1-thread ones.
 
@@ -233,7 +301,7 @@ Besides the experiments in each change's folder, these were measured or examined
 - Parallel transport: moving water through the nodes level by level, taking each pipe's outflow in parallel, or running tank reactions in parallel; each cost more in synchronisation than it saved ([BIT-10](1-bit-identical/BIT-10-transport-plan-prefetch/), [BIT-13](1-bit-identical/BIT-13-dynamic-omp-schedules/)).
 - Compiler options: link-time optimisation was not pursued; `-ffast-math` changes results, and the Windows Release build already uses `/fp:fast` ([3-bug-fixes](3-bug-fixes/README.md#found-not-yet-written-up)).
 
-**Not attempted:** EPANET's own hydraulic solver. MSX spends little time there on these cases: with [BIT-16](1-bit-identical/BIT-16-epanet-savehydfile-block-copy/), `MSXsolveH` is TBD of a patched run. [epanet-performance](https://github.com/epanet-js/epanet-performance) covers EPANET 2.3.
+**Not attempted:** EPANET's own hydraulic solver. MSX spends little time there on these cases: with [BIT-16](1-bit-identical/BIT-16-epanet-savehydfile-block-copy/), `MSXsolveH` is <!-- hl:solveh -->0.1-13 % of a run with the bit-identical changes, one thread (Net6, chlorine bulk + wall: 13 %)<!-- /hl:solveh -->. [epanet-performance](https://github.com/epanet-js/epanet-performance) covers EPANET 2.3.
 
 ## Licence
 

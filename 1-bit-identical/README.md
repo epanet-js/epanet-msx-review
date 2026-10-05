@@ -12,7 +12,7 @@ The groups form one series, applied in order on top of [FIX-01 and FIX-02](../3-
 
 | ID | Change | Area | Measured, this change alone |
 |---|---|---|---|
-| [BIT-01](BIT-01-build-defaults/) | Build optimised, with OpenMP on macOS, when following the README | Build | <!-- summary:BIT-01 -->build options; see build flavours<!-- /summary --> |
+| [BIT-01](BIT-01-build-defaults/) | Build optimised, with OpenMP on macOS, when following the README | Build | <!-- summary:BIT-01 -->no optimisation to `-O3`: 1.84x median; no OpenMP to 8 threads: 3.54x median<!-- /summary --> |
 | [BIT-02](BIT-02-terms-evaluated-once/) | Evaluate each term and formula once per rate evaluation, from flat expressions | Chemistry | <!-- summary:BIT-02 -->2.50x median, up to 3.00x (Net6, chlorine bulk + wall)<!-- /summary --> |
 | [BIT-03](BIT-03-thread-state-without-tls/) | Read per-thread chemistry and solver state once | Chemistry, threads | <!-- summary:BIT-03 -->within noise on these cases<!-- /summary --> |
 | [BIT-04](BIT-04-pipe-invariant-cache/) | Cache terms that depend only on hydraulics, parameters and constants | Chemistry | <!-- summary:BIT-04 -->up to 3.39x (Net6, chlorine bulk + wall)<!-- /summary --> |
@@ -25,12 +25,12 @@ The groups form one series, applied in order on top of [FIX-01 and FIX-02](../3-
 | [BIT-11](BIT-11-dispersion-mass-without-locks/) | Sum dispersed mass per link without locks, in link order | Dispersion, threads | <!-- summary:BIT-11 -->at 8 threads up to 1.60x (KY8, chlorine + dispersion)<!-- /summary --> |
 | [BIT-12](BIT-12-dispersion-solve/) | Factor once, solve into the segments, keep coefficients and segment lists | Dispersion | <!-- summary:BIT-12 -->up to 1.67x (KY8, chlorine + dispersion); at 8 threads up to 1.42x (KY8, chlorine + dispersion)<!-- /summary --> |
 | [BIT-13](BIT-13-dynamic-omp-schedules/) | Hand pipes to threads dynamically in the reaction and dispersion loops | Threads | <!-- summary:BIT-13 -->at 8 threads up to 1.37x (Net3, chloramine decay)<!-- /summary --> |
-| [BIT-14](BIT-14-report-and-output-file/) | Read the report's results and copy the output file in blocks; format numbers without printf | Output | <!-- summary:BIT-14 -->within noise on these cases<!-- /summary --> |
-| [BIT-15](BIT-15-link-averages-once/) | Average each link's segments once for all species | Output, toolkit | <!-- summary:BIT-15 -->up to 1.07x (KY8, chlorine + dispersion); at 8 threads 1.06x median, up to 1.11x (BWSN2, two-source chlorine)<!-- /summary --> |
+| [BIT-14](BIT-14-report-and-output-file/) | Read the report's results and copy the output file in blocks; format numbers without printf | Output | <!-- summary:BIT-14 -->output-heavy cases, one thread: BWSN2 solve mode 3.70x, Net3 chloramine solve mode 2.01x<!-- /summary --> |
+| [BIT-15](BIT-15-link-averages-once/) | Average each link's segments once for all species | Output, toolkit | <!-- summary:BIT-15 -->output-heavy cases, one thread: BWSN2 read mode 1.27x, BWSN2 solve mode 1.22x<!-- /summary --> |
 | [BIT-16](BIT-16-epanet-savehydfile-block-copy/) | EPANET 2.2: copy the hydraulics file in blocks | EPANET 2.2 | <!-- summary:BIT-16 -->MSXsolveH 3.35x median, up to 3.95x (Net6, chlorine bulk + wall); whole run up to 1.26x (Net6, chlorine bulk + wall)<!-- /summary --> |
 | [BIT-17](BIT-17-compact-segments/) | Copy every pipe's segments into contiguous memory (more memory) | Transport, memory | <!-- summary:BIT-17 -->up to 1.38x (KY8, chlorine + dispersion); at 8 threads 1.07x median, up to 1.16x (Richmond, bacterial regrowth)<!-- /summary --> |
 
-[BIT-17](BIT-17-compact-segments/) trades 30-80 % more peak memory on the larger cases for speed, and can be left out. The groups before it change peak memory by a few megabytes at most (KY8 grows from about 23 to 25 MB with BIT-12's segment lists). BIT-01, BIT-08, BIT-14, BIT-15, BIT-16 and BIT-17 can each be left out without breaking anything that follows. BIT-07 and BIT-13 can be left out of the bit-identical series, but NEAR-02 and NEAR-03 are written on top of them. Leaving out any other group stops a later one from applying.
+[BIT-17](BIT-17-compact-segments/) trades 30-80 % more peak memory on the larger cases for speed, and can be left out. The groups before it change peak memory by a few megabytes at most. BIT-01, BIT-08, BIT-14, BIT-15, BIT-16 and BIT-17 can each be left out without breaking anything that follows. BIT-07 and BIT-13 can be left out of the bit-identical series, but NEAR-02 and NEAR-03 are written on top of them. Leaving out any other group stops a later one from applying.
 
 <!-- bit-paragraphs -->
 ## Build
@@ -109,7 +109,7 @@ Segments are recycled through a last-in, first-out free list, so each pipe's cha
 
 ### BIT-11: Sum dispersed mass per link without locks, in link order
 
-`segqual_update()` added each pipe's dispersed mass to one shared total inside two `omp critical` sections per pipe; at 8 threads the main thread spent most of the function waiting for the lock, which is why the KY8 dispersion case stopped getting faster beyond 4 threads. Each pipe now writes its two values to its own slots, and one thread adds them after the loop in pipe order, as a single thread did before. The dispersion term of the mass balance is then the same at any thread count; before, its last bits changed from run to run.
+`segqual_update()` added each pipe's dispersed mass to one shared total inside two `omp critical` sections per pipe; at 8 threads the main thread spent most of the function waiting for the lock, which, once the chemistry was fast, kept the KY8 dispersion case from getting faster beyond 4 threads. Each pipe now writes its two values to its own slots, and one thread adds them after the loop in pipe order, as a single thread did before. The dispersion term of the mass balance is then the same at any thread count; before, its last bits changed from run to run.
 
 [Write-up, measurements and patch](BIT-11-dispersion-mass-without-locks/)
 

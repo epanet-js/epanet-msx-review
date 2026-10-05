@@ -2,7 +2,7 @@
 
 [All changes](../README.md)
 
-The tables in this repository's READMEs are generated from the files here by [`tools/update-docs.py`](../tools/update-docs.py), and [`tools/run-all.sh`](../tools/run-all.sh) makes all of them again. <!-- machine -->-<!-- /machine -->.
+The tables in this repository's READMEs are generated from the files here by [`tools/update-docs.py`](../tools/update-docs.py), and [`tools/run-all.sh`](../tools/run-all.sh) makes all of them again. <!-- machine -->Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG` with OpenMP, measured 2026-10-05<!-- /machine -->.
 
 **These files come from one quick pass**, `QUICK=1 tools/run-all.sh`: for each build the faster of a checked run and one timed run (or the checked run alone, where noted), on a machine in use. Each file records the load average at its start and end, and each case's record the load at its own start and end. `tools/run-all.sh` without `QUICK=1` remakes them as the best of a checked run and 5 timed runs, interleaved (3 for the scaling and build-flavour runs), in about 6 hours.
 
@@ -20,7 +20,7 @@ The tables in this repository's READMEs are generated from the files here by [`t
 | `threads.json` | The near-identical builds at 1, 8 and 10 threads and without OpenMP | `threads` |
 | `real.json` | L-Town and the NW Model, 85a303d, `bit` and `near`, one checked run each at 1 and 8 threads | `real` |
 | `yardstick-real.json`, `yardstick-real.md` | The acceptance check on L-Town and the NW Model, every sixth step | `yardstick-real` |
-| `private.json` | The two utility models: labels, times and whether results were identical, nothing else (`tools/private-summary.py`) | `private` |
+| `private.json` | The two utility models: labels, times, return codes, whether results were identical, and the load average; no sizes, memory or results (`tools/private-summary.py`) | `private` |
 | `status.json` | The last check against upstream (`tools/check.py`), used to report what changed since | - |
 
 Each run in the timing files records the case, the mode, the thread count, the build, the times of each phase in seconds (`open`, `H` for `MSXsolveH`, `Q` for the water quality, `report`, `close` and `total`), the number of steps, the peak memory (`rss_kb`) and, for the checked run, a hash of every concentration after every step (`hash`) and in solve mode the MD5 of the output file and the report.

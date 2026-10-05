@@ -7,7 +7,7 @@
 | **Reached from** | Any model in which RK5 or ROS2 fails to integrate, or Newton's method fails to solve the equilibria, in some pipe segment; through `runepanetmsx` or the toolkit (`MSXsolveQ`, `MSXstep`), at one thread or many |
 | **Where** | `MSXchem_react()` in [`src/solver/msxchem.c:298`](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxchem.c#L298) |
 | **Since** | EPANET-MSX 2.0: commit [98d0af2](https://github.com/USEPA/EPANETMSX/commit/98d0af2b12b814fd240534e9a481adb764caf940) (2021) made the reaction loop an OpenMP loop and commented out its early return. MSX 1.1 returned the error. |
-| **Results** | <!-- results:FIX-01 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:FIX-01 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxchem.c` (+14 / -3 lines) |
 | **Patch** | [`FIX-01.patch`](FIX-01.patch), first in the series; it applies on its own to 85a303d ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none |

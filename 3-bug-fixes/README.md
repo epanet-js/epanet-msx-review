@@ -48,9 +48,10 @@ On systems other than Windows, every `MSXopen` leaks two file descriptors and ev
 
 ## Fixed as part of a performance change
 
-Two bit-identical groups also fix a bug, because the faster code cannot keep it:
+Three bit-identical groups also fix a bug, because the faster code cannot keep it:
 
 - [BIT-02](../1-bit-identical/BIT-02-terms-evaluated-once/): a cycle of `FORMULA` species (such as B defined from C and C from B), or a cycle of `[TERMS]` that the input check misses, recursed until the stack overflowed. Evaluating each term and formula once, in an order fixed when the file is opened, finds any such cycle, and `MSXopen` returns error 506. This covers interpreted chemistry; with the `COMPILER` option the generated code still recurses (see below).
+- [BIT-09](../1-bit-identical/BIT-09-segment-advection/#why-the-results-are-unchanged): when the memory pool could not supply a new segment, `evalnodeoutflow()` wrote through a null pointer ([msxqual.c:1363](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxqual.c#L1363)). The run now stops with error 501 (out of memory), as `MSXqual_step` intends.
 - [BIT-11](../1-bit-identical/BIT-11-dispersion-mass-without-locks/): the dispersed mass in the mass balance was summed in whatever order the threads finished, so its last digits changed from run to run and with the thread count. It is now summed in link order. Concentrations were never affected.
 
 ## Found, not yet written up

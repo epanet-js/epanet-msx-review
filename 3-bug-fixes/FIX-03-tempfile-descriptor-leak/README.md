@@ -7,7 +7,7 @@
 | **Reached from** | The toolkit, on every system other than Windows: a program that opens and closes MSX projects many times in one process. `runepanetmsx` opens one project and exits, so it is not affected. |
 | **Where** | `MSXutils_getTempName()` in [`src/solver/msxutils.c:72`](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxutils.c#L72) |
 | **Since** | EPANET-MSX 1.1, the first commit of the repository (05a2d79, 2021) |
-| **Results** | <!-- results:FIX-03 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:FIX-03 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxutils.c` (+8 / -1 lines) |
 | **Patch** | [`FIX-03.patch`](FIX-03.patch), third in the series; it applies on its own to 85a303d, before or after the rest of the series ([the patches form one series](../../benchmarking.md#applying-the-patches)). It does not apply to upstream `dev`, which fixed the same leak another way (PR #21). |
 | **Requires** | none |

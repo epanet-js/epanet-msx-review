@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Near-identical](../README.md): results change at the level of rounding, by less than the unpatched code's own results differ between platforms |
 | **Area** | Chemistry (expression interpreter) |
-| **Results** | <!-- results:NEAR-01 -->Differs from 85a303d in 12 of 14 runs, by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
+| **Results** | <!-- results:NEAR-01 -->Differs from 85a303d in 30 of 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP), by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
 | **Files** | `mathexpr.c` (+391 / -22 lines) |
 | **Patch** | [`NEAR-01.patch`](NEAR-01.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-17, on its own: the other near-identical changes are not needed ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none beyond the bit-identical series: it extends the expression rewriter of [BIT-05](../../1-bit-identical/BIT-05-interpreter-dispatch/), and its gain comes through the cache of [BIT-04](../../1-bit-identical/BIT-04-pipe-invariant-cache/) |

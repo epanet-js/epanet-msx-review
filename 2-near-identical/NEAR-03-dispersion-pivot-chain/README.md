@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Near-identical](../README.md): results change at the level of rounding, by less than the unpatched code's own results differ between platforms |
 | **Area** | Dispersion |
-| **Results** | <!-- results:NEAR-03 -->Differs from 85a303d in 2 of 14 runs, by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
+| **Results** | <!-- results:NEAR-03 -->Differs from 85a303d in 5 of 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP), by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
 | **Files** | `msxdispersion.c` (+165 / -58 lines) |
 | **Patch** | [`NEAR-03.patch`](NEAR-03.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-17, on its own: the other near-identical changes are not needed ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none beyond the bit-identical series: it replaces the pipe solve of [BIT-12](../../1-bit-identical/BIT-12-dispersion-solve/), and keeps BIT-12's `tridiag3()` as its fallback |
@@ -16,7 +16,7 @@ Only the KY8 case has dispersion (a `[DIFFUSIVITY]` section), and once the bit-i
 
 Two chains of dependent operations set the pace:
 
-- **The forward elimination.** Each row's pivot is β<sub>j</sub> = b<sub>j</sub> − a<sub>j</sub>·c<sub>j−1</sub>/β<sub>j−1</sub>, so every row waits for a division by the pivot before it (about 10 cycles) and a multiply-add. On 2,061 systems taken from KY8 (73 rows on average), the solve took 6.4 ns per row in a micro-benchmark.
+- **The forward elimination.** Each row's pivot is β<sub>j</sub> = b<sub>j</sub> − a<sub>j</sub>·c<sub>j−1</sub>/β<sub>j−1</sub>, so every row waits for a division by the pivot before it (about 10 cycles) and a multiply-add. On 2,061 systems taken from KY8 (73 rows on average), the solve took 6.4 ns per row in a micro-benchmark (BIT-12 quotes 5.1 ns from a benchmark on synthetic systems).
 - **The walk along the segment list.** Each segment's address comes from the one before, and it waits on memory: 4.7 ns per row when the segments are not in the cache.
 
 ## What the change does

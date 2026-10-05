@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | EPANET 2.2 |
-| **Results** | <!-- results:BIT-16 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-16 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `SRC_engines/src/solver/epanet.c` in the EPANET 2.2 submodule (+10 / -2 lines) |
 | **Patch** | [`BIT-16.patch`](BIT-16.patch), for the EPANET2.2 submodule ([USEPA/EPANET2.2](https://github.com/USEPA/EPANET2.2) at 1e2fc3d), not for MSX: its paths are relative to that repository. It comes after FIX-01, FIX-02 and BIT-01 to BIT-15 in the series ([the patches form one series](../../benchmarking.md#applying-the-patches)), and since it touches no MSX file it also applies on its own |
 | **Requires** | none |
@@ -42,6 +42,19 @@ Each table compares the series up to BIT-15 ("before") with BIT-16 added ("after
 | MSX example (4 nodes) | 63.1 ms | 62.7 ms | 1.01x | 65.7 ms | 66.3 ms | 0.99x | yes |
 | **Median** | | | **1.01x** | | | **1.04x** | |
 
+**Output-heavy cases**: every node, link and species reported every 5 minutes. Solve mode runs as `runepanetmsx` does; read mode reads every value with `MSXgetqual` after every step. Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; solve and read mode, best of two runs per build (a checked run and a timed run); load average 10.5 at the start and 8.9 at the end; measured 2026-10-05.
+
+| Case | Mode | Threads | Before (s) | After (s) | Speed-up | Report and save, before | After | Identical |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| BWSN2, 2 species, every node and link every 5 min | solve | 1 | 2.38 | 1.51 | 1.58x | 0.290 | 0.287 | yes |
+| BWSN2, 2 species, every node and link every 5 min | solve | 8 | 1.54 | 0.847 | 1.82x | 0.293 | 0.304 | yes |
+| BWSN2, 2 species, every node and link every 5 min | read | 1 | 2.13 | 1.42 | 1.50x |  |  | yes |
+| BWSN2, 2 species, every node and link every 5 min | read | 8 | 1.60 | 0.822 | 1.95x |  |  | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | solve | 1 | 1.35 | 1.34 | 1.00x | 34.8 ms | 34.1 ms | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | solve | 8 | 0.367 | 0.341 | 1.08x | 41.9 ms | 41.0 ms | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | read | 1 | 1.32 | 1.30 | 1.02x |  |  | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | read | 8 | 0.362 | 0.363 | 1.00x |  |  | yes |
+
 **`MSXsolveH`** (EPANET's hydraulics and the copy of its file), one thread:
 
 | Case | MSXsolveH before (s) | After (s) | Speed-up |
@@ -58,7 +71,8 @@ Each table compares the series up to BIT-15 ("before") with BIT-16 added ("after
 To measure it yourself:
 
 ```sh
-tools/try.py BIT-16 --against BIT-15
+tools/try.py BIT-16 --against BIT-15 --cases main,output --modes step,solve,read
+# MSXsolveH is the H field of each run in the .json file it writes
 ```
 <!-- /measured -->
 

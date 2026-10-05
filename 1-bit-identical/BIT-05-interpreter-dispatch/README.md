@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Chemistry (expression interpreter) |
-| **Results** | <!-- results:BIT-05 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-05 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `mathexpr.c`, `mathexpr.h`, `msxchem.c` (+909 / -79 lines) |
 | **Patch** | [`BIT-05.patch`](BIT-05.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-04 ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | none |

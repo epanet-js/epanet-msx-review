@@ -4,11 +4,11 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Transport (pipe segments) |
-| **Results** | <!-- results:BIT-09 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-09 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxqual.c` (+127 / -89 lines) |
 | **Patch** | [`BIT-09.patch`](BIT-09.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-08 ([the patches form one series](../../benchmarking.md#applying-the-patches)) |
 | **Requires** | [FIX-02](../../3-bug-fixes/FIX-02-zero-flow-segment-leak/): step 2 rewrites the zero-flow test that FIX-02 adds to `advectSegs()`, and keeps its effect (a link without flow takes no segment), so the patch applies only on top of it |
-| **Also fixes** | none |
+| **Also fixes** | A write through a null pointer when the memory pool runs out: the run now stops with error 501 ([below](#why-the-results-are-unchanged)) |
 
 ## What was slow
 

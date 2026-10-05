@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Build |
-| **Results** | <!-- results:BIT-01 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-01 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `CMakeLists.txt`, `src/solver/CMakeLists.txt` (+24 / -0 lines) |
 | **Patch** | [`BIT-01.patch`](BIT-01.patch), applied after FIX-01 and FIX-02 ([the patches form one series](../../benchmarking.md#applying-the-patches)); it changes no C source, so it also applies to 85a303d on its own |
 | **Requires** | none |
@@ -48,10 +48,24 @@ MSX gives the same concentrations with and without OpenMP and at any thread coun
 `tools/build-msx.sh` compiles the sources directly, with Release flags and OpenMP, so applying BIT-01 changes nothing it builds. The table shows instead what the two defaults cost the unpatched code: built without optimisation, against `-O3`; and built without OpenMP at one thread, as macOS users got it, against the OpenMP build at 8 threads. At one thread the unpatched code is a little faster without OpenMP, because of how it reads per-thread state; [BIT-03](../BIT-03-thread-state-without-tls/) removes that cost.
 
 <!-- measured:BIT-01 -->
+85a303d unpatched, built three ways: with no optimisation, as the README's `cmake -B build .` builds it with the Makefile or Ninja generator; with `-O3`, as a Release build; and without OpenMP, as on macOS when CMake does not find Homebrew's libomp, against the OpenMP build at 8 threads. Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, best of two runs per build (a checked run and a timed run); load average 6.5 at the start and 8.4 at the end; measured 2026-10-05.
+
+| Case | `-O0` (plain `cmake`) (s) | `-O3` (s) | Speed-up | No OpenMP, 1 thread (s) | OpenMP, 8 threads (s) | Speed-up |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BWSN2, two-source chlorine | 23.3 | 12.7 | 1.84x | 11.8 | 3.46 | 3.41x |
+| Net6, chlorine bulk + wall | 20.3 | 10.9 | 1.87x | 10.3 | 2.90 | 3.54x |
+| KY8, chlorine + dispersion | 18.7 | 10.1 | 1.84x | 9.56 | 2.40 | 3.99x |
+| Richmond, bacterial regrowth | 26.3 | 15.1 | 1.74x | 14.4 | 3.27 | 4.39x |
+| Net3, chloramine decay | 19.7 | 11.3 | 1.73x | 10.4 | 2.89 | 3.59x |
+| Net3, arsenic adsorption | 4.77 | 2.55 | 1.87x | 2.36 | 0.678 | 3.48x |
+| MSX example (4 nodes) | 0.417 | 0.213 | 1.95x | 0.198 | 0.137 | 1.45x |
+| **Median** | | | **1.84x** | | | **3.54x** |
+
 To measure it yourself:
 
 ```sh
-tools/bench.py --builds base,base@O0,base@noomp --threads 1
+tools/bench.py --builds base,base@O0,base@noomp --threads 1    # the first three columns
+tools/bench.py --builds base --threads 8                       # OpenMP at 8 threads
 ```
 <!-- /measured -->
 

@@ -2,7 +2,7 @@
 
 [All changes](README.md)
 
-Everything here runs on macOS (Apple clang and Homebrew's `libomp`) or Linux (GCC, or clang with OpenMP), with git and Python 3. The tolerance verdicts for near-identical changes also need numpy. Windows is not supported; WSL works. Nothing outside `.build/` is written, and no source checkout is ever changed.
+Everything here runs on macOS (Apple clang and Homebrew's `libomp`) or Linux (GCC, or clang with OpenMP), with git and Python 3. The tolerance verdicts for near-identical changes also need numpy. Windows is not supported; WSL works. `tools/try.py`, `tools/bench.py`, `tools/build-msx.sh` and `tools/yardstick.py` write only into `.build/`, which git ignores, and no source checkout is ever changed. The scripts that remake this repository's pages (`tools/run-all.sh`, `tools/update-docs.py`, `tools/check.py`) write to `results/`, `status.md` and the READMEs.
 
 ```sh
 git clone --recurse-submodules https://github.com/epanet-js/epanet-msx-review.git
@@ -30,9 +30,9 @@ tools/try.py BIT-06 --against BIT-05 # one group on its own: before and after
 
 A target is `[SOURCE:]NAME[@FLAVOUR]`: a build name from [the table below](#the-builds), on 85a303d unless a source is given. The source can be an MSX commit, tag, branch (`dev`, `main`), `pull/<number>`, or a directory holding an MSX source tree. A target on another source also gets that source's own unpatched build, so that upstream's own changes stay apart from the patches': its speed is shown against 85a303d, and its results are judged against its own base.
 
-For each case it runs step mode at 1 and 8 threads (`--threads`) and solve mode at one thread. Each build is first run once with a check (a hash of every concentration of every species at every node and link after every step; in solve mode also the MD5 of the binary output file and of the report), then `--reps` times (default 3), builds interleaved, and the best time is kept. `--quick` makes one checked run per build, which is also the timed run, and reuses the baseline's last results on this machine if neither its build nor the models have changed (marked †). On the larger cases (`--cases real`, `--cases private`) the baseline's results are always reused when they can be, because the unpatched code takes minutes there; `--retime` measures it again.
+For each case it runs step mode at 1 and 8 threads (`--threads`) and solve mode at one thread. Each build is first run once with a check (a hash of every concentration of every species at every node and link after every step; in solve mode also the MD5 of the binary output file and of the report), then `--reps` times (default 3), builds interleaved, and the best of all these runs is kept (reading the values for the hash is not timed). `--quick` makes one checked run per build, which is also the timed run, and reuses the baseline's last results on this machine if neither its build nor the models have changed (marked †). On the larger cases (`--cases real`, `--cases private`) the baseline's results are always reused when they can be, because the unpatched code takes minutes there; `--retime` measures it again.
 
-It prints the speed-up per target (median over the cases, and the range) and per case, and whether results are identical. Where they are not, it judges them with [the near-identical rule](2-near-identical/README.md#how-within-tolerance-was-decided), species by species: it builds the baseline three other ways to see how much its results already vary between platforms, and a converged reference, and runs only the cases that differ. The summary goes to `.build/results/try-<date>-<targets>.md` (and `.json`). It names private models only as `Private model 1, 2, ...`, so it is safe to paste into an issue. The exit code is 0 when every target's results are what its patches' headers say (`Results: identical` or `near`).
+It prints the speed-up per target (median over the cases, and the range) and per case, and whether results are identical. Where they are not, it judges them with [the near-identical rule](2-near-identical/README.md#how-within-tolerance-was-decided), species by species: it builds the baseline three other ways (four on Linux) to see how much its results already vary between platforms, and a converged reference, and runs only the cases that differ. The summary goes to `.build/results/try-<date>-<targets>.md` (and `.json`). It names private models only as `Private model 1, 2, ...`, so it is safe to paste into an issue. The exit code is 0 when every target's results are what its patches' headers say (`Results: identical` or `near`).
 
 ## The builds
 
@@ -107,7 +107,7 @@ tools/bench.py --builds BIT-13,BIT-14 --cases output --modes solve,read
 tools/bench.py --builds base,bit,near --cases real --reps 0      # one checked run each
 ```
 
-`--cases` takes groups (`main`, `output`, `real`, `public` for all three, `private`) and case IDs from [models/cases.json](models/cases.json). For each case, mode and thread count it runs each build once with `-check`, then `--reps` times without it (`--reps 0`: the checked run is the timed run), builds interleaved so that background load affects them alike, and keeps the fastest. The first build is the reference for speed-ups and for the "Identical" column. Thread counts are set with `OMP_NUM_THREADS`; `default` leaves it unset, so OpenMP uses every core (10 on an M1 Pro). Every result records the load average at its start and end. Results go to `.build/results/<tag>.json` and `.md`.
+`--cases` takes groups (`main`, `output`, `real`, `public` for all three, `private`) and case IDs from [models/cases.json](models/cases.json). For each case, mode and thread count it runs each build once with `-check`, then `--reps` times without it (`--reps 0`: the checked run alone), builds interleaved so that background load affects them alike, and keeps the fastest of all these runs. The first build is the reference for speed-ups and for the "Identical" column. Thread counts are set with `OMP_NUM_THREADS`; `default` leaves it unset, so OpenMP uses every core (10 on an M1 Pro). Every result records the load average at its start and end. Results go to `.build/results/<tag>.json` and `.md`.
 
 **Timing advice.** On Apple silicon, run-to-run noise is about 1-2 % at one thread on a quiet machine and much more with something else running; at eight threads timings vary more, partly because the system may place threads on the slower efficiency cores. Do not run two benchmarks at once. The tables in this repository were made on a machine in use, as one quick pass (see below); treat differences under about 5 % at one thread and 20 % at eight threads as noise there.
 
@@ -143,7 +143,7 @@ tools/check.py pull/28      # a pull request
 tools/check.py --prs        # also: how far the series applies to each open pull request
 ```
 
-It fetches the version into the `msx` submodule, applies the series (each patch applies, applies after a three-way merge, is already there, or does not apply, which stops the series), applies each fix on its own, times 85a303d, the newer version, and both with the bit-identical and near-identical patches, and writes `status.md`. Commit it to keep the check, or discard it with `git checkout status.md`.
+It fetches the version into the `msx` submodule, applies the series (each patch applies, applies after a three-way merge, is already there, or does not apply, which stops the series; a fix that does not apply and that no later patch requires is skipped instead, as FIX-03 is on `dev`), applies each fix on its own, times 85a303d, the newer version, and both with the bit-identical and near-identical patches, and writes `status.md`. Commit it to keep the check, or discard it with `git checkout status.md`.
 
 ## Your own models
 
@@ -151,7 +151,7 @@ Put input and reaction files in `models/private/`, which git ignores, and run `t
 
 ## Everything the README reports
 
-`tools/run-all.sh` builds everything, makes every measurement in [results/](results/README.md) again, and writes the tables into the READMEs with `tools/update-docs.py`. With the best of 5 interleaved runs it takes about 6 hours on an Apple M1 Pro; it waits for a quiet moment before each step (up to 30 minutes) and never closes anything. `QUICK=1 tools/run-all.sh` makes one timed run per build instead, in about 2.5 hours; that is how the tables in this repository were made. `tools/run-all.sh --list` lists the steps, and `tools/run-all.sh series near` runs only those.
+`tools/run-all.sh` builds everything, makes every measurement in [results/](results/README.md) again, and writes the tables into the READMEs with `tools/update-docs.py`. With a checked run and 5 timed runs per build, interleaved, it takes about 6 hours on an Apple M1 Pro; it waits for a quiet moment before each step (up to 30 minutes) and never closes anything. `QUICK=1 tools/run-all.sh` makes a checked run and one timed run per build instead, in about 2.5 hours; that is how the tables in this repository were made. Either way it copies everything it measured into `results/` and rewrites the tables in the READMEs; `git diff` shows what changed, and `git checkout .` undoes it. `tools/run-all.sh --list` lists the steps, and `tools/run-all.sh series near` runs only those.
 
 ## Scripts
 

@@ -4,7 +4,7 @@
 |---|---|
 | **Category** | [Bit-identical](../README.md): every concentration, the binary output file and the report are unchanged |
 | **Area** | Output and report files |
-| **Results** | <!-- results:BIT-14 -->Identical to 85a303d in all 14 runs (9 cases; step and solve mode at 1 and 8 threads, read mode on the output-heavy cases, and built without OpenMP)<!-- /results --> |
+| **Results** | <!-- results:BIT-14 -->Identical to 85a303d in all 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP)<!-- /results --> |
 | **Files** | `msxout.c`, `msxrpt.c`, `msxtoolkit.c` (+356 / -18 lines) |
 | **Patch** | [`BIT-14.patch`](BIT-14.patch), applied after FIX-01, FIX-02 and BIT-01 to BIT-13 ([the patches form one series](../../benchmarking.md#applying-the-patches)); no earlier patch touches its files, so it also applies to 85a303d on its own |
 | **Requires** | none |
@@ -58,10 +58,23 @@ Each table compares the series up to BIT-13 ("before") with BIT-14 added ("after
 | MSX example (4 nodes) | 63.4 ms | 63.0 ms | 1.01x | 66.4 ms | 66.9 ms | 0.99x | yes |
 | **Median** | | | **1.01x** | | | **0.99x** | |
 
+**Output-heavy cases**: every node, link and species reported every 5 minutes. Solve mode runs as `runepanetmsx` does; read mode reads every value with `MSXgetqual` after every step. Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; solve and read mode, best of two runs per build (a checked run and a timed run); load average 10.5 at the start and 8.9 at the end; measured 2026-10-05.
+
+| Case | Mode | Threads | Before (s) | After (s) | Speed-up | Report and save, before | After | Identical |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| BWSN2, 2 species, every node and link every 5 min | solve | 1 | 10.8 | 2.91 | 3.70x | 7.92 | 0.291 | yes |
+| BWSN2, 2 species, every node and link every 5 min | solve | 8 | 8.42 | 2.06 | 4.10x | 6.63 | 0.279 | yes |
+| BWSN2, 2 species, every node and link every 5 min | read | 1 | 2.58 | 2.70 | 0.95x |  |  | yes |
+| BWSN2, 2 species, every node and link every 5 min | read | 8 | 2.28 | 2.48 | 0.92x |  |  | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | solve | 1 | 2.86 | 1.42 | 2.01x | 1.45 | 32.8 ms | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | solve | 8 | 1.82 | 0.434 | 4.21x | 1.44 | 43.3 ms | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | read | 1 | 1.42 | 1.47 | 0.97x |  |  | yes |
+| Net3 chloramine, 14 species, every node and link every 5 min | read | 8 | 0.477 | 0.477 | 1.00x |  |  | yes |
+
 To measure it yourself:
 
 ```sh
-tools/try.py BIT-14 --against BIT-13
+tools/try.py BIT-14 --against BIT-13 --cases main,output --modes step,solve,read
 ```
 <!-- /measured -->
 
