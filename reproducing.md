@@ -76,10 +76,11 @@ cmake -B build . && cmake --build build --config Release
 cd Examples && ../build/src/run/runepanetmsx example.inp example.msx out.rpt
 ```
 
-With [BIT-01](1-bit-identical/BIT-01-build-defaults/), that command compiles with optimisation and, on macOS, finds Homebrew's libomp. MSX has no unit tests of its own, and `Examples/example.rpt` at 85a303d is not a report of the example (it ends with an EPANET error), so compare with an unpatched build instead: build a second checkout at 85a303d the same way, run the same command there, and compare the two reports apart from the date and time lines:
+With [BIT-01](1-bit-identical/BIT-01-build-defaults/), that command compiles with optimisation and, on macOS, finds Homebrew's libomp. MSX has no unit tests of its own, and `Examples/example.rpt` at 85a303d is not a report of the example (it ends with an EPANET error), so compare with an unpatched build instead: build a second checkout at 85a303d the same way (here `../msx-unpatched`), run the same command there, and compare the two reports apart from the date and time lines:
 
 ```sh
-diff <(grep -v -E 'Page [0-9]|Analysis (begun|ended)' unpatched.rpt) <(grep -v -E 'Page [0-9]|Analysis (begun|ended)' out.rpt)
+strip() { grep -v -E 'Page [0-9]|Analysis (begun|ended)' "$1"; }
+diff <(strip ../../msx-unpatched/Examples/out.rpt) <(strip out.rpt) && echo identical
 ```
 
 With the bit-identical patches the reports are the same.
