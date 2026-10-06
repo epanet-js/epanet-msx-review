@@ -1,7 +1,7 @@
 #!/bin/sh
 # Make every measurement in results/ again, then write the tables into the READMEs.
 #
-#   tools/run-all.sh                 every step (about 6 hours on an Apple M1 Pro)
+#   tools/run-all.sh                 every step (about 9 hours on an Apple M1 Pro, more with models of your own)
 #   tools/run-all.sh series near     only these steps
 #   tools/run-all.sh --list          list the steps
 #   SKIP_DONE=1 tools/run-all.sh     skip steps whose results are already in .build/results/
@@ -28,7 +28,8 @@ R5=5; R3=3
 [ "${QUICK:-0}" = 1 ] && { R5=1; R3=1; }
 
 STEPS="builds series yardstick threads near output-groups headline-step headline-solve output-headline
-       flavours scaling verify-solve verify-noomp real yardstick-real stress yardstick-stress private"
+       flavours scaling verify-solve verify-noomp real yardstick-real stress yardstick-stress private
+       literature yardstick-literature literature-large private-literature"
 
 step() {
     case "$1" in
@@ -92,6 +93,29 @@ step() {
         else
             echo "No models in models/private/: skipped"
         fi ;;
+    literature)   # published reaction models on L-Town, and dispersion on BWSN2: one checked run each
+        tools/bench.py --builds base,bit,near --cases literature --threads 1,8 --reps 0 --tag literature ;;
+    yardstick-literature)
+        tools/yardstick.py run --builds "$SAMPLES,bit@conv,only:NEAR-01,only:NEAR-02,only:NEAR-03,near" \
+            --cases literature --tag yardstick-literature --jobs 4 ;;
+    literature-large)   # the same models on NW Model and BWSN2; the unpatched code on 8 threads only, as its
+                        # one-thread runs take hours there; bit and near on 1 and 8
+        tools/bench.py --builds base,bit,near --cases literature-large --threads 8 --reps 0 --tag literature-large-8 &&
+        tools/bench.py --builds bit,near --cases literature-large --threads 1 --reps 0 --tag literature-large-1 ;;
+    private-literature)   # the same models on your own: tools/private-reactions.py --kinds literature
+        # (list the cases in models/private/cases-literature.json, in the order of models/private/cases.json)
+        if [ -f models/private/cases-literature.json ]; then
+            F=models/private/cases-literature.json
+            tools/bench.py --builds base,bit,near --cases-file $F --cases private --threads 8 --reps 0 \
+                --private-label "Utility model" --tag private-literature-8 &&
+            tools/bench.py --builds bit,near --cases-file $F --cases private --threads 1 --reps 0 \
+                --private-label "Utility model" --tag private-literature-1 &&
+            for n in 8 1; do
+                tools/private-summary.py .build/results/private-literature-$n.json > .build/results/private-literature-$n-summary.json
+            done
+        else
+            echo "No models/private/cases-literature.json: skipped"
+        fi ;;
     *) echo "Unknown step $1" >&2; return 2 ;;
     esac
 }
@@ -117,9 +141,10 @@ mkdir -p .build/results
 FAILED=""
 for s in $STEPS; do
     case "$s" in
-        builds|series|near|output-groups|headline-step|headline-solve|output-headline|flavours|scaling|real|private)
+        builds|series|near|output-groups|headline-step|headline-solve|output-headline|flavours|scaling|real|private|literature)
             tag=$s; [ "$s" = near ] && tag=near-series ;;
         verify-solve) tag=verify-output ;;
+        literature-large|private-literature) tag=$s-1 ;;
         *) tag=$s ;;
     esac
     if [ "${SKIP_DONE:-0}" = 1 ] && [ -f ".build/results/$tag.json" ]; then
@@ -139,9 +164,14 @@ done
 # Copy what was measured to results/, and write the tables into the READMEs
 mkdir -p results
 for t in series near-series output-groups headline-step headline-solve output-headline flavours scaling \
-         verify-solve verify-output verify-noomp yardstick threads real yardstick-real stress yardstick-stress; do
+         verify-solve verify-output verify-noomp yardstick threads real yardstick-real stress yardstick-stress \
+         literature yardstick-literature literature-large-8 literature-large-1; do
     for f in .build/results/$t.json .build/results/$t.md; do [ -f "$f" ] && cp "$f" results/; done
 done
 [ -f .build/results/private-summary.json ] && cp .build/results/private-summary.json results/private.json
+for n in 8 1; do
+    [ -f .build/results/private-literature-$n-summary.json ] &&
+        cp .build/results/private-literature-$n-summary.json results/private-literature-$n.json
+done
 tools/update-docs.py || FAILED="$FAILED update-docs"
 if [ -n "$FAILED" ]; then echo "Failed:$FAILED" >&2; exit 1; fi

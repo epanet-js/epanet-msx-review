@@ -1,0 +1,2018 @@
+[TITLE]
+L-Town: VCDM discolouration (turbidity) model - 17 shear-strength bands of wall material, continual erosion and regeneration (Furnass et al. 2014, 2019)
+
+; ---------------------------------------------------------------------------
+; Variable Condition Discolouration Model (VCDM, University of Sheffield) as an
+; EPANET-MSX reaction file for L-Town (ltown-24h.inp). Our own implementation
+; of the published equations; see models/literature.md.
+;
+; Sources:
+;  Furnass WR, Collins RP, Husband PS, Sharpe RL, Mounce SR, Boxall JB (2014)
+;    Modelling both the continual erosion and regeneration of discolouration
+;    material in drinking water distribution systems. Water Sci Technol:
+;    Water Supply 14(1):81-90. doi:10.2166/ws.2013.176 (eqs 1-3).
+;    White Rose eprint 87035.
+;  Furnass WR (2015) PhD thesis, University of Sheffield (Table 6.5: VCDM
+;    fitted to the PODDS-CI1 flushing data). etheses.whiterose.ac.uk/10645
+;  Furnass WR, Mounce SR, Husband S, Collins RP, Boxall JB (2019) Calibrating
+;    and validating a combined accumulation and mobilisation model for water
+;    distribution system discolouration using particle swarm optimisation.
+;    Smart Water 4:3. doi:10.1186/s40713-019-0015-z
+;  Husband S, Boxall J, Sunny I (2023) Simulating long term discolouration
+;    behaviour in large diameter trunk mains. Environ Sci: Water Res Technol
+;    9(3):756-771. doi:10.1039/d2ew00855f (accumulation period 1.65-1.85 y).
+;
+; State: relative amount of material phi_i in [0,1] held on the wall at shear
+; strength s_i (one wall species per band), as in the VCDM's material
+; condition function phi(tau,t):
+;   d(phi_i)/dt = -be*(tau_a - s_i)  if tau_a >= s_i and phi_i > 0   (erosion)
+;               =  br                if tau_a <  s_i and phi_i < 1   (regeneration)
+; Release from 1 m2 of wall, summed over the eroding bands (eq 3):
+;   dN/dt = alpha * sum_i w_i * be*(tau_a - s_i)     [TPMU/m2/s, 1 TPMU = 1 NTU.m3]
+; Turbidity: dTURB/dt = dN/dt * (wall area / water volume) = dN/dt * 4/D.
+; Bands: s_i = 0.01*sqrt(2)^(i-1) Pa, i = 1..17 (0.01 to 2.56 Pa); each band
+; holds the material between the geometric midpoints of its neighbours, width
+; w_i = s_i*(2^(1/4) - 2^(-1/4)). The published model uses equal widths; L-Town's
+; shear spans three orders of magnitude, so the bands are spaced geometrically.
+; Applied shear tau_a = rho*U^2*Ff/8 (= rho*u*^2); "Us" cannot be used in this
+; MSX version (its name lookup resolves Us to U).
+; ---------------------------------------------------------------------------
+
+[OPTIONS]
+  AREA_UNITS   M2
+  RATE_UNITS   SEC
+  SOLVER       EUL          ;the VCDM is integrated with explicit Euler steps (Furnass 2014 eq 2)
+  TIMESTEP     60
+
+[SPECIES]
+  BULK  TURB   NTU    0.001  0.001   ;turbidity, treated as a concentration
+  WALL  PHI01  FRAC   0.001  0.001   ;relative material at strength 0.01 Pa
+  WALL  PHI02  FRAC   0.001  0.001   ;relative material at strength 0.01414 Pa
+  WALL  PHI03  FRAC   0.001  0.001   ;relative material at strength 0.02 Pa
+  WALL  PHI04  FRAC   0.001  0.001   ;relative material at strength 0.02828 Pa
+  WALL  PHI05  FRAC   0.001  0.001   ;relative material at strength 0.04 Pa
+  WALL  PHI06  FRAC   0.001  0.001   ;relative material at strength 0.05657 Pa
+  WALL  PHI07  FRAC   0.001  0.001   ;relative material at strength 0.08 Pa
+  WALL  PHI08  FRAC   0.001  0.001   ;relative material at strength 0.1131 Pa
+  WALL  PHI09  FRAC   0.001  0.001   ;relative material at strength 0.16 Pa
+  WALL  PHI10  FRAC   0.001  0.001   ;relative material at strength 0.2263 Pa
+  WALL  PHI11  FRAC   0.001  0.001   ;relative material at strength 0.32 Pa
+  WALL  PHI12  FRAC   0.001  0.001   ;relative material at strength 0.4525 Pa
+  WALL  PHI13  FRAC   0.001  0.001   ;relative material at strength 0.64 Pa
+  WALL  PHI14  FRAC   0.001  0.001   ;relative material at strength 0.9051 Pa
+  WALL  PHI15  FRAC   0.001  0.001   ;relative material at strength 1.28 Pa
+  WALL  PHI16  FRAC   0.001  0.001   ;relative material at strength 1.81 Pa
+  WALL  PHI17  FRAC   0.001  0.001   ;relative material at strength 2.56 Pa
+  WALL  MAT    TPMU                 ;material on the wall, TPMU/m2 (formula, reported)
+  WALL  TAPP   PA                   ;applied wall shear stress, Pa (formula, reported)
+
+[COEFFICIENTS]
+  CONSTANT  LU  1.0     ;metres per network length unit: 1 for SI networks, 0.3048 for US units
+; Mobilisation: VCDM fitted to the PODDS-CI1 flushing data (unlined cast iron,
+; 95 mm, groundwater), Furnass (2015) Table 6.5 / Furnass et al. (2019) Table 3
+  PARAMETER  BE     0.00064   ;beta_e, 1/(Pa.s), erosion rate factor
+  PARAMETER  ALPHA  0.593     ;alpha, TPMU/(Pa.m2), material release coefficient
+; Regeneration: accumulation period 1/beta_r = 1.75 years (Husband et al. 2023)
+  PARAMETER  BR     1.81e-08  ;beta_r, 1/s
+  CONSTANT   RHO    1000     ;water density, kg/m3
+  CONSTANT   LPM3   1000     ;litres per m3 (NTU = TPMU/m3)
+  CONSTANT   S01    0.01   ;band strength, Pa
+  CONSTANT   S02    0.0141421   ;band strength, Pa
+  CONSTANT   S03    0.02   ;band strength, Pa
+  CONSTANT   S04    0.0282843   ;band strength, Pa
+  CONSTANT   S05    0.04   ;band strength, Pa
+  CONSTANT   S06    0.0565685   ;band strength, Pa
+  CONSTANT   S07    0.08   ;band strength, Pa
+  CONSTANT   S08    0.113137   ;band strength, Pa
+  CONSTANT   S09    0.16   ;band strength, Pa
+  CONSTANT   S10    0.226274   ;band strength, Pa
+  CONSTANT   S11    0.32   ;band strength, Pa
+  CONSTANT   S12    0.452548   ;band strength, Pa
+  CONSTANT   S13    0.64   ;band strength, Pa
+  CONSTANT   S14    0.905097   ;band strength, Pa
+  CONSTANT   S15    1.28   ;band strength, Pa
+  CONSTANT   S16    1.81019   ;band strength, Pa
+  CONSTANT   S17    2.56   ;band strength, Pa
+  CONSTANT   W01    0.00348311   ;band width, Pa
+  CONSTANT   W02    0.00492586   ;band width, Pa
+  CONSTANT   W03    0.00696621   ;band width, Pa
+  CONSTANT   W04    0.00985171   ;band width, Pa
+  CONSTANT   W05    0.0139324   ;band width, Pa
+  CONSTANT   W06    0.0197034   ;band width, Pa
+  CONSTANT   W07    0.0278649   ;band width, Pa
+  CONSTANT   W08    0.0394069   ;band width, Pa
+  CONSTANT   W09    0.0557297   ;band width, Pa
+  CONSTANT   W10    0.0788137   ;band width, Pa
+  CONSTANT   W11    0.111459   ;band width, Pa
+  CONSTANT   W12    0.157627   ;band width, Pa
+  CONSTANT   W13    0.222919   ;band width, Pa
+  CONSTANT   W14    0.315255   ;band width, Pa
+  CONSTANT   W15    0.445838   ;band width, Pa
+  CONSTANT   W16    0.63051   ;band width, Pa
+  CONSTANT   W17    0.891675   ;band width, Pa
+
+[TERMS]
+  ;lengths and velocities in metres: LU is metres per network length unit
+  ULU     U*LU
+  TAUA   RHO*ULU^2*Ff/8        ;applied wall shear stress, Pa
+  ERO01  BE*(TAUA-S01)*STEP(TAUA-S01)*STEP(PHI01)   ;erosion of band 1, 1/s
+  ERO02  BE*(TAUA-S02)*STEP(TAUA-S02)*STEP(PHI02)   ;erosion of band 2, 1/s
+  ERO03  BE*(TAUA-S03)*STEP(TAUA-S03)*STEP(PHI03)   ;erosion of band 3, 1/s
+  ERO04  BE*(TAUA-S04)*STEP(TAUA-S04)*STEP(PHI04)   ;erosion of band 4, 1/s
+  ERO05  BE*(TAUA-S05)*STEP(TAUA-S05)*STEP(PHI05)   ;erosion of band 5, 1/s
+  ERO06  BE*(TAUA-S06)*STEP(TAUA-S06)*STEP(PHI06)   ;erosion of band 6, 1/s
+  ERO07  BE*(TAUA-S07)*STEP(TAUA-S07)*STEP(PHI07)   ;erosion of band 7, 1/s
+  ERO08  BE*(TAUA-S08)*STEP(TAUA-S08)*STEP(PHI08)   ;erosion of band 8, 1/s
+  ERO09  BE*(TAUA-S09)*STEP(TAUA-S09)*STEP(PHI09)   ;erosion of band 9, 1/s
+  ERO10  BE*(TAUA-S10)*STEP(TAUA-S10)*STEP(PHI10)   ;erosion of band 10, 1/s
+  ERO11  BE*(TAUA-S11)*STEP(TAUA-S11)*STEP(PHI11)   ;erosion of band 11, 1/s
+  ERO12  BE*(TAUA-S12)*STEP(TAUA-S12)*STEP(PHI12)   ;erosion of band 12, 1/s
+  ERO13  BE*(TAUA-S13)*STEP(TAUA-S13)*STEP(PHI13)   ;erosion of band 13, 1/s
+  ERO14  BE*(TAUA-S14)*STEP(TAUA-S14)*STEP(PHI14)   ;erosion of band 14, 1/s
+  ERO15  BE*(TAUA-S15)*STEP(TAUA-S15)*STEP(PHI15)   ;erosion of band 15, 1/s
+  ERO16  BE*(TAUA-S16)*STEP(TAUA-S16)*STEP(PHI16)   ;erosion of band 16, 1/s
+  ERO17  BE*(TAUA-S17)*STEP(TAUA-S17)*STEP(PHI17)   ;erosion of band 17, 1/s
+  REG01  BR*STEP(S01-TAUA)*STEP(1-PHI01)   ;regeneration of band 1, 1/s
+  REG02  BR*STEP(S02-TAUA)*STEP(1-PHI02)   ;regeneration of band 2, 1/s
+  REG03  BR*STEP(S03-TAUA)*STEP(1-PHI03)   ;regeneration of band 3, 1/s
+  REG04  BR*STEP(S04-TAUA)*STEP(1-PHI04)   ;regeneration of band 4, 1/s
+  REG05  BR*STEP(S05-TAUA)*STEP(1-PHI05)   ;regeneration of band 5, 1/s
+  REG06  BR*STEP(S06-TAUA)*STEP(1-PHI06)   ;regeneration of band 6, 1/s
+  REG07  BR*STEP(S07-TAUA)*STEP(1-PHI07)   ;regeneration of band 7, 1/s
+  REG08  BR*STEP(S08-TAUA)*STEP(1-PHI08)   ;regeneration of band 8, 1/s
+  REG09  BR*STEP(S09-TAUA)*STEP(1-PHI09)   ;regeneration of band 9, 1/s
+  REG10  BR*STEP(S10-TAUA)*STEP(1-PHI10)   ;regeneration of band 10, 1/s
+  REG11  BR*STEP(S11-TAUA)*STEP(1-PHI11)   ;regeneration of band 11, 1/s
+  REG12  BR*STEP(S12-TAUA)*STEP(1-PHI12)   ;regeneration of band 12, 1/s
+  REG13  BR*STEP(S13-TAUA)*STEP(1-PHI13)   ;regeneration of band 13, 1/s
+  REG14  BR*STEP(S14-TAUA)*STEP(1-PHI14)   ;regeneration of band 14, 1/s
+  REG15  BR*STEP(S15-TAUA)*STEP(1-PHI15)   ;regeneration of band 15, 1/s
+  REG16  BR*STEP(S16-TAUA)*STEP(1-PHI16)   ;regeneration of band 16, 1/s
+  REG17  BR*STEP(S17-TAUA)*STEP(1-PHI17)   ;regeneration of band 17, 1/s
+  REL    ALPHA*(W01*ERO01+W02*ERO02+W03*ERO03+W04*ERO04+W05*ERO05+W06*ERO06+W07*ERO07+W08*ERO08+W09*ERO09+W10*ERO10+W11*ERO11+W12*ERO12+W13*ERO13+W14*ERO14+W15*ERO15+W16*ERO16+W17*ERO17)   ;dN/dt, TPMU/m2/s (eq 3)
+
+[PIPES]
+  RATE     PHI01  REG01-ERO01
+  RATE     PHI02  REG02-ERO02
+  RATE     PHI03  REG03-ERO03
+  RATE     PHI04  REG04-ERO04
+  RATE     PHI05  REG05-ERO05
+  RATE     PHI06  REG06-ERO06
+  RATE     PHI07  REG07-ERO07
+  RATE     PHI08  REG08-ERO08
+  RATE     PHI09  REG09-ERO09
+  RATE     PHI10  REG10-ERO10
+  RATE     PHI11  REG11-ERO11
+  RATE     PHI12  REG12-ERO12
+  RATE     PHI13  REG13-ERO13
+  RATE     PHI14  REG14-ERO14
+  RATE     PHI15  REG15-ERO15
+  RATE     PHI16  REG16-ERO16
+  RATE     PHI17  REG17-ERO17
+  RATE     TURB   LPM3*Av*REL
+  FORMULA  MAT    ALPHA*(W01*PHI01+W02*PHI02+W03*PHI03+W04*PHI04+W05*PHI05+W06*PHI06+W07*PHI07+W08*PHI08+W09*PHI09+W10*PHI10+W11*PHI11+W12*PHI12+W13*PHI13+W14*PHI14+W15*PHI15+W16*PHI16+W17*PHI17)
+  FORMULA  TAPP   TAUA
+
+[TANKS]
+  RATE     TURB   0                   ;mobilised material stays entrained
+
+[QUALITY]
+  GLOBAL  TURB  0.1
+  NODE    R1    TURB  0.1
+  NODE    R2    TURB  0.1
+; Initial wall state polarised at a conditioning strength tau_c (the VCDM's
+; "single cusp" boundary condition, Furnass 2015 5.8.3): phi = 0 below tau_c,
+; 1 above. As in ltown-podds.msx, tau_c is half of each pipe's peak shear
+; in this 24 h run, with a floor of 0.02 Pa: the GLOBAL lines give the floor,
+; the LINK lines empty the further bands below tau_c in the other pipes.
+  GLOBAL  PHI01  0
+  GLOBAL  PHI02  0
+  GLOBAL  PHI03  1
+  GLOBAL  PHI04  1
+  GLOBAL  PHI05  1
+  GLOBAL  PHI06  1
+  GLOBAL  PHI07  1
+  GLOBAL  PHI08  1
+  GLOBAL  PHI09  1
+  GLOBAL  PHI10  1
+  GLOBAL  PHI11  1
+  GLOBAL  PHI12  1
+  GLOBAL  PHI13  1
+  GLOBAL  PHI14  1
+  GLOBAL  PHI15  1
+  GLOBAL  PHI16  1
+  GLOBAL  PHI17  1
+  LINK  p1  PHI03  0
+  LINK  p1  PHI04  0
+  LINK  p2  PHI03  0
+  LINK  p2  PHI04  0
+  LINK  p3  PHI03  0
+  LINK  p3  PHI04  0
+  LINK  p3  PHI05  0
+  LINK  p3  PHI06  0
+  LINK  p9  PHI03  0
+  LINK  p9  PHI04  0
+  LINK  p9  PHI05  0
+  LINK  p9  PHI06  0
+  LINK  p16  PHI03  0
+  LINK  p16  PHI04  0
+  LINK  p21  PHI03  0
+  LINK  p21  PHI04  0
+  LINK  p21  PHI05  0
+  LINK  p21  PHI06  0
+  LINK  p26  PHI03  0
+  LINK  p26  PHI04  0
+  LINK  p26  PHI05  0
+  LINK  p26  PHI06  0
+  LINK  p26  PHI07  0
+  LINK  p29  PHI03  0
+  LINK  p29  PHI04  0
+  LINK  p29  PHI05  0
+  LINK  p29  PHI06  0
+  LINK  p29  PHI07  0
+  LINK  p31  PHI03  0
+  LINK  p31  PHI04  0
+  LINK  p32  PHI03  0
+  LINK  p32  PHI04  0
+  LINK  p32  PHI05  0
+  LINK  p32  PHI06  0
+  LINK  p32  PHI07  0
+  LINK  p32  PHI08  0
+  LINK  p33  PHI03  0
+  LINK  p33  PHI04  0
+  LINK  p33  PHI05  0
+  LINK  p33  PHI06  0
+  LINK  p33  PHI07  0
+  LINK  p33  PHI08  0
+  LINK  p36  PHI03  0
+  LINK  p37  PHI03  0
+  LINK  p37  PHI04  0
+  LINK  p37  PHI05  0
+  LINK  p38  PHI03  0
+  LINK  p38  PHI04  0
+  LINK  p39  PHI03  0
+  LINK  p39  PHI04  0
+  LINK  p40  PHI03  0
+  LINK  p40  PHI04  0
+  LINK  p40  PHI05  0
+  LINK  p40  PHI06  0
+  LINK  p42  PHI03  0
+  LINK  p43  PHI03  0
+  LINK  p43  PHI04  0
+  LINK  p43  PHI05  0
+  LINK  p43  PHI06  0
+  LINK  p43  PHI07  0
+  LINK  p43  PHI08  0
+  LINK  p44  PHI03  0
+  LINK  p44  PHI04  0
+  LINK  p44  PHI05  0
+  LINK  p44  PHI06  0
+  LINK  p45  PHI03  0
+  LINK  p45  PHI04  0
+  LINK  p45  PHI05  0
+  LINK  p45  PHI06  0
+  LINK  p45  PHI07  0
+  LINK  p45  PHI08  0
+  LINK  p46  PHI03  0
+  LINK  p47  PHI03  0
+  LINK  p47  PHI04  0
+  LINK  p47  PHI05  0
+  LINK  p47  PHI06  0
+  LINK  p48  PHI03  0
+  LINK  p48  PHI04  0
+  LINK  p48  PHI05  0
+  LINK  p48  PHI06  0
+  LINK  p49  PHI03  0
+  LINK  p49  PHI04  0
+  LINK  p49  PHI05  0
+  LINK  p49  PHI06  0
+  LINK  p54  PHI03  0
+  LINK  p54  PHI04  0
+  LINK  p58  PHI03  0
+  LINK  p61  PHI03  0
+  LINK  p61  PHI04  0
+  LINK  p61  PHI05  0
+  LINK  p61  PHI06  0
+  LINK  p61  PHI07  0
+  LINK  p61  PHI08  0
+  LINK  p61  PHI09  0
+  LINK  p63  PHI03  0
+  LINK  p63  PHI04  0
+  LINK  p63  PHI05  0
+  LINK  p63  PHI06  0
+  LINK  p63  PHI07  0
+  LINK  p63  PHI08  0
+  LINK  p63  PHI09  0
+  LINK  p66  PHI03  0
+  LINK  p66  PHI04  0
+  LINK  p66  PHI05  0
+  LINK  p66  PHI06  0
+  LINK  p66  PHI07  0
+  LINK  p69  PHI03  0
+  LINK  p69  PHI04  0
+  LINK  p69  PHI05  0
+  LINK  p69  PHI06  0
+  LINK  p69  PHI07  0
+  LINK  p69  PHI08  0
+  LINK  p69  PHI09  0
+  LINK  p69  PHI10  0
+  LINK  p69  PHI11  0
+  LINK  p69  PHI12  0
+  LINK  p69  PHI13  0
+  LINK  p71  PHI03  0
+  LINK  p75  PHI03  0
+  LINK  p76  PHI03  0
+  LINK  p76  PHI04  0
+  LINK  p78  PHI03  0
+  LINK  p78  PHI04  0
+  LINK  p79  PHI03  0
+  LINK  p79  PHI04  0
+  LINK  p79  PHI05  0
+  LINK  p79  PHI06  0
+  LINK  p79  PHI07  0
+  LINK  p80  PHI03  0
+  LINK  p80  PHI04  0
+  LINK  p81  PHI03  0
+  LINK  p81  PHI04  0
+  LINK  p81  PHI05  0
+  LINK  p81  PHI06  0
+  LINK  p81  PHI07  0
+  LINK  p82  PHI03  0
+  LINK  p83  PHI03  0
+  LINK  p83  PHI04  0
+  LINK  p83  PHI05  0
+  LINK  p83  PHI06  0
+  LINK  p83  PHI07  0
+  LINK  p83  PHI08  0
+  LINK  p87  PHI03  0
+  LINK  p87  PHI04  0
+  LINK  p87  PHI05  0
+  LINK  p87  PHI06  0
+  LINK  p87  PHI07  0
+  LINK  p87  PHI08  0
+  LINK  p87  PHI09  0
+  LINK  p87  PHI10  0
+  LINK  p88  PHI03  0
+  LINK  p88  PHI04  0
+  LINK  p88  PHI05  0
+  LINK  p88  PHI06  0
+  LINK  p88  PHI07  0
+  LINK  p89  PHI03  0
+  LINK  p89  PHI04  0
+  LINK  p89  PHI05  0
+  LINK  p89  PHI06  0
+  LINK  p89  PHI07  0
+  LINK  p89  PHI08  0
+  LINK  p89  PHI09  0
+  LINK  p90  PHI03  0
+  LINK  p90  PHI04  0
+  LINK  p90  PHI05  0
+  LINK  p90  PHI06  0
+  LINK  p90  PHI07  0
+  LINK  p90  PHI08  0
+  LINK  p90  PHI09  0
+  LINK  p90  PHI10  0
+  LINK  p91  PHI03  0
+  LINK  p91  PHI04  0
+  LINK  p91  PHI05  0
+  LINK  p91  PHI06  0
+  LINK  p92  PHI03  0
+  LINK  p92  PHI04  0
+  LINK  p92  PHI05  0
+  LINK  p93  PHI03  0
+  LINK  p93  PHI04  0
+  LINK  p93  PHI05  0
+  LINK  p93  PHI06  0
+  LINK  p95  PHI03  0
+  LINK  p95  PHI04  0
+  LINK  p95  PHI05  0
+  LINK  p95  PHI06  0
+  LINK  p95  PHI07  0
+  LINK  p96  PHI03  0
+  LINK  p96  PHI04  0
+  LINK  p96  PHI05  0
+  LINK  p98  PHI03  0
+  LINK  p99  PHI03  0
+  LINK  p99  PHI04  0
+  LINK  p99  PHI05  0
+  LINK  p100  PHI03  0
+  LINK  p100  PHI04  0
+  LINK  p100  PHI05  0
+  LINK  p100  PHI06  0
+  LINK  p101  PHI03  0
+  LINK  p101  PHI04  0
+  LINK  p101  PHI05  0
+  LINK  p101  PHI06  0
+  LINK  p101  PHI07  0
+  LINK  p103  PHI03  0
+  LINK  p103  PHI04  0
+  LINK  p104  PHI03  0
+  LINK  p104  PHI04  0
+  LINK  p104  PHI05  0
+  LINK  p104  PHI06  0
+  LINK  p104  PHI07  0
+  LINK  p105  PHI03  0
+  LINK  p105  PHI04  0
+  LINK  p105  PHI05  0
+  LINK  p105  PHI06  0
+  LINK  p105  PHI07  0
+  LINK  p105  PHI08  0
+  LINK  p105  PHI09  0
+  LINK  p105  PHI10  0
+  LINK  p105  PHI11  0
+  LINK  p105  PHI12  0
+  LINK  p105  PHI13  0
+  LINK  p106  PHI03  0
+  LINK  p106  PHI04  0
+  LINK  p106  PHI05  0
+  LINK  p106  PHI06  0
+  LINK  p106  PHI07  0
+  LINK  p106  PHI08  0
+  LINK  p106  PHI09  0
+  LINK  p106  PHI10  0
+  LINK  p107  PHI03  0
+  LINK  p107  PHI04  0
+  LINK  p107  PHI05  0
+  LINK  p107  PHI06  0
+  LINK  p107  PHI07  0
+  LINK  p107  PHI08  0
+  LINK  p107  PHI09  0
+  LINK  p108  PHI03  0
+  LINK  p108  PHI04  0
+  LINK  p108  PHI05  0
+  LINK  p108  PHI06  0
+  LINK  p108  PHI07  0
+  LINK  p109  PHI03  0
+  LINK  p109  PHI04  0
+  LINK  p109  PHI05  0
+  LINK  p109  PHI06  0
+  LINK  p110  PHI03  0
+  LINK  p110  PHI04  0
+  LINK  p110  PHI05  0
+  LINK  p110  PHI06  0
+  LINK  p110  PHI07  0
+  LINK  p110  PHI08  0
+  LINK  p110  PHI09  0
+  LINK  p110  PHI10  0
+  LINK  p110  PHI11  0
+  LINK  p110  PHI12  0
+  LINK  p110  PHI13  0
+  LINK  p110  PHI14  0
+  LINK  p110  PHI15  0
+  LINK  p111  PHI03  0
+  LINK  p111  PHI04  0
+  LINK  p111  PHI05  0
+  LINK  p113  PHI03  0
+  LINK  p113  PHI04  0
+  LINK  p114  PHI03  0
+  LINK  p114  PHI04  0
+  LINK  p114  PHI05  0
+  LINK  p114  PHI06  0
+  LINK  p114  PHI07  0
+  LINK  p117  PHI03  0
+  LINK  p117  PHI04  0
+  LINK  p117  PHI05  0
+  LINK  p117  PHI06  0
+  LINK  p117  PHI07  0
+  LINK  p117  PHI08  0
+  LINK  p118  PHI03  0
+  LINK  p118  PHI04  0
+  LINK  p121  PHI03  0
+  LINK  p121  PHI04  0
+  LINK  p122  PHI03  0
+  LINK  p122  PHI04  0
+  LINK  p122  PHI05  0
+  LINK  p122  PHI06  0
+  LINK  p122  PHI07  0
+  LINK  p124  PHI03  0
+  LINK  p124  PHI04  0
+  LINK  p124  PHI05  0
+  LINK  p124  PHI06  0
+  LINK  p124  PHI07  0
+  LINK  p124  PHI08  0
+  LINK  p124  PHI09  0
+  LINK  p124  PHI10  0
+  LINK  p124  PHI11  0
+  LINK  p125  PHI03  0
+  LINK  p125  PHI04  0
+  LINK  p125  PHI05  0
+  LINK  p125  PHI06  0
+  LINK  p125  PHI07  0
+  LINK  p125  PHI08  0
+  LINK  p125  PHI09  0
+  LINK  p125  PHI10  0
+  LINK  p126  PHI03  0
+  LINK  p126  PHI04  0
+  LINK  p127  PHI03  0
+  LINK  p127  PHI04  0
+  LINK  p128  PHI03  0
+  LINK  p128  PHI04  0
+  LINK  p128  PHI05  0
+  LINK  p128  PHI06  0
+  LINK  p128  PHI07  0
+  LINK  p128  PHI08  0
+  LINK  p128  PHI09  0
+  LINK  p131  PHI03  0
+  LINK  p131  PHI04  0
+  LINK  p132  PHI03  0
+  LINK  p132  PHI04  0
+  LINK  p132  PHI05  0
+  LINK  p132  PHI06  0
+  LINK  p132  PHI07  0
+  LINK  p133  PHI03  0
+  LINK  p133  PHI04  0
+  LINK  p133  PHI05  0
+  LINK  p133  PHI06  0
+  LINK  p133  PHI07  0
+  LINK  p133  PHI08  0
+  LINK  p134  PHI03  0
+  LINK  p134  PHI04  0
+  LINK  p134  PHI05  0
+  LINK  p134  PHI06  0
+  LINK  p135  PHI03  0
+  LINK  p135  PHI04  0
+  LINK  p135  PHI05  0
+  LINK  p135  PHI06  0
+  LINK  p135  PHI07  0
+  LINK  p135  PHI08  0
+  LINK  p135  PHI09  0
+  LINK  p136  PHI03  0
+  LINK  p136  PHI04  0
+  LINK  p136  PHI05  0
+  LINK  p136  PHI06  0
+  LINK  p137  PHI03  0
+  LINK  p137  PHI04  0
+  LINK  p137  PHI05  0
+  LINK  p139  PHI03  0
+  LINK  p139  PHI04  0
+  LINK  p139  PHI05  0
+  LINK  p141  PHI03  0
+  LINK  p141  PHI04  0
+  LINK  p143  PHI03  0
+  LINK  p153  PHI03  0
+  LINK  p153  PHI04  0
+  LINK  p153  PHI05  0
+  LINK  p153  PHI06  0
+  LINK  p153  PHI07  0
+  LINK  p153  PHI08  0
+  LINK  p153  PHI09  0
+  LINK  p153  PHI10  0
+  LINK  p154  PHI03  0
+  LINK  p154  PHI04  0
+  LINK  p154  PHI05  0
+  LINK  p155  PHI03  0
+  LINK  p155  PHI04  0
+  LINK  p156  PHI03  0
+  LINK  p156  PHI04  0
+  LINK  p161  PHI03  0
+  LINK  p161  PHI04  0
+  LINK  p161  PHI05  0
+  LINK  p161  PHI06  0
+  LINK  p163  PHI03  0
+  LINK  p163  PHI04  0
+  LINK  p163  PHI05  0
+  LINK  p164  PHI03  0
+  LINK  p164  PHI04  0
+  LINK  p164  PHI05  0
+  LINK  p164  PHI06  0
+  LINK  p164  PHI07  0
+  LINK  p164  PHI08  0
+  LINK  p164  PHI09  0
+  LINK  p168  PHI03  0
+  LINK  p171  PHI03  0
+  LINK  p171  PHI04  0
+  LINK  p171  PHI05  0
+  LINK  p171  PHI06  0
+  LINK  p171  PHI07  0
+  LINK  p171  PHI08  0
+  LINK  p171  PHI09  0
+  LINK  p172  PHI03  0
+  LINK  p172  PHI04  0
+  LINK  p172  PHI05  0
+  LINK  p172  PHI06  0
+  LINK  p173  PHI03  0
+  LINK  p173  PHI04  0
+  LINK  p173  PHI05  0
+  LINK  p173  PHI06  0
+  LINK  p173  PHI07  0
+  LINK  p174  PHI03  0
+  LINK  p174  PHI04  0
+  LINK  p174  PHI05  0
+  LINK  p174  PHI06  0
+  LINK  p174  PHI07  0
+  LINK  p174  PHI08  0
+  LINK  p174  PHI09  0
+  LINK  p175  PHI03  0
+  LINK  p175  PHI04  0
+  LINK  p176  PHI03  0
+  LINK  p176  PHI04  0
+  LINK  p176  PHI05  0
+  LINK  p176  PHI06  0
+  LINK  p177  PHI03  0
+  LINK  p178  PHI03  0
+  LINK  p178  PHI04  0
+  LINK  p178  PHI05  0
+  LINK  p178  PHI06  0
+  LINK  p182  PHI03  0
+  LINK  p182  PHI04  0
+  LINK  p182  PHI05  0
+  LINK  p182  PHI06  0
+  LINK  p182  PHI07  0
+  LINK  p182  PHI08  0
+  LINK  p182  PHI09  0
+  LINK  p182  PHI10  0
+  LINK  p182  PHI11  0
+  LINK  p182  PHI12  0
+  LINK  p186  PHI03  0
+  LINK  p186  PHI04  0
+  LINK  p186  PHI05  0
+  LINK  p186  PHI06  0
+  LINK  p188  PHI03  0
+  LINK  p188  PHI04  0
+  LINK  p188  PHI05  0
+  LINK  p188  PHI06  0
+  LINK  p188  PHI07  0
+  LINK  p188  PHI08  0
+  LINK  p189  PHI03  0
+  LINK  p189  PHI04  0
+  LINK  p189  PHI05  0
+  LINK  p189  PHI06  0
+  LINK  p189  PHI07  0
+  LINK  p189  PHI08  0
+  LINK  p189  PHI09  0
+  LINK  p189  PHI10  0
+  LINK  p189  PHI11  0
+  LINK  p191  PHI03  0
+  LINK  p191  PHI04  0
+  LINK  p191  PHI05  0
+  LINK  p191  PHI06  0
+  LINK  p191  PHI07  0
+  LINK  p193  PHI03  0
+  LINK  p194  PHI03  0
+  LINK  p197  PHI03  0
+  LINK  p197  PHI04  0
+  LINK  p197  PHI05  0
+  LINK  p197  PHI06  0
+  LINK  p197  PHI07  0
+  LINK  p197  PHI08  0
+  LINK  p197  PHI09  0
+  LINK  p197  PHI10  0
+  LINK  p197  PHI11  0
+  LINK  p198  PHI03  0
+  LINK  p198  PHI04  0
+  LINK  p198  PHI05  0
+  LINK  p198  PHI06  0
+  LINK  p198  PHI07  0
+  LINK  p198  PHI08  0
+  LINK  p198  PHI09  0
+  LINK  p199  PHI03  0
+  LINK  p199  PHI04  0
+  LINK  p199  PHI05  0
+  LINK  p200  PHI03  0
+  LINK  p200  PHI04  0
+  LINK  p200  PHI05  0
+  LINK  p200  PHI06  0
+  LINK  p200  PHI07  0
+  LINK  p200  PHI08  0
+  LINK  p200  PHI09  0
+  LINK  p202  PHI03  0
+  LINK  p202  PHI04  0
+  LINK  p202  PHI05  0
+  LINK  p202  PHI06  0
+  LINK  p202  PHI07  0
+  LINK  p202  PHI08  0
+  LINK  p202  PHI09  0
+  LINK  p202  PHI10  0
+  LINK  p203  PHI03  0
+  LINK  p203  PHI04  0
+  LINK  p204  PHI03  0
+  LINK  p204  PHI04  0
+  LINK  p204  PHI05  0
+  LINK  p204  PHI06  0
+  LINK  p204  PHI07  0
+  LINK  p204  PHI08  0
+  LINK  p204  PHI09  0
+  LINK  p204  PHI10  0
+  LINK  p206  PHI03  0
+  LINK  p206  PHI04  0
+  LINK  p206  PHI05  0
+  LINK  p208  PHI03  0
+  LINK  p208  PHI04  0
+  LINK  p209  PHI03  0
+  LINK  p209  PHI04  0
+  LINK  p209  PHI05  0
+  LINK  p209  PHI06  0
+  LINK  p209  PHI07  0
+  LINK  p209  PHI08  0
+  LINK  p209  PHI09  0
+  LINK  p210  PHI03  0
+  LINK  p210  PHI04  0
+  LINK  p210  PHI05  0
+  LINK  p210  PHI06  0
+  LINK  p210  PHI07  0
+  LINK  p210  PHI08  0
+  LINK  p211  PHI03  0
+  LINK  p212  PHI03  0
+  LINK  p212  PHI04  0
+  LINK  p212  PHI05  0
+  LINK  p212  PHI06  0
+  LINK  p213  PHI03  0
+  LINK  p213  PHI04  0
+  LINK  p214  PHI03  0
+  LINK  p214  PHI04  0
+  LINK  p220  PHI03  0
+  LINK  p220  PHI04  0
+  LINK  p220  PHI05  0
+  LINK  p220  PHI06  0
+  LINK  p220  PHI07  0
+  LINK  p220  PHI08  0
+  LINK  p220  PHI09  0
+  LINK  p220  PHI10  0
+  LINK  p221  PHI03  0
+  LINK  p223  PHI03  0
+  LINK  p223  PHI04  0
+  LINK  p223  PHI05  0
+  LINK  p223  PHI06  0
+  LINK  p223  PHI07  0
+  LINK  p223  PHI08  0
+  LINK  p226  PHI03  0
+  LINK  p226  PHI04  0
+  LINK  p226  PHI05  0
+  LINK  p226  PHI06  0
+  LINK  p226  PHI07  0
+  LINK  p227  PHI03  0
+  LINK  p227  PHI04  0
+  LINK  p227  PHI05  0
+  LINK  p227  PHI06  0
+  LINK  p227  PHI07  0
+  LINK  p227  PHI08  0
+  LINK  p227  PHI09  0
+  LINK  p227  PHI10  0
+  LINK  p227  PHI11  0
+  LINK  p227  PHI12  0
+  LINK  p227  PHI13  0
+  LINK  p227  PHI14  0
+  LINK  p228  PHI03  0
+  LINK  p228  PHI04  0
+  LINK  p228  PHI05  0
+  LINK  p228  PHI06  0
+  LINK  p228  PHI07  0
+  LINK  p228  PHI08  0
+  LINK  p228  PHI09  0
+  LINK  p228  PHI10  0
+  LINK  p228  PHI11  0
+  LINK  p228  PHI12  0
+  LINK  p228  PHI13  0
+  LINK  p229  PHI03  0
+  LINK  p229  PHI04  0
+  LINK  p229  PHI05  0
+  LINK  p229  PHI06  0
+  LINK  p229  PHI07  0
+  LINK  p229  PHI08  0
+  LINK  p229  PHI09  0
+  LINK  p230  PHI03  0
+  LINK  p230  PHI04  0
+  LINK  p230  PHI05  0
+  LINK  p230  PHI06  0
+  LINK  p230  PHI07  0
+  LINK  p230  PHI08  0
+  LINK  p231  PHI03  0
+  LINK  p231  PHI04  0
+  LINK  p231  PHI05  0
+  LINK  p231  PHI06  0
+  LINK  p231  PHI07  0
+  LINK  p231  PHI08  0
+  LINK  p231  PHI09  0
+  LINK  p233  PHI03  0
+  LINK  p233  PHI04  0
+  LINK  p233  PHI05  0
+  LINK  p233  PHI06  0
+  LINK  p233  PHI07  0
+  LINK  p233  PHI08  0
+  LINK  p234  PHI03  0
+  LINK  p234  PHI04  0
+  LINK  p234  PHI05  0
+  LINK  p234  PHI06  0
+  LINK  p234  PHI07  0
+  LINK  p234  PHI08  0
+  LINK  p234  PHI09  0
+  LINK  p234  PHI10  0
+  LINK  p234  PHI11  0
+  LINK  p234  PHI12  0
+  LINK  p235  PHI03  0
+  LINK  p235  PHI04  0
+  LINK  p235  PHI05  0
+  LINK  p235  PHI06  0
+  LINK  p235  PHI07  0
+  LINK  p235  PHI08  0
+  LINK  p235  PHI09  0
+  LINK  p235  PHI10  0
+  LINK  p235  PHI11  0
+  LINK  p235  PHI12  0
+  LINK  p235  PHI13  0
+  LINK  p235  PHI14  0
+  LINK  p235  PHI15  0
+  LINK  p237  PHI03  0
+  LINK  p238  PHI03  0
+  LINK  p238  PHI04  0
+  LINK  p238  PHI05  0
+  LINK  p238  PHI06  0
+  LINK  p238  PHI07  0
+  LINK  p238  PHI08  0
+  LINK  p238  PHI09  0
+  LINK  p239  PHI03  0
+  LINK  p239  PHI04  0
+  LINK  p239  PHI05  0
+  LINK  p239  PHI06  0
+  LINK  p240  PHI03  0
+  LINK  p240  PHI04  0
+  LINK  p240  PHI05  0
+  LINK  p240  PHI06  0
+  LINK  p248  PHI03  0
+  LINK  p248  PHI04  0
+  LINK  p248  PHI05  0
+  LINK  p248  PHI06  0
+  LINK  p301  PHI03  0
+  LINK  p302  PHI03  0
+  LINK  p304  PHI03  0
+  LINK  p304  PHI04  0
+  LINK  p305  PHI03  0
+  LINK  p305  PHI04  0
+  LINK  p305  PHI05  0
+  LINK  p310  PHI03  0
+  LINK  p310  PHI04  0
+  LINK  p310  PHI05  0
+  LINK  p311  PHI03  0
+  LINK  p311  PHI04  0
+  LINK  p311  PHI05  0
+  LINK  p315  PHI03  0
+  LINK  p316  PHI03  0
+  LINK  p316  PHI04  0
+  LINK  p317  PHI03  0
+  LINK  p317  PHI04  0
+  LINK  p318  PHI03  0
+  LINK  p318  PHI04  0
+  LINK  p319  PHI03  0
+  LINK  p319  PHI04  0
+  LINK  p319  PHI05  0
+  LINK  p319  PHI06  0
+  LINK  p319  PHI07  0
+  LINK  p319  PHI08  0
+  LINK  p319  PHI09  0
+  LINK  p320  PHI03  0
+  LINK  p320  PHI04  0
+  LINK  p320  PHI05  0
+  LINK  p320  PHI06  0
+  LINK  p320  PHI07  0
+  LINK  p320  PHI08  0
+  LINK  p320  PHI09  0
+  LINK  p321  PHI03  0
+  LINK  p322  PHI03  0
+  LINK  p322  PHI04  0
+  LINK  p323  PHI03  0
+  LINK  p323  PHI04  0
+  LINK  p324  PHI03  0
+  LINK  p324  PHI04  0
+  LINK  p344  PHI03  0
+  LINK  p344  PHI04  0
+  LINK  p344  PHI05  0
+  LINK  p344  PHI06  0
+  LINK  p344  PHI07  0
+  LINK  p344  PHI08  0
+  LINK  p345  PHI03  0
+  LINK  p345  PHI04  0
+  LINK  p345  PHI05  0
+  LINK  p345  PHI06  0
+  LINK  p345  PHI07  0
+  LINK  p345  PHI08  0
+  LINK  p346  PHI03  0
+  LINK  p346  PHI04  0
+  LINK  p346  PHI05  0
+  LINK  p346  PHI06  0
+  LINK  p346  PHI07  0
+  LINK  p346  PHI08  0
+  LINK  p346  PHI09  0
+  LINK  p347  PHI03  0
+  LINK  p347  PHI04  0
+  LINK  p347  PHI05  0
+  LINK  p347  PHI06  0
+  LINK  p347  PHI07  0
+  LINK  p347  PHI08  0
+  LINK  p347  PHI09  0
+  LINK  p353  PHI03  0
+  LINK  p354  PHI03  0
+  LINK  p355  PHI03  0
+  LINK  p356  PHI03  0
+  LINK  p356  PHI04  0
+  LINK  p356  PHI05  0
+  LINK  p356  PHI06  0
+  LINK  p357  PHI03  0
+  LINK  p357  PHI04  0
+  LINK  p357  PHI05  0
+  LINK  p357  PHI06  0
+  LINK  p358  PHI03  0
+  LINK  p358  PHI04  0
+  LINK  p358  PHI05  0
+  LINK  p358  PHI06  0
+  LINK  p358  PHI07  0
+  LINK  p358  PHI08  0
+  LINK  p358  PHI09  0
+  LINK  p359  PHI03  0
+  LINK  p359  PHI04  0
+  LINK  p359  PHI05  0
+  LINK  p359  PHI06  0
+  LINK  p359  PHI07  0
+  LINK  p359  PHI08  0
+  LINK  p359  PHI09  0
+  LINK  p359  PHI10  0
+  LINK  p363  PHI03  0
+  LINK  p363  PHI04  0
+  LINK  p363  PHI05  0
+  LINK  p363  PHI06  0
+  LINK  p363  PHI07  0
+  LINK  p364  PHI03  0
+  LINK  p364  PHI04  0
+  LINK  p364  PHI05  0
+  LINK  p364  PHI06  0
+  LINK  p364  PHI07  0
+  LINK  p365  PHI03  0
+  LINK  p365  PHI04  0
+  LINK  p365  PHI05  0
+  LINK  p365  PHI06  0
+  LINK  p365  PHI07  0
+  LINK  p372  PHI03  0
+  LINK  p372  PHI04  0
+  LINK  p372  PHI05  0
+  LINK  p373  PHI03  0
+  LINK  p373  PHI04  0
+  LINK  p373  PHI05  0
+  LINK  p374  PHI03  0
+  LINK  p374  PHI04  0
+  LINK  p374  PHI05  0
+  LINK  p375  PHI03  0
+  LINK  p375  PHI04  0
+  LINK  p375  PHI05  0
+  LINK  p376  PHI03  0
+  LINK  p376  PHI04  0
+  LINK  p376  PHI05  0
+  LINK  p377  PHI03  0
+  LINK  p377  PHI04  0
+  LINK  p377  PHI05  0
+  LINK  p378  PHI03  0
+  LINK  p378  PHI04  0
+  LINK  p378  PHI05  0
+  LINK  p379  PHI03  0
+  LINK  p379  PHI04  0
+  LINK  p379  PHI05  0
+  LINK  p380  PHI03  0
+  LINK  p380  PHI04  0
+  LINK  p380  PHI05  0
+  LINK  p381  PHI03  0
+  LINK  p381  PHI04  0
+  LINK  p381  PHI05  0
+  LINK  p382  PHI03  0
+  LINK  p382  PHI04  0
+  LINK  p382  PHI05  0
+  LINK  p384  PHI03  0
+  LINK  p385  PHI03  0
+  LINK  p385  PHI04  0
+  LINK  p385  PHI05  0
+  LINK  p385  PHI06  0
+  LINK  p385  PHI07  0
+  LINK  p385  PHI08  0
+  LINK  p385  PHI09  0
+  LINK  p386  PHI03  0
+  LINK  p386  PHI04  0
+  LINK  p386  PHI05  0
+  LINK  p386  PHI06  0
+  LINK  p386  PHI07  0
+  LINK  p386  PHI08  0
+  LINK  p387  PHI03  0
+  LINK  p387  PHI04  0
+  LINK  p387  PHI05  0
+  LINK  p387  PHI06  0
+  LINK  p388  PHI03  0
+  LINK  p388  PHI04  0
+  LINK  p388  PHI05  0
+  LINK  p388  PHI06  0
+  LINK  p391  PHI03  0
+  LINK  p391  PHI04  0
+  LINK  p392  PHI03  0
+  LINK  p392  PHI04  0
+  LINK  p392  PHI05  0
+  LINK  p395  PHI03  0
+  LINK  p395  PHI04  0
+  LINK  p396  PHI03  0
+  LINK  p396  PHI04  0
+  LINK  p397  PHI03  0
+  LINK  p397  PHI04  0
+  LINK  p397  PHI05  0
+  LINK  p398  PHI03  0
+  LINK  p398  PHI04  0
+  LINK  p398  PHI05  0
+  LINK  p402  PHI03  0
+  LINK  p403  PHI03  0
+  LINK  p404  PHI03  0
+  LINK  p404  PHI04  0
+  LINK  p404  PHI05  0
+  LINK  p405  PHI03  0
+  LINK  p405  PHI04  0
+  LINK  p405  PHI05  0
+  LINK  p406  PHI03  0
+  LINK  p406  PHI04  0
+  LINK  p406  PHI05  0
+  LINK  p406  PHI06  0
+  LINK  p407  PHI03  0
+  LINK  p407  PHI04  0
+  LINK  p407  PHI05  0
+  LINK  p407  PHI06  0
+  LINK  p408  PHI03  0
+  LINK  p408  PHI04  0
+  LINK  p408  PHI05  0
+  LINK  p408  PHI06  0
+  LINK  p409  PHI03  0
+  LINK  p409  PHI04  0
+  LINK  p409  PHI05  0
+  LINK  p409  PHI06  0
+  LINK  p409  PHI07  0
+  LINK  p416  PHI03  0
+  LINK  p416  PHI04  0
+  LINK  p416  PHI05  0
+  LINK  p417  PHI03  0
+  LINK  p417  PHI04  0
+  LINK  p417  PHI05  0
+  LINK  p418  PHI03  0
+  LINK  p418  PHI04  0
+  LINK  p418  PHI05  0
+  LINK  p419  PHI03  0
+  LINK  p419  PHI04  0
+  LINK  p419  PHI05  0
+  LINK  p420  PHI03  0
+  LINK  p420  PHI04  0
+  LINK  p420  PHI05  0
+  LINK  p420  PHI06  0
+  LINK  p421  PHI03  0
+  LINK  p421  PHI04  0
+  LINK  p422  PHI03  0
+  LINK  p422  PHI04  0
+  LINK  p422  PHI05  0
+  LINK  p423  PHI03  0
+  LINK  p423  PHI04  0
+  LINK  p423  PHI05  0
+  LINK  p424  PHI03  0
+  LINK  p424  PHI04  0
+  LINK  p424  PHI05  0
+  LINK  p425  PHI03  0
+  LINK  p425  PHI04  0
+  LINK  p425  PHI05  0
+  LINK  p425  PHI06  0
+  LINK  p425  PHI07  0
+  LINK  p426  PHI03  0
+  LINK  p426  PHI04  0
+  LINK  p426  PHI05  0
+  LINK  p426  PHI06  0
+  LINK  p426  PHI07  0
+  LINK  p427  PHI03  0
+  LINK  p427  PHI04  0
+  LINK  p427  PHI05  0
+  LINK  p427  PHI06  0
+  LINK  p427  PHI07  0
+  LINK  p428  PHI03  0
+  LINK  p429  PHI03  0
+  LINK  p430  PHI03  0
+  LINK  p430  PHI04  0
+  LINK  p430  PHI05  0
+  LINK  p431  PHI03  0
+  LINK  p431  PHI04  0
+  LINK  p431  PHI05  0
+  LINK  p431  PHI06  0
+  LINK  p432  PHI03  0
+  LINK  p432  PHI04  0
+  LINK  p433  PHI03  0
+  LINK  p433  PHI04  0
+  LINK  p434  PHI03  0
+  LINK  p434  PHI04  0
+  LINK  p441  PHI03  0
+  LINK  p444  PHI03  0
+  LINK  p444  PHI04  0
+  LINK  p447  PHI03  0
+  LINK  p447  PHI04  0
+  LINK  p447  PHI05  0
+  LINK  p447  PHI06  0
+  LINK  p447  PHI07  0
+  LINK  p448  PHI03  0
+  LINK  p448  PHI04  0
+  LINK  p448  PHI05  0
+  LINK  p448  PHI06  0
+  LINK  p448  PHI07  0
+  LINK  p449  PHI03  0
+  LINK  p449  PHI04  0
+  LINK  p449  PHI05  0
+  LINK  p449  PHI06  0
+  LINK  p449  PHI07  0
+  LINK  p452  PHI03  0
+  LINK  p452  PHI04  0
+  LINK  p452  PHI05  0
+  LINK  p452  PHI06  0
+  LINK  p453  PHI03  0
+  LINK  p453  PHI04  0
+  LINK  p453  PHI05  0
+  LINK  p453  PHI06  0
+  LINK  p454  PHI03  0
+  LINK  p454  PHI04  0
+  LINK  p454  PHI05  0
+  LINK  p454  PHI06  0
+  LINK  p457  PHI03  0
+  LINK  p457  PHI04  0
+  LINK  p457  PHI05  0
+  LINK  p457  PHI06  0
+  LINK  p457  PHI07  0
+  LINK  p458  PHI03  0
+  LINK  p458  PHI04  0
+  LINK  p458  PHI05  0
+  LINK  p458  PHI06  0
+  LINK  p458  PHI07  0
+  LINK  p459  PHI03  0
+  LINK  p459  PHI04  0
+  LINK  p459  PHI05  0
+  LINK  p459  PHI06  0
+  LINK  p460  PHI03  0
+  LINK  p460  PHI04  0
+  LINK  p460  PHI05  0
+  LINK  p461  PHI03  0
+  LINK  p461  PHI04  0
+  LINK  p462  PHI03  0
+  LINK  p462  PHI04  0
+  LINK  p463  PHI03  0
+  LINK  p463  PHI04  0
+  LINK  p464  PHI03  0
+  LINK  p464  PHI04  0
+  LINK  p465  PHI03  0
+  LINK  p468  PHI03  0
+  LINK  p468  PHI04  0
+  LINK  p468  PHI05  0
+  LINK  p468  PHI06  0
+  LINK  p469  PHI03  0
+  LINK  p469  PHI04  0
+  LINK  p469  PHI05  0
+  LINK  p470  PHI03  0
+  LINK  p470  PHI04  0
+  LINK  p470  PHI05  0
+  LINK  p471  PHI03  0
+  LINK  p471  PHI04  0
+  LINK  p471  PHI05  0
+  LINK  p472  PHI03  0
+  LINK  p472  PHI04  0
+  LINK  p472  PHI05  0
+  LINK  p473  PHI03  0
+  LINK  p473  PHI04  0
+  LINK  p473  PHI05  0
+  LINK  p474  PHI03  0
+  LINK  p474  PHI04  0
+  LINK  p474  PHI05  0
+  LINK  p474  PHI06  0
+  LINK  p474  PHI07  0
+  LINK  p475  PHI03  0
+  LINK  p475  PHI04  0
+  LINK  p475  PHI05  0
+  LINK  p475  PHI06  0
+  LINK  p475  PHI07  0
+  LINK  p476  PHI03  0
+  LINK  p476  PHI04  0
+  LINK  p476  PHI05  0
+  LINK  p476  PHI06  0
+  LINK  p476  PHI07  0
+  LINK  p477  PHI03  0
+  LINK  p477  PHI04  0
+  LINK  p477  PHI05  0
+  LINK  p477  PHI06  0
+  LINK  p477  PHI07  0
+  LINK  p477  PHI08  0
+  LINK  p477  PHI09  0
+  LINK  p477  PHI10  0
+  LINK  p477  PHI11  0
+  LINK  p477  PHI12  0
+  LINK  p477  PHI13  0
+  LINK  p478  PHI03  0
+  LINK  p478  PHI04  0
+  LINK  p478  PHI05  0
+  LINK  p478  PHI06  0
+  LINK  p478  PHI07  0
+  LINK  p478  PHI08  0
+  LINK  p478  PHI09  0
+  LINK  p478  PHI10  0
+  LINK  p478  PHI11  0
+  LINK  p478  PHI12  0
+  LINK  p478  PHI13  0
+  LINK  p479  PHI03  0
+  LINK  p479  PHI04  0
+  LINK  p479  PHI05  0
+  LINK  p479  PHI06  0
+  LINK  p479  PHI07  0
+  LINK  p479  PHI08  0
+  LINK  p479  PHI09  0
+  LINK  p479  PHI10  0
+  LINK  p479  PHI11  0
+  LINK  p479  PHI12  0
+  LINK  p480  PHI03  0
+  LINK  p480  PHI04  0
+  LINK  p480  PHI05  0
+  LINK  p480  PHI06  0
+  LINK  p480  PHI07  0
+  LINK  p480  PHI08  0
+  LINK  p480  PHI09  0
+  LINK  p480  PHI10  0
+  LINK  p480  PHI11  0
+  LINK  p480  PHI12  0
+  LINK  p481  PHI03  0
+  LINK  p481  PHI04  0
+  LINK  p481  PHI05  0
+  LINK  p481  PHI06  0
+  LINK  p481  PHI07  0
+  LINK  p481  PHI08  0
+  LINK  p481  PHI09  0
+  LINK  p481  PHI10  0
+  LINK  p482  PHI03  0
+  LINK  p482  PHI04  0
+  LINK  p482  PHI05  0
+  LINK  p482  PHI06  0
+  LINK  p482  PHI07  0
+  LINK  p482  PHI08  0
+  LINK  p482  PHI09  0
+  LINK  p482  PHI10  0
+  LINK  p483  PHI03  0
+  LINK  p483  PHI04  0
+  LINK  p483  PHI05  0
+  LINK  p483  PHI06  0
+  LINK  p483  PHI07  0
+  LINK  p483  PHI08  0
+  LINK  p483  PHI09  0
+  LINK  p483  PHI10  0
+  LINK  p483  PHI11  0
+  LINK  p486  PHI03  0
+  LINK  p486  PHI04  0
+  LINK  p488  PHI03  0
+  LINK  p488  PHI04  0
+  LINK  p488  PHI05  0
+  LINK  p488  PHI06  0
+  LINK  p488  PHI07  0
+  LINK  p489  PHI03  0
+  LINK  p489  PHI04  0
+  LINK  p489  PHI05  0
+  LINK  p489  PHI06  0
+  LINK  p489  PHI07  0
+  LINK  p490  PHI03  0
+  LINK  p490  PHI04  0
+  LINK  p490  PHI05  0
+  LINK  p490  PHI06  0
+  LINK  p490  PHI07  0
+  LINK  p491  PHI03  0
+  LINK  p491  PHI04  0
+  LINK  p491  PHI05  0
+  LINK  p491  PHI06  0
+  LINK  p491  PHI07  0
+  LINK  p494  PHI03  0
+  LINK  p494  PHI04  0
+  LINK  p494  PHI05  0
+  LINK  p494  PHI06  0
+  LINK  p494  PHI07  0
+  LINK  p494  PHI08  0
+  LINK  p495  PHI03  0
+  LINK  p495  PHI04  0
+  LINK  p495  PHI05  0
+  LINK  p495  PHI06  0
+  LINK  p495  PHI07  0
+  LINK  p495  PHI08  0
+  LINK  p496  PHI03  0
+  LINK  p496  PHI04  0
+  LINK  p496  PHI05  0
+  LINK  p496  PHI06  0
+  LINK  p496  PHI07  0
+  LINK  p496  PHI08  0
+  LINK  p497  PHI03  0
+  LINK  p498  PHI03  0
+  LINK  p499  PHI03  0
+  LINK  p500  PHI03  0
+  LINK  p503  PHI03  0
+  LINK  p503  PHI04  0
+  LINK  p503  PHI05  0
+  LINK  p503  PHI06  0
+  LINK  p503  PHI07  0
+  LINK  p503  PHI08  0
+  LINK  p503  PHI09  0
+  LINK  p504  PHI03  0
+  LINK  p504  PHI04  0
+  LINK  p504  PHI05  0
+  LINK  p504  PHI06  0
+  LINK  p504  PHI07  0
+  LINK  p504  PHI08  0
+  LINK  p504  PHI09  0
+  LINK  p505  PHI03  0
+  LINK  p505  PHI04  0
+  LINK  p505  PHI05  0
+  LINK  p505  PHI06  0
+  LINK  p505  PHI07  0
+  LINK  p505  PHI08  0
+  LINK  p505  PHI09  0
+  LINK  p509  PHI03  0
+  LINK  p513  PHI03  0
+  LINK  p513  PHI04  0
+  LINK  p513  PHI05  0
+  LINK  p513  PHI06  0
+  LINK  p513  PHI07  0
+  LINK  p513  PHI08  0
+  LINK  p513  PHI09  0
+  LINK  p513  PHI10  0
+  LINK  p514  PHI03  0
+  LINK  p514  PHI04  0
+  LINK  p514  PHI05  0
+  LINK  p514  PHI06  0
+  LINK  p514  PHI07  0
+  LINK  p514  PHI08  0
+  LINK  p514  PHI09  0
+  LINK  p515  PHI03  0
+  LINK  p515  PHI04  0
+  LINK  p515  PHI05  0
+  LINK  p515  PHI06  0
+  LINK  p515  PHI07  0
+  LINK  p515  PHI08  0
+  LINK  p516  PHI03  0
+  LINK  p517  PHI03  0
+  LINK  p518  PHI03  0
+  LINK  p518  PHI04  0
+  LINK  p518  PHI05  0
+  LINK  p518  PHI06  0
+  LINK  p518  PHI07  0
+  LINK  p518  PHI08  0
+  LINK  p518  PHI09  0
+  LINK  p519  PHI03  0
+  LINK  p519  PHI04  0
+  LINK  p519  PHI05  0
+  LINK  p519  PHI06  0
+  LINK  p519  PHI07  0
+  LINK  p519  PHI08  0
+  LINK  p519  PHI09  0
+  LINK  p519  PHI10  0
+  LINK  p520  PHI03  0
+  LINK  p520  PHI04  0
+  LINK  p520  PHI05  0
+  LINK  p520  PHI06  0
+  LINK  p520  PHI07  0
+  LINK  p520  PHI08  0
+  LINK  p520  PHI09  0
+  LINK  p520  PHI10  0
+  LINK  p521  PHI03  0
+  LINK  p521  PHI04  0
+  LINK  p521  PHI05  0
+  LINK  p521  PHI06  0
+  LINK  p521  PHI07  0
+  LINK  p521  PHI08  0
+  LINK  p522  PHI03  0
+  LINK  p522  PHI04  0
+  LINK  p522  PHI05  0
+  LINK  p522  PHI06  0
+  LINK  p522  PHI07  0
+  LINK  p522  PHI08  0
+  LINK  p523  PHI03  0
+  LINK  p523  PHI04  0
+  LINK  p523  PHI05  0
+  LINK  p524  PHI03  0
+  LINK  p527  PHI03  0
+  LINK  p527  PHI04  0
+  LINK  p527  PHI05  0
+  LINK  p527  PHI06  0
+  LINK  p528  PHI03  0
+  LINK  p528  PHI04  0
+  LINK  p528  PHI05  0
+  LINK  p532  PHI03  0
+  LINK  p532  PHI04  0
+  LINK  p532  PHI05  0
+  LINK  p532  PHI06  0
+  LINK  p532  PHI07  0
+  LINK  p533  PHI03  0
+  LINK  p533  PHI04  0
+  LINK  p533  PHI05  0
+  LINK  p533  PHI06  0
+  LINK  p533  PHI07  0
+  LINK  p534  PHI03  0
+  LINK  p534  PHI04  0
+  LINK  p534  PHI05  0
+  LINK  p534  PHI06  0
+  LINK  p534  PHI07  0
+  LINK  p534  PHI08  0
+  LINK  p535  PHI03  0
+  LINK  p535  PHI04  0
+  LINK  p535  PHI05  0
+  LINK  p535  PHI06  0
+  LINK  p535  PHI07  0
+  LINK  p535  PHI08  0
+  LINK  p536  PHI03  0
+  LINK  p536  PHI04  0
+  LINK  p536  PHI05  0
+  LINK  p536  PHI06  0
+  LINK  p536  PHI07  0
+  LINK  p536  PHI08  0
+  LINK  p539  PHI03  0
+  LINK  p539  PHI04  0
+  LINK  p539  PHI05  0
+  LINK  p539  PHI06  0
+  LINK  p540  PHI03  0
+  LINK  p540  PHI04  0
+  LINK  p540  PHI05  0
+  LINK  p540  PHI06  0
+  LINK  p541  PHI03  0
+  LINK  p541  PHI04  0
+  LINK  p542  PHI03  0
+  LINK  p547  PHI03  0
+  LINK  p547  PHI04  0
+  LINK  p547  PHI05  0
+  LINK  p547  PHI06  0
+  LINK  p547  PHI07  0
+  LINK  p547  PHI08  0
+  LINK  p547  PHI09  0
+  LINK  p548  PHI03  0
+  LINK  p548  PHI04  0
+  LINK  p548  PHI05  0
+  LINK  p548  PHI06  0
+  LINK  p548  PHI07  0
+  LINK  p548  PHI08  0
+  LINK  p548  PHI09  0
+  LINK  p549  PHI03  0
+  LINK  p549  PHI04  0
+  LINK  p549  PHI05  0
+  LINK  p549  PHI06  0
+  LINK  p549  PHI07  0
+  LINK  p550  PHI03  0
+  LINK  p550  PHI04  0
+  LINK  p550  PHI05  0
+  LINK  p550  PHI06  0
+  LINK  p550  PHI07  0
+  LINK  p551  PHI03  0
+  LINK  p551  PHI04  0
+  LINK  p551  PHI05  0
+  LINK  p552  PHI03  0
+  LINK  p552  PHI04  0
+  LINK  p553  PHI03  0
+  LINK  p553  PHI04  0
+  LINK  p553  PHI05  0
+  LINK  p553  PHI06  0
+  LINK  p553  PHI07  0
+  LINK  p553  PHI08  0
+  LINK  p554  PHI03  0
+  LINK  p554  PHI04  0
+  LINK  p554  PHI05  0
+  LINK  p554  PHI06  0
+  LINK  p554  PHI07  0
+  LINK  p554  PHI08  0
+  LINK  p560  PHI03  0
+  LINK  p560  PHI04  0
+  LINK  p560  PHI05  0
+  LINK  p561  PHI03  0
+  LINK  p561  PHI04  0
+  LINK  p567  PHI03  0
+  LINK  p567  PHI04  0
+  LINK  p567  PHI05  0
+  LINK  p567  PHI06  0
+  LINK  p568  PHI03  0
+  LINK  p568  PHI04  0
+  LINK  p568  PHI05  0
+  LINK  p569  PHI03  0
+  LINK  p569  PHI04  0
+  LINK  p573  PHI03  0
+  LINK  p574  PHI03  0
+  LINK  p575  PHI03  0
+  LINK  p577  PHI03  0
+  LINK  p577  PHI04  0
+  LINK  p577  PHI05  0
+  LINK  p577  PHI06  0
+  LINK  p578  PHI03  0
+  LINK  p578  PHI04  0
+  LINK  p578  PHI05  0
+  LINK  p578  PHI06  0
+  LINK  p586  PHI03  0
+  LINK  p586  PHI04  0
+  LINK  p586  PHI05  0
+  LINK  p587  PHI03  0
+  LINK  p587  PHI04  0
+  LINK  p587  PHI05  0
+  LINK  p593  PHI03  0
+  LINK  p594  PHI03  0
+  LINK  p595  PHI03  0
+  LINK  p595  PHI04  0
+  LINK  p629  PHI03  0
+  LINK  p629  PHI04  0
+  LINK  p630  PHI03  0
+  LINK  p630  PHI04  0
+  LINK  p681  PHI03  0
+  LINK  p681  PHI04  0
+  LINK  p681  PHI05  0
+  LINK  p681  PHI06  0
+  LINK  p681  PHI07  0
+  LINK  p681  PHI08  0
+  LINK  p682  PHI03  0
+  LINK  p682  PHI04  0
+  LINK  p682  PHI05  0
+  LINK  p682  PHI06  0
+  LINK  p682  PHI07  0
+  LINK  p682  PHI08  0
+  LINK  p683  PHI03  0
+  LINK  p683  PHI04  0
+  LINK  p683  PHI05  0
+  LINK  p683  PHI06  0
+  LINK  p683  PHI07  0
+  LINK  p683  PHI08  0
+  LINK  p684  PHI03  0
+  LINK  p684  PHI04  0
+  LINK  p684  PHI05  0
+  LINK  p684  PHI06  0
+  LINK  p684  PHI07  0
+  LINK  p685  PHI03  0
+  LINK  p685  PHI04  0
+  LINK  p685  PHI05  0
+  LINK  p685  PHI06  0
+  LINK  p685  PHI07  0
+  LINK  p686  PHI03  0
+  LINK  p686  PHI04  0
+  LINK  p686  PHI05  0
+  LINK  p686  PHI06  0
+  LINK  p687  PHI03  0
+  LINK  p687  PHI04  0
+  LINK  p687  PHI05  0
+  LINK  p687  PHI06  0
+  LINK  p688  PHI03  0
+  LINK  p688  PHI04  0
+  LINK  p688  PHI05  0
+  LINK  p689  PHI03  0
+  LINK  p689  PHI04  0
+  LINK  p689  PHI05  0
+  LINK  p690  PHI03  0
+  LINK  p690  PHI04  0
+  LINK  p690  PHI05  0
+  LINK  p690  PHI06  0
+  LINK  p690  PHI07  0
+  LINK  p690  PHI08  0
+  LINK  p690  PHI09  0
+  LINK  p691  PHI03  0
+  LINK  p691  PHI04  0
+  LINK  p691  PHI05  0
+  LINK  p691  PHI06  0
+  LINK  p691  PHI07  0
+  LINK  p691  PHI08  0
+  LINK  p691  PHI09  0
+  LINK  p692  PHI03  0
+  LINK  p692  PHI04  0
+  LINK  p692  PHI05  0
+  LINK  p692  PHI06  0
+  LINK  p692  PHI07  0
+  LINK  p692  PHI08  0
+  LINK  p692  PHI09  0
+  LINK  p693  PHI03  0
+  LINK  p693  PHI04  0
+  LINK  p693  PHI05  0
+  LINK  p693  PHI06  0
+  LINK  p693  PHI07  0
+  LINK  p693  PHI08  0
+  LINK  p693  PHI09  0
+  LINK  p694  PHI03  0
+  LINK  p694  PHI04  0
+  LINK  p694  PHI05  0
+  LINK  p694  PHI06  0
+  LINK  p694  PHI07  0
+  LINK  p694  PHI08  0
+  LINK  p694  PHI09  0
+  LINK  p695  PHI03  0
+  LINK  p695  PHI04  0
+  LINK  p695  PHI05  0
+  LINK  p695  PHI06  0
+  LINK  p695  PHI07  0
+  LINK  p695  PHI08  0
+  LINK  p695  PHI09  0
+  LINK  p696  PHI03  0
+  LINK  p696  PHI04  0
+  LINK  p696  PHI05  0
+  LINK  p697  PHI03  0
+  LINK  p697  PHI04  0
+  LINK  p697  PHI05  0
+  LINK  p698  PHI03  0
+  LINK  p698  PHI04  0
+  LINK  p698  PHI05  0
+  LINK  p699  PHI03  0
+  LINK  p699  PHI04  0
+  LINK  p699  PHI05  0
+  LINK  p700  PHI03  0
+  LINK  p700  PHI04  0
+  LINK  p700  PHI05  0
+  LINK  p701  PHI03  0
+  LINK  p701  PHI04  0
+  LINK  p701  PHI05  0
+  LINK  p702  PHI03  0
+  LINK  p703  PHI03  0
+  LINK  p704  PHI03  0
+  LINK  p705  PHI03  0
+  LINK  p705  PHI04  0
+  LINK  p706  PHI03  0
+  LINK  p707  PHI03  0
+  LINK  p708  PHI03  0
+  LINK  p709  PHI03  0
+  LINK  p709  PHI04  0
+  LINK  p710  PHI03  0
+  LINK  p710  PHI04  0
+  LINK  p715  PHI03  0
+  LINK  p716  PHI03  0
+  LINK  p716  PHI04  0
+  LINK  p723  PHI03  0
+  LINK  p723  PHI04  0
+  LINK  p724  PHI03  0
+  LINK  p724  PHI04  0
+  LINK  p724  PHI05  0
+  LINK  p724  PHI06  0
+  LINK  p724  PHI07  0
+  LINK  p725  PHI03  0
+  LINK  p725  PHI04  0
+  LINK  p725  PHI05  0
+  LINK  p725  PHI06  0
+  LINK  p725  PHI07  0
+  LINK  p725  PHI08  0
+  LINK  p726  PHI03  0
+  LINK  p726  PHI04  0
+  LINK  p726  PHI05  0
+  LINK  p726  PHI06  0
+  LINK  p726  PHI07  0
+  LINK  p726  PHI08  0
+  LINK  p726  PHI09  0
+  LINK  p727  PHI03  0
+  LINK  p727  PHI04  0
+  LINK  p727  PHI05  0
+  LINK  p727  PHI06  0
+  LINK  p727  PHI07  0
+  LINK  p727  PHI08  0
+  LINK  p727  PHI09  0
+  LINK  p728  PHI03  0
+  LINK  p728  PHI04  0
+  LINK  p728  PHI05  0
+  LINK  p728  PHI06  0
+  LINK  p728  PHI07  0
+  LINK  p728  PHI08  0
+  LINK  p728  PHI09  0
+  LINK  p728  PHI10  0
+  LINK  p739  PHI03  0
+  LINK  p739  PHI04  0
+  LINK  p739  PHI05  0
+  LINK  p739  PHI06  0
+  LINK  p739  PHI07  0
+  LINK  p739  PHI08  0
+  LINK  p739  PHI09  0
+  LINK  p739  PHI10  0
+  LINK  p740  PHI03  0
+  LINK  p740  PHI04  0
+  LINK  p740  PHI05  0
+  LINK  p740  PHI06  0
+  LINK  p740  PHI07  0
+  LINK  p740  PHI08  0
+  LINK  p740  PHI09  0
+  LINK  p740  PHI10  0
+  LINK  p741  PHI03  0
+  LINK  p741  PHI04  0
+  LINK  p741  PHI05  0
+  LINK  p741  PHI06  0
+  LINK  p741  PHI07  0
+  LINK  p741  PHI08  0
+  LINK  p741  PHI09  0
+  LINK  p741  PHI10  0
+  LINK  p741  PHI11  0
+  LINK  p742  PHI03  0
+  LINK  p742  PHI04  0
+  LINK  p742  PHI05  0
+  LINK  p742  PHI06  0
+  LINK  p742  PHI07  0
+  LINK  p742  PHI08  0
+  LINK  p742  PHI09  0
+  LINK  p742  PHI10  0
+  LINK  p742  PHI11  0
+  LINK  p743  PHI03  0
+  LINK  p743  PHI04  0
+  LINK  p743  PHI05  0
+  LINK  p743  PHI06  0
+  LINK  p743  PHI07  0
+  LINK  p743  PHI08  0
+  LINK  p743  PHI09  0
+  LINK  p743  PHI10  0
+  LINK  p743  PHI11  0
+  LINK  p744  PHI03  0
+  LINK  p744  PHI04  0
+  LINK  p744  PHI05  0
+  LINK  p744  PHI06  0
+  LINK  p744  PHI07  0
+  LINK  p744  PHI08  0
+  LINK  p744  PHI09  0
+  LINK  p744  PHI10  0
+  LINK  p744  PHI11  0
+  LINK  p745  PHI03  0
+  LINK  p746  PHI03  0
+  LINK  p746  PHI04  0
+  LINK  p747  PHI03  0
+  LINK  p747  PHI04  0
+  LINK  p748  PHI03  0
+  LINK  p748  PHI04  0
+  LINK  p750  PHI03  0
+  LINK  p751  PHI03  0
+  LINK  p751  PHI04  0
+  LINK  p751  PHI05  0
+  LINK  p752  PHI03  0
+  LINK  p752  PHI04  0
+  LINK  p752  PHI05  0
+  LINK  p761  PHI03  0
+  LINK  p763  PHI03  0
+  LINK  p763  PHI04  0
+  LINK  p763  PHI05  0
+  LINK  p764  PHI03  0
+  LINK  p764  PHI04  0
+  LINK  p764  PHI05  0
+  LINK  p765  PHI03  0
+  LINK  p765  PHI04  0
+  LINK  p765  PHI05  0
+  LINK  p766  PHI03  0
+  LINK  p766  PHI04  0
+  LINK  p766  PHI05  0
+  LINK  p766  PHI06  0
+  LINK  p767  PHI03  0
+  LINK  p768  PHI03  0
+  LINK  p774  PHI03  0
+  LINK  p774  PHI04  0
+  LINK  p775  PHI03  0
+  LINK  p775  PHI04  0
+  LINK  p776  PHI03  0
+  LINK  p776  PHI04  0
+  LINK  p776  PHI05  0
+  LINK  p776  PHI06  0
+  LINK  p776  PHI07  0
+  LINK  p776  PHI08  0
+  LINK  p776  PHI09  0
+  LINK  p776  PHI10  0
+  LINK  p776  PHI11  0
+  LINK  p777  PHI03  0
+  LINK  p777  PHI04  0
+  LINK  p777  PHI05  0
+  LINK  p777  PHI06  0
+  LINK  p777  PHI07  0
+  LINK  p777  PHI08  0
+  LINK  p777  PHI09  0
+  LINK  p777  PHI10  0
+  LINK  p777  PHI11  0
+  LINK  p778  PHI03  0
+  LINK  p778  PHI04  0
+  LINK  p778  PHI05  0
+  LINK  p778  PHI06  0
+  LINK  p778  PHI07  0
+  LINK  p778  PHI08  0
+  LINK  p778  PHI09  0
+  LINK  p778  PHI10  0
+  LINK  p778  PHI11  0
+  LINK  p779  PHI03  0
+  LINK  p779  PHI04  0
+  LINK  p779  PHI05  0
+  LINK  p779  PHI06  0
+  LINK  p779  PHI07  0
+  LINK  p779  PHI08  0
+  LINK  p779  PHI09  0
+  LINK  p779  PHI10  0
+  LINK  p779  PHI11  0
+  LINK  p779  PHI12  0
+  LINK  p780  PHI03  0
+  LINK  p780  PHI04  0
+  LINK  p780  PHI05  0
+  LINK  p780  PHI06  0
+  LINK  p780  PHI07  0
+  LINK  p780  PHI08  0
+  LINK  p780  PHI09  0
+  LINK  p780  PHI10  0
+  LINK  p780  PHI11  0
+  LINK  p780  PHI12  0
+  LINK  p781  PHI03  0
+  LINK  p781  PHI04  0
+  LINK  p781  PHI05  0
+  LINK  p781  PHI06  0
+  LINK  p781  PHI07  0
+  LINK  p781  PHI08  0
+  LINK  p781  PHI09  0
+  LINK  p781  PHI10  0
+  LINK  p781  PHI11  0
+  LINK  p781  PHI12  0
+  LINK  p788  PHI03  0
+  LINK  p788  PHI04  0
+  LINK  p789  PHI03  0
+  LINK  p790  PHI03  0
+  LINK  p797  PHI03  0
+  LINK  p797  PHI04  0
+  LINK  p798  PHI03  0
+  LINK  p798  PHI04  0
+  LINK  p801  PHI03  0
+  LINK  p802  PHI03  0
+  LINK  p803  PHI03  0
+  LINK  p804  PHI03  0
+  LINK  p805  PHI03  0
+  LINK  p805  PHI04  0
+  LINK  p806  PHI03  0
+  LINK  p807  PHI03  0
+  LINK  p808  PHI03  0
+  LINK  p809  PHI03  0
+  LINK  p810  PHI03  0
+  LINK  p811  PHI03  0
+  LINK  p826  PHI03  0
+  LINK  p827  PHI03  0
+  LINK  p828  PHI03  0
+  LINK  p828  PHI04  0
+  LINK  p839  PHI03  0
+  LINK  p839  PHI04  0
+  LINK  p839  PHI05  0
+  LINK  p839  PHI06  0
+  LINK  p839  PHI07  0
+  LINK  p839  PHI08  0
+  LINK  p839  PHI09  0
+  LINK  p839  PHI10  0
+  LINK  p840  PHI03  0
+  LINK  p840  PHI04  0
+  LINK  p840  PHI05  0
+  LINK  p840  PHI06  0
+  LINK  p840  PHI07  0
+  LINK  p840  PHI08  0
+  LINK  p840  PHI09  0
+  LINK  p840  PHI10  0
+  LINK  p841  PHI03  0
+  LINK  p841  PHI04  0
+  LINK  p841  PHI05  0
+  LINK  p841  PHI06  0
+  LINK  p841  PHI07  0
+  LINK  p841  PHI08  0
+  LINK  p841  PHI09  0
+  LINK  p841  PHI10  0
+  LINK  p842  PHI03  0
+  LINK  p842  PHI04  0
+  LINK  p842  PHI05  0
+  LINK  p842  PHI06  0
+  LINK  p842  PHI07  0
+  LINK  p842  PHI08  0
+  LINK  p842  PHI09  0
+  LINK  p842  PHI10  0
+  LINK  p847  PHI03  0
+  LINK  p848  PHI03  0
+  LINK  p849  PHI03  0
+  LINK  p849  PHI04  0
+  LINK  p849  PHI05  0
+  LINK  p849  PHI06  0
+  LINK  p849  PHI07  0
+  LINK  p849  PHI08  0
+  LINK  p849  PHI09  0
+  LINK  p849  PHI10  0
+  LINK  p849  PHI11  0
+  LINK  p850  PHI03  0
+  LINK  p850  PHI04  0
+  LINK  p850  PHI05  0
+  LINK  p850  PHI06  0
+  LINK  p850  PHI07  0
+  LINK  p850  PHI08  0
+  LINK  p850  PHI09  0
+  LINK  p850  PHI10  0
+  LINK  p850  PHI11  0
+  LINK  p851  PHI03  0
+  LINK  p851  PHI04  0
+  LINK  p851  PHI05  0
+  LINK  p851  PHI06  0
+  LINK  p851  PHI07  0
+  LINK  p851  PHI08  0
+  LINK  p851  PHI09  0
+  LINK  p851  PHI10  0
+  LINK  p851  PHI11  0
+  LINK  p852  PHI03  0
+  LINK  p852  PHI04  0
+  LINK  p852  PHI05  0
+  LINK  p852  PHI06  0
+  LINK  p852  PHI07  0
+  LINK  p852  PHI08  0
+  LINK  p852  PHI09  0
+  LINK  p852  PHI10  0
+  LINK  p852  PHI11  0
+  LINK  p853  PHI03  0
+  LINK  p853  PHI04  0
+  LINK  p853  PHI05  0
+  LINK  p853  PHI06  0
+  LINK  p853  PHI07  0
+  LINK  p853  PHI08  0
+  LINK  p853  PHI09  0
+  LINK  p853  PHI10  0
+  LINK  p853  PHI11  0
+  LINK  p871  PHI03  0
+  LINK  p871  PHI04  0
+  LINK  p872  PHI03  0
+  LINK  p872  PHI04  0
+  LINK  p877  PHI03  0
+  LINK  p878  PHI03  0
+  LINK  p878  PHI04  0
+  LINK  p878  PHI05  0
+  LINK  p878  PHI06  0
+  LINK  p878  PHI07  0
+  LINK  p878  PHI08  0
+  LINK  p878  PHI09  0
+  LINK  p879  PHI03  0
+  LINK  p879  PHI04  0
+  LINK  p879  PHI05  0
+  LINK  p879  PHI06  0
+  LINK  p879  PHI07  0
+  LINK  p879  PHI08  0
+  LINK  p879  PHI09  0
+  LINK  p880  PHI03  0
+  LINK  p880  PHI04  0
+  LINK  p880  PHI05  0
+  LINK  p880  PHI06  0
+  LINK  p880  PHI07  0
+  LINK  p880  PHI08  0
+  LINK  p880  PHI09  0
+  LINK  p881  PHI03  0
+  LINK  p881  PHI04  0
+  LINK  p881  PHI05  0
+  LINK  p881  PHI06  0
+  LINK  p881  PHI07  0
+  LINK  p881  PHI08  0
+  LINK  p881  PHI09  0
+  LINK  p882  PHI03  0
+  LINK  p882  PHI04  0
+  LINK  p882  PHI05  0
+  LINK  p882  PHI06  0
+  LINK  p882  PHI07  0
+  LINK  p882  PHI08  0
+  LINK  p882  PHI09  0
+  LINK  p883  PHI03  0
+  LINK  p883  PHI04  0
+  LINK  p883  PHI05  0
+  LINK  p883  PHI06  0
+  LINK  p883  PHI07  0
+  LINK  p883  PHI08  0
+  LINK  p883  PHI09  0
+  LINK  p884  PHI03  0
+  LINK  p884  PHI04  0
+  LINK  p884  PHI05  0
+  LINK  p884  PHI06  0
+  LINK  p884  PHI07  0
+  LINK  p884  PHI08  0
+  LINK  p884  PHI09  0
+  LINK  p885  PHI03  0
+  LINK  p885  PHI04  0
+  LINK  p885  PHI05  0
+  LINK  p886  PHI03  0
+  LINK  p886  PHI04  0
+  LINK  p886  PHI05  0
+  LINK  p887  PHI03  0
+  LINK  p887  PHI04  0
+  LINK  p887  PHI05  0
+  LINK  p888  PHI03  0
+  LINK  p888  PHI04  0
+  LINK  p888  PHI05  0
+  LINK  p889  PHI03  0
+  LINK  p889  PHI04  0
+  LINK  p889  PHI05  0
+  LINK  p889  PHI06  0
+  LINK  p889  PHI07  0
+  LINK  p889  PHI08  0
+  LINK  p889  PHI09  0
+  LINK  p890  PHI03  0
+  LINK  p890  PHI04  0
+  LINK  p890  PHI05  0
+  LINK  p890  PHI06  0
+  LINK  p890  PHI07  0
+  LINK  p890  PHI08  0
+  LINK  p890  PHI09  0
+  LINK  p891  PHI03  0
+  LINK  p891  PHI04  0
+  LINK  p891  PHI05  0
+  LINK  p892  PHI03  0
+  LINK  p892  PHI04  0
+  LINK  p892  PHI05  0
+  LINK  p893  PHI03  0
+  LINK  p893  PHI04  0
+  LINK  p893  PHI05  0
+  LINK  p893  PHI06  0
+  LINK  p893  PHI07  0
+  LINK  p894  PHI03  0
+  LINK  p894  PHI04  0
+  LINK  p894  PHI05  0
+  LINK  p894  PHI06  0
+  LINK  p894  PHI07  0
+  LINK  p897  PHI03  0
+  LINK  p897  PHI04  0
+  LINK  p898  PHI03  0
+  LINK  p903  PHI03  0
+  LINK  p904  PHI03  0
+
+[REPORT]
+; As ltown-podds.msx, with four of the bands (0.057, 0.23, 0.64 and
+; 1.28 Pa). MSX appends /L or /M2 to the units: TURB is NTU, PHIxx are
+; fractions, MAT is TPMU/m2 and TAPP is Pa.
+  NODES   n303 n52 n412 n407 n56 n4 T1
+  LINKS   p227 p477 p69 p105 p483 p4
+  SPECIES TURB  YES 3
+  SPECIES MAT   YES 5
+  SPECIES TAPP  YES 4
+  SPECIES PHI06 YES 4
+  SPECIES PHI10 YES 4
+  SPECIES PHI13 YES 4
+  SPECIES PHI15 YES 4

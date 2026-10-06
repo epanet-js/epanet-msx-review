@@ -1,0 +1,106 @@
+[TITLE]
+Chlorine 2RA bulk + EXBRUF wall decay with THM and HAA formation (after Fisher 2023, WER 95:e10949)
+; Written by tools/private-reactions.py from models/msx/ltown-dbp.msx for nwmodel-12h.inp.
+; Sources, equations and assumptions: models/literature.md.
+
+[OPTIONS]
+  AREA_UNITS      M2          ;no wall species; wall rate is folded into CL
+  RATE_UNITS      HR          ;rates per hour, as in the source
+  SOLVER          RK5         ;as in the source (Table 4)
+  TIMESTEP        300         ;source uses 360 s; 300 s fits L-Town's 5-min steps
+  RTOL            0.001       ;as in the source
+  ATOL            0.0001      ;as in the source
+
+[SPECIES]
+  BULK  CL    MG              ;free chlorine (mg/L)
+  BULK  F     MG              ;fast-reacting reductants (mg Cl-equivalent/L)
+  BULK  S     MG              ;slow-reacting reductants (mg Cl-equivalent/L)
+  BULK  THM   MG              ;total trihalomethanes, THM4 (mg/L)
+  BULK  HAA   MG              ;haloacetic acids, HAA9 (mg/L)
+
+[COEFFICIENTS]
+  CONSTANT  LU  0.3048     ;metres per network length unit: 1 for SI networks, 0.3048 for US units
+; 2RA bulk model and by-product yields (Fisher 2023, Table 4)
+  CONSTANT  KF20    0.0054    ;fast reaction rate coefficient at 20 C (L/mg/h)
+  CONSTANT  KS20    0.0017    ;slow reaction rate coefficient at 20 C (L/mg/h)
+  CONSTANT  EOR     1300      ;activation energy / gas constant (K)
+  CONSTANT  KTHM    0.043     ;THM yield, mg THM per mg Cl reacted (default)
+  CONSTANT  KHAA    0.020     ;HAA yield, mg HAA per mg Cl reacted (default)
+  CONSTANT  TC      22.6      ;water temperature (C)
+; EXPBIO / EXBRUF wall model (Fisher 2023, Tables 5 and 6)
+  CONSTANT  ABF20   1000      ;biofilm activity at zero chlorine and 20 C (dm/h)
+  CONSTANT  BBF     26        ;decrease of biofilm activity with chlorine (L/mg)
+
+[TERMS]
+  ;lengths and velocities in metres: LU is metres per network length unit
+  DLU     D*LU
+  LLU     Len*LU
+; temperature correction (eq. 3-4)
+  TCOEF   EXP(EOR*(TC-20)/(20+273)/(TC+273))
+  KFTC    KF20*TCOEF                    ;fast rate coefficient at TC (L/mg/h)
+  KSTC    KS20*TCOEF                    ;slow rate coefficient at TC (L/mg/h)
+  ABFTC   ABF20*TCOEF                   ;biofilm activity at TC (dm/h)
+; bulk reactions (eq. 13-15)
+  RF      -KFTC*CL*F                    ;fast reactant rate (mg/L/h)
+  RS      -KSTC*CL*S                    ;slow reactant rate (mg/L/h)
+  RCLB    RF + RS                       ;bulk chlorine rate (mg/L/h)
+; physical properties at TC (eq. 11-12)
+  KV      EXP(-3.7188 + 578.92/(TC+135.56))*1.0E-6   ;kinematic viscosity (m2/s)
+  DCL     (0.0365*TC + 0.5176)*1.0E-9                ;chlorine diffusivity (m2/s)
+  SC      KV/DCL                                     ;Schmidt number
+  SC66    (SC^0.66)
+; Sherwood number: Gnielinski for rough pipes (eq. 19, Ff from EPANET) when
+; turbulent; laminar fallback (3.65 + Graetz term, as in the MSX manual's
+; Listing 5.2) when Re < 2300, where the Gnielinski form is not valid
+  FDW8    Ff/8
+  SHT     FDW8*(Re-1000)*SC/(1 + 12.7*(FDW8^0.5)*(SC66-1))
+  GZ      DLU*Re*SC/LLU
+  SHL     3.65 + 0.0668*GZ/(1 + 0.04*(GZ^0.6667))
+  SH      STEP(Re-2300)*SHT + STEP(2300-Re)*SHL
+  KM      SH*(DCL*10)/DLU*3600            ;mass-transfer coefficient (dm/h); D in m
+; EXPBIO wall reaction (eq. 17-18)
+  ABEXP   ABFTC*EXP(-BBF*CL)            ;biofilm activity (dm/h)
+  RCLW    -ABEXP*CL/(1 + ABEXP/KM)      ;wall rate (mg/dm2/h)
+; total chlorine rate in pipes (eq. 1), D converted from m to dm
+  RCLP    RCLB + 4/(DLU*10)*RCLW
+
+[PIPES]
+  RATE  F     RF
+  RATE  S     RS
+  RATE  CL    RCLP
+  RATE  THM   -KTHM*RCLB
+  RATE  HAA   -KHAA*RCLB
+
+[TANKS]
+  RATE  F     RF
+  RATE  S     RS
+  RATE  CL    RCLB
+  RATE  THM   -KTHM*RCLB
+  RATE  HAA   -KHAA*RCLB
+
+[QUALITY]
+  GLOBAL  CL    0.3
+  GLOBAL  F     4.0
+  GLOBAL  S     49.3
+  GLOBAL  THM   0.030
+  GLOBAL  HAA   0.014
+  NODE  7384  CL  1.2
+  NODE  7384  F  4.1
+  NODE  7384  S  49.9
+  NODE  7384  THM  0.0
+  NODE  7384  HAA  0.0
+  NODE  311  CL  1.2
+  NODE  311  F  4.1
+  NODE  311  S  49.9
+  NODE  311  THM  0.0
+  NODE  311  HAA  0.0
+  NODE  RES9000  CL  1.2
+  NODE  RES9000  F  4.1
+  NODE  RES9000  S  49.9
+  NODE  RES9000  THM  0.0
+  NODE  RES9000  HAA  0.0
+
+[REPORT]
+  SPECIES  CL   YES  3
+  SPECIES  THM  YES  4
+  SPECIES  HAA  YES  4

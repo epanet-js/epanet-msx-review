@@ -1,0 +1,559 @@
+[TITLE]
+L-Town: PODDS discolouration (turbidity) model - cohesive layer mobilisation and regeneration (Boxall et al. 2001; Boxall & Saul 2005)
+
+; ---------------------------------------------------------------------------
+; PODDS (Prediction Of Discolouration in Distribution Systems, University of
+; Sheffield) written as an EPANET-MSX reaction file for L-Town (ltown-24h.inp).
+; Our own implementation of the published equations; see models/literature.md.
+;
+; Sources (equation numbers as in Furnass 2015):
+;  Boxall JB, Skipworth PJ, Saul AJ (2001) A novel approach to modelling
+;    sediment movement in distribution mains based on particle characteristics.
+;    Water Software Systems, Vol 1. Research Studies Press. (PODDS concept)
+;  Boxall JB, Saul AJ (2005) Modeling discoloration in potable water
+;    distribution systems. J Environ Eng 131(5):716-725.
+;    doi:10.1061/(ASCE)0733-9372(2005)131:5(716)
+;  Husband PS, Boxall JB (2010) Field studies of discoloration in water
+;    distribution systems: model verification and practical implications.
+;    J Environ Eng 136(1):86-94. doi:10.1061/(ASCE)EE.1943-7870.0000115
+;  Husband S, Boxall J (2015) Predictive water quality modelling and
+;    resilience flow conditioning to manage discolouration risk in
+;    operational trunk mains. J Water Supply Res T - Aqua 64(5):529-542.
+;    doi:10.2166/aqua.2014.042 (Fig. 1: R = P(tau_a - tau)^n,
+;    C = k*tau + Cmax, dC = R dt, dN = R As/Q). White Rose eprint 90591.
+;  Furnass WR (2015) Modelling both the continual accumulation and erosion of
+;    discolouration material in drinking water distribution systems. PhD
+;    thesis, University of Sheffield (eqs 2.15-2.18; Table 5.6 parameter sets;
+;    Figs 4.6, 5.9 regeneration). etheses.whiterose.ac.uk/10645
+;  Husband S, Boxall JB (2016) Understanding and managing discolouration risk
+;    in trunk mains. Water Res 107:127-140. doi:10.1016/j.watres.2016.10.049
+;
+; State: per pipe (MSX wall species, fixed in space along the pipe)
+;   CPOT  discolouration potential C, TPMU/m2 = NTU.m (1 TPMU = 1 NTU.m3)
+;   TCOND layer shear strength tau_c = (C - Cmax)/k        (eq 2.15, b = 1)
+; Erosion when the applied shear tau_a exceeds tau_c:
+;   R = P (tau_a - tau_c)^n                                (eq 2.16)
+;   dC/dt = -R ; turbidity gain dN = R As/Q                 (eqs 2.18, 2.17)
+;   In MSX's Lagrangian frame dN/dt = R * (wall area / water volume) = R*4/D.
+; Regeneration (original PODDS coding: reverse of mobilisation, strongest
+; layers first, linear in time) while tau_a < tau_c:   dC/dt = P0
+;   This is the reduced form of the Boxall & Saul (2005) regeneration law with
+;   its temperature and strength exponents set to zero (Furnass 2015, Fig 5.9).
+; Applied shear: tau_a = rho g (D/4) S0 = rho f U^2 / 8 = rho u*^2, from MSX's
+;   friction factor Ff (from the hydraulic headloss) and velocity U.
+;   NOTE: the MSX hydraulic variable "Us" cannot be used in this MSX version:
+;   the name lookup matches the prefix "U" first, so Us evaluates to U.
+; ---------------------------------------------------------------------------
+
+[OPTIONS]
+  AREA_UNITS   M2          ;wall species per m2 of pipe wall
+  RATE_UNITS   SEC         ;PODDS rates are per second
+  SOLVER       RK5
+  TIMESTEP     60          ;L-Town has many short pipes; 300 s doubles the turbidity error
+  RTOL         0.001
+  ATOL         0.001
+
+[SPECIES]
+  BULK  TURB   NTU    0.001  0.001   ;turbidity, treated as a concentration
+  WALL  CPOT   TPMU   0.001  0.001   ;PODDS discolouration potential C, TPMU per m2 of wall
+  WALL  TCOND  PA                    ;layer shear strength tau_c (formula, reported)
+  WALL  TAPP   PA                    ;applied wall shear stress tau_a (formula, reported)
+
+[COEFFICIENTS]
+  CONSTANT  LU  1.0     ;metres per network length unit: 1 for SI networks, 0.3048 for US units
+; PODDS mobilisation parameters: set "PODDS-2" (100 mm pipe) of Furnass (2015)
+; Table 5.6. The calibrated PODDS look-up table is confidential (not published).
+  PARAMETER  K     -0.5      ;k, TPMU/m2 per Pa (negative: C falls as tau_c rises)
+  PARAMETER  P      0.0002   ;P, TPMU/m2 per Pa^n per s (erosion coefficient)
+  PARAMETER  N      2.5      ;n, - (erosion exponent)
+; Cmax sets the ultimate layer strength -Cmax/k = 1.8 Pa (strongest material in
+; plastic pipes, Husband & Boxall 2010, as reported by Furnass 2015 2.2.8.4)
+  PARAMETER  CMAX   0.9      ;Cmax, TPMU/m2
+; Regeneration: full layer (C from 0 to Cmax) in about 1.75 years
+; (Husband & Boxall 2015 Aqua: ~2 years; Husband, Boxall & Sunny 2023: 1.65-1.85 y)
+  PARAMETER  P0     1.6E-8   ;P0, TPMU/m2 per s
+  CONSTANT   RHO    1000     ;water density, kg/m3
+  CONSTANT   LPM3   1000     ;litres per m3 (MSX bulk concentrations are per litre)
+
+[TERMS]
+  ;lengths and velocities in metres: LU is metres per network length unit
+  ULU     U*LU
+  TAUA   RHO*ULU^2*Ff/8        ;applied wall shear stress tau_a, Pa (U in m/s)
+  TAUC   (CPOT-CMAX)/K       ;layer shear strength tau_c, Pa (eq 2.15)
+  XS     TAUA-TAUC           ;excess shear stress, Pa
+  XSP    XS*STEP(XS)         ;excess shear when eroding, else 0
+  EROS   P*XSP^N*STEP(CPOT)  ;R, TPMU/m2/s: supply rate from 1 m2 of wall (eq 2.16)
+  REGEN  P0*STEP(-XS)        ;regeneration while tau_a < tau_c
+
+[PIPES]
+  RATE     CPOT   REGEN-EROS          ;eq 2.18 plus regeneration
+  RATE     TURB   LPM3*Av*EROS        ;eq 2.17: Av is m2 of wall per litre, NTU = TPMU/m3
+  FORMULA  TCOND  TAUC
+  FORMULA  TAPP   TAUA
+
+[TANKS]
+  RATE     TURB   0                   ;mobilised material stays entrained
+
+[QUALITY]
+; Background turbidity of the treated water at both reservoirs and everywhere
+  GLOBAL  TURB  0.1
+  NODE    R1    TURB  0.1
+  NODE    R2    TURB  0.1
+; Initial layer condition. PODDS assumes layers in equilibrium with a
+; conditioning shear: C = Cmax + k*tau_cond. Here each pipe's layers were
+; conditioned at half of the peak shear it sees in this 24 h run (peak flows
+; ~45% above the conditioning flows, e.g. a hot-weather day), with a floor of
+; 0.02 Pa: GLOBAL covers pipes whose half-peak is below 0.02 Pa, the LINK
+; lines the rest (peak shear from rho*U^2*Ff/8 at the 5 min hydraulic steps).
+  GLOBAL  CPOT  0.89
+  LINK  p1     CPOT  0.88110
+  LINK  p2     CPOT  0.88568
+  LINK  p3     CPOT  0.86032
+  LINK  p9     CPOT  0.86105
+  LINK  p16    CPOT  0.88535
+  LINK  p21    CPOT  0.87112
+  LINK  p26    CPOT  0.85346
+  LINK  p29    CPOT  0.85154
+  LINK  p31    CPOT  0.88534
+  LINK  p32    CPOT  0.83222
+  LINK  p33    CPOT  0.82955
+  LINK  p36    CPOT  0.88598
+  LINK  p37    CPOT  0.87317
+  LINK  p38    CPOT  0.88096
+  LINK  p39    CPOT  0.88046
+  LINK  p40    CPOT  0.86952
+  LINK  p42    CPOT  0.88883
+  LINK  p43    CPOT  0.83509
+  LINK  p44    CPOT  0.86282
+  LINK  p45    CPOT  0.83840
+  LINK  p46    CPOT  0.88937
+  LINK  p47    CPOT  0.86065
+  LINK  p48    CPOT  0.86740
+  LINK  p49    CPOT  0.86132
+  LINK  p54    CPOT  0.88481
+  LINK  p58    CPOT  0.88982
+  LINK  p61    CPOT  0.81382
+  LINK  p63    CPOT  0.81872
+  LINK  p66    CPOT  0.85711
+  LINK  p69    CPOT  0.55988
+  LINK  p71    CPOT  0.88720
+  LINK  p75    CPOT  0.88758
+  LINK  p76    CPOT  0.88535
+  LINK  p78    CPOT  0.88519
+  LINK  p79    CPOT  0.84784
+  LINK  p80    CPOT  0.88441
+  LINK  p81    CPOT  0.85423
+  LINK  p82    CPOT  0.88982
+  LINK  p83    CPOT  0.84227
+  LINK  p87    CPOT  0.76904
+  LINK  p88    CPOT  0.84833
+  LINK  p89    CPOT  0.80766
+  LINK  p90    CPOT  0.78147
+  LINK  p91    CPOT  0.86211
+  LINK  p92    CPOT  0.87714
+  LINK  p93    CPOT  0.87141
+  LINK  p95    CPOT  0.85766
+  LINK  p96    CPOT  0.87521
+  LINK  p98    CPOT  0.88633
+  LINK  p99    CPOT  0.87963
+  LINK  p100   CPOT  0.87020
+  LINK  p101   CPOT  0.85557
+  LINK  p103   CPOT  0.88349
+  LINK  p104   CPOT  0.84987
+  LINK  p105   CPOT  0.56518
+  LINK  p106   CPOT  0.75627
+  LINK  p107   CPOT  0.80236
+  LINK  p108   CPOT  0.84461
+  LINK  p109   CPOT  0.86528
+  LINK  p110   CPOT  0.22584
+  LINK  p111   CPOT  0.87543
+  LINK  p113   CPOT  0.88524
+  LINK  p114   CPOT  0.85553
+  LINK  p117   CPOT  0.83584
+  LINK  p118   CPOT  0.88030
+  LINK  p121   CPOT  0.88430
+  LINK  p122   CPOT  0.85482
+  LINK  p124   CPOT  0.71630
+  LINK  p125   CPOT  0.75543
+  LINK  p126   CPOT  0.88566
+  LINK  p127   CPOT  0.88578
+  LINK  p128   CPOT  0.80712
+  LINK  p131   CPOT  0.88229
+  LINK  p132   CPOT  0.85830
+  LINK  p133   CPOT  0.83244
+  LINK  p134   CPOT  0.86445
+  LINK  p135   CPOT  0.79975
+  LINK  p136   CPOT  0.86770
+  LINK  p137   CPOT  0.87984
+  LINK  p139   CPOT  0.87784
+  LINK  p141   CPOT  0.88135
+  LINK  p143   CPOT  0.88935
+  LINK  p153   CPOT  0.77533
+  LINK  p154   CPOT  0.87269
+  LINK  p155   CPOT  0.88248
+  LINK  p156   CPOT  0.88583
+  LINK  p161   CPOT  0.86292
+  LINK  p163   CPOT  0.87603
+  LINK  p164   CPOT  0.79921
+  LINK  p168   CPOT  0.88612
+  LINK  p171   CPOT  0.81446
+  LINK  p172   CPOT  0.86084
+  LINK  p173   CPOT  0.84994
+  LINK  p174   CPOT  0.81072
+  LINK  p175   CPOT  0.88356
+  LINK  p176   CPOT  0.86307
+  LINK  p177   CPOT  0.88738
+  LINK  p178   CPOT  0.86218
+  LINK  p182   CPOT  0.58649
+  LINK  p186   CPOT  0.86253
+  LINK  p188   CPOT  0.82917
+  LINK  p189   CPOT  0.73604
+  LINK  p191   CPOT  0.84574
+  LINK  p193   CPOT  0.88957
+  LINK  p194   CPOT  0.88658
+  LINK  p197   CPOT  0.70273
+  LINK  p198   CPOT  0.80428
+  LINK  p199   CPOT  0.87467
+  LINK  p200   CPOT  0.79363
+  LINK  p202   CPOT  0.78338
+  LINK  p203   CPOT  0.88136
+  LINK  p204   CPOT  0.76755
+  LINK  p206   CPOT  0.87387
+  LINK  p208   CPOT  0.88225
+  LINK  p209   CPOT  0.80624
+  LINK  p210   CPOT  0.83085
+  LINK  p211   CPOT  0.88723
+  LINK  p212   CPOT  0.86924
+  LINK  p213   CPOT  0.88007
+  LINK  p214   CPOT  0.88414
+  LINK  p220   CPOT  0.78370
+  LINK  p221   CPOT  0.88648
+  LINK  p223   CPOT  0.82227
+  LINK  p226   CPOT  0.84686
+  LINK  p227   CPOT  0.28742
+  LINK  p228   CPOT  0.56127
+  LINK  p229   CPOT  0.78968
+  LINK  p230   CPOT  0.83446
+  LINK  p231   CPOT  0.81713
+  LINK  p233   CPOT  0.83681
+  LINK  p234   CPOT  0.63871
+  LINK  p235   CPOT  0.21287
+  LINK  p237   CPOT  0.88634
+  LINK  p238   CPOT  0.80447
+  LINK  p239   CPOT  0.86034
+  LINK  p240   CPOT  0.86090
+  LINK  p248   CPOT  0.87069
+  LINK  p301   CPOT  0.88964
+  LINK  p302   CPOT  0.88977
+  LINK  p304   CPOT  0.88193
+  LINK  p305   CPOT  0.87984
+  LINK  p310   CPOT  0.87592
+  LINK  p311   CPOT  0.87294
+  LINK  p315   CPOT  0.88889
+  LINK  p316   CPOT  0.88320
+  LINK  p317   CPOT  0.88363
+  LINK  p318   CPOT  0.88474
+  LINK  p319   CPOT  0.81219
+  LINK  p320   CPOT  0.81638
+  LINK  p321   CPOT  0.88606
+  LINK  p322   CPOT  0.88465
+  LINK  p323   CPOT  0.88305
+  LINK  p324   CPOT  0.88215
+  LINK  p344   CPOT  0.83146
+  LINK  p345   CPOT  0.82729
+  LINK  p346   CPOT  0.81496
+  LINK  p347   CPOT  0.81303
+  LINK  p353   CPOT  0.88764
+  LINK  p354   CPOT  0.88935
+  LINK  p355   CPOT  0.88959
+  LINK  p356   CPOT  0.86952
+  LINK  p357   CPOT  0.86422
+  LINK  p358   CPOT  0.80118
+  LINK  p359   CPOT  0.78610
+  LINK  p363   CPOT  0.85844
+  LINK  p364   CPOT  0.85832
+  LINK  p365   CPOT  0.85808
+  LINK  p372   CPOT  0.87838
+  LINK  p373   CPOT  0.87591
+  LINK  p374   CPOT  0.87424
+  LINK  p375   CPOT  0.87951
+  LINK  p376   CPOT  0.87921
+  LINK  p377   CPOT  0.87884
+  LINK  p378   CPOT  0.87884
+  LINK  p379   CPOT  0.87845
+  LINK  p380   CPOT  0.87840
+  LINK  p381   CPOT  0.87805
+  LINK  p382   CPOT  0.87687
+  LINK  p384   CPOT  0.88929
+  LINK  p385   CPOT  0.81001
+  LINK  p386   CPOT  0.82172
+  LINK  p387   CPOT  0.87084
+  LINK  p388   CPOT  0.87029
+  LINK  p391   CPOT  0.88141
+  LINK  p392   CPOT  0.87973
+  LINK  p395   CPOT  0.88059
+  LINK  p396   CPOT  0.88031
+  LINK  p397   CPOT  0.87751
+  LINK  p398   CPOT  0.87750
+  LINK  p402   CPOT  0.88648
+  LINK  p403   CPOT  0.88722
+  LINK  p404   CPOT  0.87876
+  LINK  p405   CPOT  0.87518
+  LINK  p406   CPOT  0.87152
+  LINK  p407   CPOT  0.87052
+  LINK  p408   CPOT  0.86276
+  LINK  p409   CPOT  0.85897
+  LINK  p416   CPOT  0.87747
+  LINK  p417   CPOT  0.87498
+  LINK  p418   CPOT  0.87388
+  LINK  p419   CPOT  0.87295
+  LINK  p420   CPOT  0.87150
+  LINK  p421   CPOT  0.88062
+  LINK  p422   CPOT  0.87963
+  LINK  p423   CPOT  0.87798
+  LINK  p424   CPOT  0.87292
+  LINK  p425   CPOT  0.85714
+  LINK  p426   CPOT  0.85426
+  LINK  p427   CPOT  0.85247
+  LINK  p428   CPOT  0.88709
+  LINK  p429   CPOT  0.88709
+  LINK  p430   CPOT  0.87462
+  LINK  p431   CPOT  0.87149
+  LINK  p432   CPOT  0.88334
+  LINK  p433   CPOT  0.88129
+  LINK  p434   CPOT  0.88129
+  LINK  p441   CPOT  0.88794
+  LINK  p444   CPOT  0.88571
+  LINK  p447   CPOT  0.85882
+  LINK  p448   CPOT  0.85348
+  LINK  p449   CPOT  0.84834
+  LINK  p452   CPOT  0.86903
+  LINK  p453   CPOT  0.86903
+  LINK  p454   CPOT  0.86911
+  LINK  p457   CPOT  0.85213
+  LINK  p458   CPOT  0.84931
+  LINK  p459   CPOT  0.86980
+  LINK  p460   CPOT  0.87908
+  LINK  p461   CPOT  0.88117
+  LINK  p462   CPOT  0.88264
+  LINK  p463   CPOT  0.88406
+  LINK  p464   CPOT  0.88566
+  LINK  p465   CPOT  0.88977
+  LINK  p468   CPOT  0.87069
+  LINK  p469   CPOT  0.87204
+  LINK  p470   CPOT  0.87558
+  LINK  p471   CPOT  0.87570
+  LINK  p472   CPOT  0.87233
+  LINK  p473   CPOT  0.87410
+  LINK  p474   CPOT  0.85171
+  LINK  p475   CPOT  0.85449
+  LINK  p476   CPOT  0.85515
+  LINK  p477   CPOT  0.55642
+  LINK  p478   CPOT  0.55732
+  LINK  p479   CPOT  0.62731
+  LINK  p480   CPOT  0.63773
+  LINK  p481   CPOT  0.75902
+  LINK  p482   CPOT  0.74553
+  LINK  p483   CPOT  0.72192
+  LINK  p486   CPOT  0.88490
+  LINK  p488   CPOT  0.84519
+  LINK  p489   CPOT  0.84586
+  LINK  p490   CPOT  0.84796
+  LINK  p491   CPOT  0.85035
+  LINK  p494   CPOT  0.83452
+  LINK  p495   CPOT  0.83519
+  LINK  p496   CPOT  0.83598
+  LINK  p497   CPOT  0.88870
+  LINK  p498   CPOT  0.88981
+  LINK  p499   CPOT  0.88789
+  LINK  p500   CPOT  0.88902
+  LINK  p503   CPOT  0.80180
+  LINK  p504   CPOT  0.80193
+  LINK  p505   CPOT  0.80849
+  LINK  p509   CPOT  0.88991
+  LINK  p513   CPOT  0.78544
+  LINK  p514   CPOT  0.79772
+  LINK  p515   CPOT  0.82089
+  LINK  p516   CPOT  0.88606
+  LINK  p517   CPOT  0.88991
+  LINK  p518   CPOT  0.79077
+  LINK  p519   CPOT  0.77387
+  LINK  p520   CPOT  0.75473
+  LINK  p521   CPOT  0.82881
+  LINK  p522   CPOT  0.83133
+  LINK  p523   CPOT  0.87935
+  LINK  p524   CPOT  0.88876
+  LINK  p527   CPOT  0.86489
+  LINK  p528   CPOT  0.87906
+  LINK  p532   CPOT  0.85296
+  LINK  p533   CPOT  0.84920
+  LINK  p534   CPOT  0.82035
+  LINK  p535   CPOT  0.82529
+  LINK  p536   CPOT  0.83094
+  LINK  p539   CPOT  0.86406
+  LINK  p540   CPOT  0.86485
+  LINK  p541   CPOT  0.88510
+  LINK  p542   CPOT  0.88996
+  LINK  p547   CPOT  0.80962
+  LINK  p548   CPOT  0.81234
+  LINK  p549   CPOT  0.85202
+  LINK  p550   CPOT  0.85202
+  LINK  p551   CPOT  0.87488
+  LINK  p552   CPOT  0.88028
+  LINK  p553   CPOT  0.83963
+  LINK  p554   CPOT  0.83356
+  LINK  p560   CPOT  0.87742
+  LINK  p561   CPOT  0.88338
+  LINK  p567   CPOT  0.86984
+  LINK  p568   CPOT  0.87744
+  LINK  p569   CPOT  0.88228
+  LINK  p573   CPOT  0.88642
+  LINK  p574   CPOT  0.88886
+  LINK  p575   CPOT  0.88924
+  LINK  p577   CPOT  0.86196
+  LINK  p578   CPOT  0.86094
+  LINK  p586   CPOT  0.87564
+  LINK  p587   CPOT  0.87961
+  LINK  p593   CPOT  0.88911
+  LINK  p594   CPOT  0.88842
+  LINK  p595   CPOT  0.88222
+  LINK  p629   CPOT  0.88329
+  LINK  p630   CPOT  0.88339
+  LINK  p681   CPOT  0.82372
+  LINK  p682   CPOT  0.82191
+  LINK  p683   CPOT  0.84168
+  LINK  p684   CPOT  0.84382
+  LINK  p685   CPOT  0.84510
+  LINK  p686   CPOT  0.86503
+  LINK  p687   CPOT  0.86161
+  LINK  p688   CPOT  0.87842
+  LINK  p689   CPOT  0.87887
+  LINK  p690   CPOT  0.79879
+  LINK  p691   CPOT  0.79757
+  LINK  p692   CPOT  0.79699
+  LINK  p693   CPOT  0.79205
+  LINK  p694   CPOT  0.78993
+  LINK  p695   CPOT  0.78988
+  LINK  p696   CPOT  0.87264
+  LINK  p697   CPOT  0.87316
+  LINK  p698   CPOT  0.87367
+  LINK  p699   CPOT  0.87462
+  LINK  p700   CPOT  0.87519
+  LINK  p701   CPOT  0.87648
+  LINK  p702   CPOT  0.88844
+  LINK  p703   CPOT  0.88746
+  LINK  p704   CPOT  0.88622
+  LINK  p705   CPOT  0.88503
+  LINK  p706   CPOT  0.88756
+  LINK  p707   CPOT  0.88742
+  LINK  p708   CPOT  0.88596
+  LINK  p709   CPOT  0.88468
+  LINK  p710   CPOT  0.88405
+  LINK  p715   CPOT  0.88688
+  LINK  p716   CPOT  0.88490
+  LINK  p723   CPOT  0.88553
+  LINK  p724   CPOT  0.84351
+  LINK  p725   CPOT  0.83879
+  LINK  p726   CPOT  0.78962
+  LINK  p727   CPOT  0.78815
+  LINK  p728   CPOT  0.78587
+  LINK  p739   CPOT  0.74299
+  LINK  p740   CPOT  0.74003
+  LINK  p741   CPOT  0.73820
+  LINK  p742   CPOT  0.73711
+  LINK  p743   CPOT  0.73510
+  LINK  p744   CPOT  0.73289
+  LINK  p745   CPOT  0.88599
+  LINK  p746   CPOT  0.88531
+  LINK  p747   CPOT  0.88246
+  LINK  p748   CPOT  0.88201
+  LINK  p750   CPOT  0.88968
+  LINK  p751   CPOT  0.87676
+  LINK  p752   CPOT  0.87647
+  LINK  p761   CPOT  0.88882
+  LINK  p763   CPOT  0.87916
+  LINK  p764   CPOT  0.87500
+  LINK  p765   CPOT  0.87434
+  LINK  p766   CPOT  0.87129
+  LINK  p767   CPOT  0.88879
+  LINK  p768   CPOT  0.88784
+  LINK  p774   CPOT  0.88310
+  LINK  p775   CPOT  0.88206
+  LINK  p776   CPOT  0.68089
+  LINK  p777   CPOT  0.67817
+  LINK  p778   CPOT  0.67519
+  LINK  p779   CPOT  0.67226
+  LINK  p780   CPOT  0.66961
+  LINK  p781   CPOT  0.66865
+  LINK  p788   CPOT  0.88437
+  LINK  p789   CPOT  0.88695
+  LINK  p790   CPOT  0.88936
+  LINK  p797   CPOT  0.88207
+  LINK  p798   CPOT  0.88100
+  LINK  p801   CPOT  0.88752
+  LINK  p802   CPOT  0.88697
+  LINK  p803   CPOT  0.88678
+  LINK  p804   CPOT  0.88669
+  LINK  p805   CPOT  0.88379
+  LINK  p806   CPOT  0.88987
+  LINK  p807   CPOT  0.88961
+  LINK  p808   CPOT  0.88941
+  LINK  p809   CPOT  0.88940
+  LINK  p810   CPOT  0.88840
+  LINK  p811   CPOT  0.88838
+  LINK  p826   CPOT  0.88925
+  LINK  p827   CPOT  0.88686
+  LINK  p828   CPOT  0.88445
+  LINK  p839   CPOT  0.76105
+  LINK  p840   CPOT  0.76397
+  LINK  p841   CPOT  0.76995
+  LINK  p842   CPOT  0.77673
+  LINK  p847   CPOT  0.88757
+  LINK  p848   CPOT  0.88619
+  LINK  p849   CPOT  0.69501
+  LINK  p850   CPOT  0.69745
+  LINK  p851   CPOT  0.70143
+  LINK  p852   CPOT  0.70558
+  LINK  p853   CPOT  0.70895
+  LINK  p871   CPOT  0.88391
+  LINK  p872   CPOT  0.88381
+  LINK  p877   CPOT  0.88855
+  LINK  p878   CPOT  0.78868
+  LINK  p879   CPOT  0.78897
+  LINK  p880   CPOT  0.79214
+  LINK  p881   CPOT  0.79345
+  LINK  p882   CPOT  0.79680
+  LINK  p883   CPOT  0.80161
+  LINK  p884   CPOT  0.80186
+  LINK  p885   CPOT  0.87783
+  LINK  p886   CPOT  0.87783
+  LINK  p887   CPOT  0.87684
+  LINK  p888   CPOT  0.87643
+  LINK  p889   CPOT  0.80193
+  LINK  p890   CPOT  0.80194
+  LINK  p891   CPOT  0.87610
+  LINK  p892   CPOT  0.87607
+  LINK  p893   CPOT  0.84585
+  LINK  p894   CPOT  0.84980
+  LINK  p897   CPOT  0.88173
+  LINK  p898   CPOT  0.88941
+  LINK  p903   CPOT  0.88771
+  LINK  p904   CPOT  0.88896
+
+[REPORT]
+; Nodes: below the R1 outlet main (n303), the largest turbidity responses
+; (n52, n412, n407, n56), a node fed by low-shear pipes (n4) and the tank T1.
+; Links: 200 mm mains with the highest shear (p227, the R1 outlet, exceeds the
+; 1.8 Pa ultimate strength and is scoured clean; p477), 100 mm pipes that
+; mobilise (p69, p105, p483) and a 100 mm pipe that only regenerates (p4).
+; Link TURB is the pipe average after advection: in short, fast pipes such as
+; p227 (residence time < 60 s) it shows the inflow value; the material shows
+; up at the downstream node.
+; MSX appends /L to bulk and /M2 to wall units in the report: TURB is NTU,
+; CPOT TPMU/m2, and TCOND and TAPP are in Pa.
+  NODES   n303 n52 n412 n407 n56 n4 T1
+  LINKS   p227 p477 p69 p105 p483 p4
+  SPECIES TURB  YES 3
+  SPECIES CPOT  YES 5
+  SPECIES TCOND YES 4
+  SPECIES TAPP  YES 4

@@ -1,5 +1,5 @@
 {
- "_comment": "Benchmark cases: an EPANET network (inp/) and an MSX reaction file (msx/). reps repeats a short run inside one process so that it can be timed reliably. Sorted by size of network. Cases in group \"output\" report every node, link and species every 5 minutes; tools/bench.py runs them with --cases output. Cases in group \"real\" are larger real-world networks with three types of reactions each; tools/bench.py runs them with --cases real. Cases in group \"stress\" exercise paths the main cases do not: water age (segments that never merge) and full coupling; tools/bench.py runs them with --cases stress.",
+ "_comment": "Benchmark cases: an EPANET network (inp/) and an MSX reaction file (msx/). reps repeats a short run inside one process so that it can be timed reliably. Sorted by size of network. Cases in group \"output\" report every node, link and species every 5 minutes; tools/bench.py runs them with --cases output. Cases in group \"real\" are larger real-world networks with three types of reactions each; tools/bench.py runs them with --cases real. Cases in group \"stress\" exercise paths the main cases do not: water age (segments that never merge) and full coupling; tools/bench.py runs them with --cases stress. Cases in group \"literature\" replicate published reaction models (DBP, two-reactant chlorine, temperature, inactivation, PODDS and VCDM discolouration) and add dispersion on a larger network; tools/bench.py runs them with --cases literature. Group \"literature-large\" runs the same published models on NW Model and BWSN2 (files written by tools/private-reactions.py); tools/bench.py runs them with --cases literature-large.",
  "cases": [
   {
    "id": "bwsn2-2src",
@@ -129,6 +129,182 @@
    "msx": "msx/net3-chloramine-full.msx",
    "reps": 1,
    "group": "stress"
+  },
+  {
+   "id": "ltown-dbp",
+   "name": "L-Town 24 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-dbp.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "ltown-regrowth-thm",
+   "name": "L-Town 24 h, bacterial regrowth in bulk and biofilm with THM formation (RK5)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-regrowth-thm.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "ltown-psm",
+   "name": "L-Town 24 h, parallel second-order chlorine decay, two source waters blending (RK5)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-psm.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "ltown-temperature",
+   "name": "L-Town 24 h, water temperature from heat exchange with the soil driving chlorine decay (RK5)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-temperature.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "ltown-inactivation",
+   "name": "L-Town 24 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-inactivation.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "ltown-podds",
+   "name": "L-Town 24 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-podds.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "ltown-vcdm",
+   "name": "L-Town 24 h, VCDM discolouration: 17 material strength bands (Euler, 60 s)",
+   "inp": "inp/ltown-24h.inp",
+   "msx": "msx/ltown-vcdm.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "bwsn2-disp",
+   "name": "BWSN2 6 h, chlorine bulk and wall decay with dispersion (Euler, 60 s)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-dispersion.msx",
+   "reps": 1,
+   "group": "literature"
+  },
+  {
+   "id": "nw-dbp",
+   "name": "NW Model 12 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-dbp.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "nw-regrowth-thm",
+   "name": "NW Model 12 h, bacterial regrowth in bulk and biofilm with THM formation (RK5)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-regrowth-thm.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "nw-psm",
+   "name": "NW Model 12 h, parallel second-order chlorine decay, two source waters blending (RK5)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-psm.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "nw-temperature",
+   "name": "NW Model 12 h, water temperature from heat exchange with the soil driving chlorine decay (RK5)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-temperature.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "nw-inactivation",
+   "name": "NW Model 12 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-inactivation.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "nw-podds",
+   "name": "NW Model 12 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-podds.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "nw-vcdm",
+   "name": "NW Model 12 h, VCDM discolouration: 17 material strength bands (Euler, 60 s)",
+   "inp": "inp/nwmodel-12h.inp",
+   "msx": "msx/nw-vcdm.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "bwsn2-dbp",
+   "name": "BWSN2 6 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-dbp.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "bwsn2-regrowth-thm",
+   "name": "BWSN2 6 h, bacterial regrowth in bulk and biofilm with THM formation (RK5)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-regrowth-thm.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "bwsn2-psm",
+   "name": "BWSN2 6 h, parallel second-order chlorine decay, two source waters blending (RK5)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-psm.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "bwsn2-temperature",
+   "name": "BWSN2 6 h, water temperature from heat exchange with the soil driving chlorine decay (RK5)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-temperature.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "bwsn2-inactivation",
+   "name": "BWSN2 6 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-inactivation.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "bwsn2-podds",
+   "name": "BWSN2 6 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-podds.msx",
+   "reps": 1,
+   "group": "literature-large"
+  },
+  {
+   "id": "bwsn2-vcdm",
+   "name": "BWSN2 6 h, VCDM discolouration: 17 material strength bands (Euler, 60 s)",
+   "inp": "inp/bwsn2-6h.inp",
+   "msx": "msx/bwsn2-vcdm.msx",
+   "reps": 1,
+   "group": "literature-large"
   }
  ]
 }

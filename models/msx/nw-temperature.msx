@@ -1,0 +1,130 @@
+[TITLE]
+Water temperature from soil heat exchange (WTM+) coupled to temperature-dependent 2RA chlorine reactions with EXBRUF wall reaction (after Blokker et al. 2013, 2024; Fisher et al. 2012, 2023)
+; Written by tools/private-reactions.py from models/msx/ltown-temperature.msx for nwmodel-12h.inp.
+; Sources, equations and assumptions: models/literature.md.
+
+[OPTIONS]
+  AREA_UNITS  M2             ;not used (no wall species)
+  RATE_UNITS  HR             ;rates per hour
+  SOLVER      RK5
+  COUPLING    NONE
+  TIMESTEP    300            ;s
+  RTOL        0.001
+  ATOL        0.0001
+
+[SPECIES]
+  BULK  TW    DEGC           ;water temperature [C]
+  BULK  CL    MG             ;free chlorine [mg/L]
+  BULK  F     MG             ;fast reducing agents [mg Cl-equiv/L]
+  BULK  S     MG             ;slow reducing agents [mg Cl-equiv/L]
+  BULK  THM   MG             ;total trihalomethanes [mg/L]
+  BULK  HAA   MG             ;haloacetic acids [mg/L]
+
+[COEFFICIENTS]
+  CONSTANT  LU  0.3048     ;metres per network length unit: 1 for SI networks, 0.3048 for US units
+; soil temperature around the pipes (summer) [C]
+  CONSTANT  TSOIL  20.0
+; heat transfer (Blokker et al. 2024, Table A8)
+  CONSTANT  AW     0.14E-6    ;thermal diffusivity of water [m2/s]
+  CONSTANT  LW     0.57       ;thermal conductivity of water [W/m/K]
+  CONSTANT  LP     0.16       ;thermal conductivity of the pipe wall, PVC [W/m/K]
+  CONSTANT  LS     1.6        ;thermal conductivity of dry sandy soil [W/m/K]
+  CONSTANT  DR     1.052      ;outer / inner pipe diameter, PVC
+  CONSTANT  PR     7.0        ;Prandtl number of water
+  CONSTANT  RETR   5000       ;Re above which the turbulent Nusselt number applies
+  CONSTANT  TSIL   2.0        ;thermal sphere of influence, laminar (recommended 2)
+  CONSTANT  TSIT   0.5        ;thermal sphere of influence, turbulent (recommended 0-1)
+; 2RA chlorine reactions, Greenvale water
+  CONSTANT  KF20   0.164      ;fast rate coefficient at 20 C [L/mg/h]
+  CONSTANT  KS20   0.00496    ;slow rate coefficient at 20 C [L/mg/h]
+  CONSTANT  EOR    10500      ;activation energy / gas constant [K]
+; by-product yields (Fisher 2023 WER defaults)
+  CONSTANT  KTHM   0.043      ;[mg THM / mg Cl reacted]
+  CONSTANT  KHAA   0.020      ;[mg HAA / mg Cl reacted]
+; EXBRUF wall reaction (Fisher 2023 WER Tables 5-6)
+  CONSTANT  ABF20  1000       ;biofilm activity at zero chlorine and 20 C [dm/h]
+  CONSTANT  BBF    26         ;decrease of biofilm activity with chlorine [L/mg]
+  CONSTANT  EORW   5000       ;wall E/R [K]
+  CONSTANT  EPS    0.0025     ;absolute pipe roughness [m]
+
+[TERMS]
+  ;lengths and velocities in metres: LU is metres per network length unit
+  DLU     D*LU
+  LLU     Len*LU
+; --- heat exchange with the soil (rate in 1/h)
+  NUT     0.027*(Re^0.8)*(PR^0.33)                     ;turbulent Nusselt number
+  NU      3.66 + STEP(Re - RETR)*(NUT - 3.66)
+  TSI     TSIL + STEP(Re - RETR)*(TSIT - TSIL)
+  RWS     LW*LOG(DR)/(2*LP) + LW*LOG((DR + 2*TSI)/DR)/(2*LS)
+  KH      3600*4*AW/(DLU*DLU*(1/NU + RWS))
+; --- Arrhenius factors at the water temperature (2RA)
+  TCOEF   exp(EOR*(TW-20)/(20+273)/(TW+273))
+  TCW     exp(EORW*(TW-20)/(20+273)/(TW+273))
+  RF      -KF20*TCOEF*CL*F
+  RS      -KS20*TCOEF*CL*S
+  RB      RF + RS
+; --- water properties at the water temperature (Fisher 2023 WER eqs 11-12)
+  KV      exp(-3.7188 + 578.92/(TW + 135.56))*1E-6    ;kinematic viscosity [m2/s]
+  DCL     (0.0365*TW + 0.5176)*1E-9                    ;chlorine diffusivity [m2/s]
+  SC      KV/DCL                                       ;Schmidt number
+  SC66    SC^0.66
+; --- Sherwood number: Gnielinski (rough pipe) above Re 2300, EPANET laminar form below
+  RET     Re + STEP(2300 - Re)*(2300 - Re)
+  LGF     LOG10(0.27*EPS/DLU + 5.74/(RET^0.9))
+  FD8     0.25/(LGF*LGF)/8
+  SHT     FD8*(RET - 1000)*SC/(1 + 12.7*(FD8^0.5)*(SC66 - 1))
+  GZ      DLU*Re*SC/LLU
+  SHL     3.65 + 0.0668*GZ/(1 + 0.04*(GZ^0.6667))
+  SH      SHL + STEP(Re - 2300)*(SHT - SHL)
+  KM      SH*DCL*10/DLU*3600                             ;[dm/h]
+; --- EXBRUF wall reaction
+  BA      ABF20*TCW*exp(-BBF*CL)                       ;[dm/h]
+  RW      -BA*CL/(1 + BA/KM)                           ;[mg/dm2/h]
+  RP      RB + 4/(DLU*10)*RW                             ;[mg/L/h]
+
+[PIPES]
+  RATE  TW   KH*(TSOIL - TW)
+  RATE  CL   RP
+  RATE  F    RF
+  RATE  S    RS
+  RATE  THM  -KTHM*RP
+  RATE  HAA  -KHAA*RP
+
+[TANKS]
+; adiabatic tank, bulk reactions only
+  RATE  TW   0
+  RATE  CL   RB
+  RATE  F    RF
+  RATE  S    RS
+  RATE  THM  -KTHM*RB
+  RATE  HAA  -KHAA*RB
+
+[QUALITY]
+  GLOBAL  TW   18.5
+  GLOBAL  CL   0.563
+  GLOBAL  F    0.730
+  GLOBAL  S    2.832
+  GLOBAL  THM  0.0188
+  GLOBAL  HAA  0.0087
+  NODE  7384  TW  10.0
+  NODE  7384  CL  1.0
+  NODE  7384  F  1.13
+  NODE  7384  S  2.87
+  NODE  7384  THM  0.0
+  NODE  7384  HAA  0.0
+  NODE  311  TW  12.0
+  NODE  311  CL  1.0
+  NODE  311  F  1.13
+  NODE  311  S  2.87
+  NODE  311  THM  0.0
+  NODE  311  HAA  0.0
+  NODE  RES9000  TW  10.0
+  NODE  RES9000  CL  1.0
+  NODE  RES9000  F  1.13
+  NODE  RES9000  S  2.87
+  NODE  RES9000  THM  0.0
+  NODE  RES9000  HAA  0.0
+
+[REPORT]
+  SPECIES  TW   YES  2
+  SPECIES  CL   YES  3

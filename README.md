@@ -290,6 +290,46 @@ Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.
 
 Water age gains least on Utility models 3 and 4. The unpatched code was already fast there, because a water-age rate is one addition per segment, so what is left is mostly EPANET's own hydraulics (about a third of the patched run on the largest model) and moving water through the nodes, which runs on one thread. Chlorine decay, whose Sherwood-number terms the interpreter used to recompute in every segment, gains as much as on the public networks.
 
+## Published reaction models
+
+The manual's reaction systems are not the most demanding ones in use. Seven more models were written from published papers ([models/literature.md](models/literature.md) gives the sources, equations and assumptions):
+- chlorine with THM and HAA formation (Fisher 2023);
+- bacterial regrowth in the water and the biofilm with THM formation (Abhijith et al. 2021);
+- two-reactant chlorine decay with two source waters that blend (the parallel second-order model);
+- water temperature from heat exchange with the soil, driving chlorine decay (Blokker et al. 2024);
+- a microbial intrusion, with its chlorine demand and the inactivation of four organisms;
+- the University of Sheffield's PODDS and VCDM discolouration models.
+
+They correspond in purpose to the example models InfoWater MSX ships (DBP, PSM, Temperature, INACTIVATION, Turbidity), whose formulations are not public. They use paths the manual's systems do not: wall species driven by the wall shear stress, `STEP()` switches, timed `MASS` sources, a temperature species that sets the other rates, and up to 20 species in every pipe. An eighth case runs the manual's chlorine decay with dispersion on BWSN2, which before only the small KY8 case did. The seven models on L-Town 24 h and dispersion on BWSN2 6 h (`--cases literature`), one checked run per build:
+
+<!-- literature -->
+| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 | Bit-identical results |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| L-Town 24 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5) | 33.2 | 8.09 | 1.41 | 0.540 | 1.34 | 0.481 | 6.04x | 16.83x | identical |
+| L-Town 24 h, bacterial regrowth in bulk and biofilm with THM formation (RK5) | 81.8 | 20.2 | 2.18 | 0.723 | 1.92 | 0.475 | 10.49x | 42.50x | identical |
+| L-Town 24 h, parallel second-order chlorine decay, two source waters blending (RK5) | 128 | 32.6 | 1.75 | 1.03 | 1.67 | 0.951 | 19.49x | 34.33x | identical |
+| L-Town 24 h, water temperature from heat exchange with the soil driving chlorine decay (RK5) | 121 | 32.2 | 3.26 | 1.13 | 3.45 | 0.956 | 9.35x | 33.71x | identical |
+| L-Town 24 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2) | 96.9 | 18.7 | 7.16 | 1.46 | 5.19 | 1.23 | 3.61x | 15.18x | identical |
+| L-Town 24 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s) | 136 | 31.1 | 11.5 | 2.61 | 11.6 | 2.62 | 2.67x | 11.85x | identical |
+| L-Town 24 h, VCDM discolouration: 17 material strength bands (Euler, 60 s) | 187 | 48.8 | 8.41 | 2.82 | 8.11 | 2.69 | 6.02x | 18.15x | identical |
+| BWSN2 6 h, chlorine bulk and wall decay with dispersion (Euler, 60 s) | 135 | 28.0 | 7.55 | 2.42 | 6.05 | 2.22 | 4.63x | 12.61x | identical |
+| **Median** | | | | | | | **6.03x** | **17.49x** | |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 10.4 at the start and 7.8 at the end; measured 2026-10-05.
+<!-- /literature -->
+
+<!-- hl:literature -->The bit-identical builds gave the unpatched results bit for bit in every run. On one thread they were 23x faster than the unpatched code (median over the 8 cases; from 12x to 73x). With the near-identical changes, one thread was 6.0x faster than the unpatched code on eight threads, and 17.5x faster with both on eight threads.<!-- /hl:literature -->
+
+**On the two larger public networks** (`--cases literature-large`), NW Model 12 h and BWSN2 6 h, the same seven models were written by `tools/private-reactions.py --kinds literature` ([how](models/literature.md#on-other-networks)). There the unpatched code ran on 8 threads only: on one thread it took 567 s for the first model on NW Model, and would take hours for all fourteen. The two comparisons that matter, near-identical on one thread against unpatched on eight, and both on eight, need only its 8-thread runs.
+
+<!-- literature-large -->
+<!-- /literature-large -->
+
+**On the four utility models**, the same way: all seven models on Utility models 1 and 2, and DBP, intrusion and PODDS on Utility models 3 and 4, the unpatched code on 8 threads only.
+
+<!-- private-literature -->
+<!-- /private-literature -->
+
 ## Your own models
 
 The public networks can only say so much. Put your own network and reaction files in [`models/private/`](models/private/README.md), which git ignores, and run:

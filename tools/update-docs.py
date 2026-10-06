@@ -578,12 +578,14 @@ def six_table(pairs, private=False, ident_col=False):
         f = fmt
         cells = [f(b1), f(b8), f(i1), f(i8), f(n1), f(n8), fsp(x), fsp(y)]
         if ident_col:
+            have = [r for r in (r1, r8) if r and r["builds"].get("base")]     # runs with the unpatched code
+            first = lambda b: next((r["builds"][b] for r in (r1, r8) if r and r["builds"].get(b)), {})
             if private:
-                ident = r1["builds"]["bit"].get("identical") and (not r8 or r8["builds"]["bit"].get("identical"))
-                rc = [r1["builds"][b].get("rc") for b in ("base", "bit", "near")]
+                ident = all(r["builds"]["bit"].get("identical") for r in have)
+                rc = [first(b).get("rc") for b in ("base", "bit", "near")]
             else:
-                ident = sig(r1, "bit") == sig(r1, "base") and (not r8 or sig(r8, "bit") == sig(r8, "base"))
-                rc = [r1["builds"][b]["check"].get("rc") for b in ("base", "bit", "near")]
+                ident = all(sig(r, "bit") == sig(r, "base") for r in have)
+                rc = [first(b).get("check", {}).get("rc") for b in ("base", "bit", "near")]
             note = "" if not any(rc) else f" (return codes {'/'.join(str(v) for v in rc)})"
             cells.append(("identical" if ident else "**differ**") + note)
         L.append(f"| {r1['name']} | " + " | ".join(cells) + " |")
@@ -593,6 +595,23 @@ def six_table(pairs, private=False, ident_col=False):
 
 def simple_three(data, private=False):
     return six_table([(r, rec(data, r["case"], "step", 8)) for r in rows(data, "step", 1)], private, ident_col=True)
+
+
+def split_three(*tags, private=False):
+    """the same table from pairs of runs TAG-8 (all builds, 8 threads) and TAG-1 (bit and near, 1 thread),
+    for cases whose unpatched one-thread runs would take hours; with the conditions of the 8-thread runs"""
+    pairs, notes = [], []
+    for t in tags:
+        d8, d1 = load(t + "-8"), load(t + "-1")
+        if not d8:
+            continue
+        notes.append(conditions(d8))
+        for r8 in rows(d8, "step", 8):
+            r1 = rec(d1, r8["case"], "step", 1) if d1 else None
+            pairs.append((r1 or {"name": r8["name"], "case": r8["case"], "builds": {}}, r8))
+    if not pairs:
+        return None
+    return six_table(pairs, private, ident_col=True) + "\n\n" + " ".join(dict.fromkeys(notes))
 
 
 def index(text):
@@ -613,6 +632,28 @@ def index(text):
     st = load("stress")
     if st:
         text = replace(text, "stress", simple_three(st) + f"\n\n{conditions(st)}")
+    lt = load("literature")
+    if lt:
+        text = replace(text, "literature", simple_three(lt) + f"\n\n{conditions(lt)}")
+        pr = [(r, rec(lt, r["case"], "step", 8)) for r in rows(lt, "step", 1)]
+        s1 = [x for x in (sp(best(r1, "base"), best(r1, "bit")) for r1, r8 in pr) if x]
+        a = median([sp(best(r8, "base"), best(r1, "near")) for r1, r8 in pr])
+        b = median([sp(best(r8, "base"), best(r8, "near")) for r1, r8 in pr])
+        same = all(sig(x, "bit") == sig(x, "base") for p in pr for x in p if x)
+        text = replace(text, "hl:literature",
+                       ("The bit-identical builds gave the unpatched results bit for bit in every run. " if same else
+                        "**The bit-identical builds did not give the unpatched results in every run.** ") +
+                       f"On one thread they were {median(s1):.0f}x faster than the unpatched code (median over the "
+                       f"{len(pr)} cases; from {min(s1):.0f}x to {max(s1):.0f}x). With the near-identical changes, one "
+                       f"thread was {a:.1f}x faster than the unpatched code on eight threads, and {b:.1f}x faster with "
+                       f"both on eight threads.")
+    t = split_three("literature-large")
+    if t:
+        text = replace(text, "literature-large", t)
+    t = split_three("private-literature", private=True) or \
+        split_three("private-literature-12", "private-literature-34", private=True)
+    if t:
+        text = replace(text, "private-literature", t)
     sc = load("scaling")
     if sc:
         ths = sc["threads"]

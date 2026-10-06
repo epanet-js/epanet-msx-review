@@ -1,0 +1,182 @@
+[TITLE]
+L-Town: two-source parallel second-order (2R/2RA) chlorine reactions, EXBRUF wall reaction, THM and HAA (after Kastl et al. 1999; Fisher et al. 2011, 2012, 2015, 2017, 2023)
+
+; ---------------------------------------------------------------------------
+; Parallel second-order ("two-reactant", 2R) chlorine model in EPANET-MSX form.
+; Written for the epanet-msx-review benchmarks as a stand-in for InfoWater MSX's
+; built-in "PSM" examples, whose formulation is not public. Equations follow the
+; open literature; this file is our own implementation, not a copy of any listing.
+;
+; Bulk reactions (Kastl, Fisher & Jegatheesan 1999, J. Water SRT-Aqua 48(6):219,
+; doi:10.2166/aqua.1999.0024; Fisher, Kastl & Sathasivan 2011, Water Res.
+; 45:4896, doi:10.1016/j.watres.2011.06.032):
+;   dF/dt  = -kF * F * Cl          fast reducing agents  [mg Cl-equiv/L]
+;   dS/dt  = -kS * S * Cl          slow reducing agents  [mg Cl-equiv/L]
+;   dCl/dt =  dF/dt + dS/dt (+ wall term in pipes)
+; Rate coefficients carry the Arrhenius factor of the 2RA model (Fisher, Kastl &
+; Sathasivan 2012, Water Res. 46:3293, doi:10.1016/j.watres.2012.03.017):
+;   k(TC) = k20 * exp(EOR*(TC-20)/(293*(TC+273)))
+; Here TC is a fixed water temperature (default 20 C, so the factor is 1);
+; ltown-temperature.msx makes the temperature a dynamic species.
+;
+; Two source waters. Each reservoir carries its own reactant pair, and each
+; pair keeps its own rate coefficients when the waters blend; all four react
+; with the one chlorine pool (the blending approach of Fisher et al. 2015,
+; J. Environ. Eng. 141, doi:10.1061/(ASCE)EE.1943-7870.0000980, as described
+; in Fisher 2023, Water Environ. Res. 95:e10949, doi:10.1002/wer.10949).
+;   Water A (R1): Greenvale, Australia. 2RA coefficients and reactant
+;     concentrations from I. Fisher, "A Multi-Species Decay Model to Support
+;     Cost-Effective Chlorination in Distribution Systems", Bentley Virtuosity
+;     blog, 24 Mar 2022 (data of Fisher et al. 2011, 2012).
+;   Water B (R2): Mirrabooka, Western Australia. Coefficients and reactant
+;     concentrations of Fisher 2023 (WER) Table 4.
+;
+; Wall reaction EXBRUF (Fisher, Kastl & Sathasivan 2017, Water Res. 125:427,
+; doi:10.1016/j.watres.2017.08.066; 2023, Urban Water J. 20:1157,
+; doi:10.1080/1573062X.2023.2241437; MSX form in Fisher 2023 WER Tables 5-6):
+;   RW  = -BA*Cl/(1 + BA/KM)           [mg/dm2/h]
+;   BA  = ABF20*TCOEFW*exp(-BBF*Cl)    biofilm activity [dm/h]
+;   KM  = SH*DCL/D                     mass-transfer coefficient [dm/h]
+;   SH  = Gnielinski, rough pipe:  (f/8)(Re-1000)Sc / (1 + 12.7 (f/8)^0.5 (Sc^0.66 - 1))
+;   pipe rate adds (4/D)*RW, D in dm.
+; Deviations from Fisher's listing (see models/literature.md):
+;   * f from Swamee-Jain with a fixed roughness, not MSX's Ff, which is NaN at
+;     zero flow; the log is squared by multiplication, because MSX returns 0 for
+;     x^y when x <= 0;
+;   * Gnielinski is used only for Re > 2300; below that, EPANET's laminar
+;     Sherwood number (Graetz form) is used, as Gnielinski is not defined there;
+;   * the Re given to Gnielinski is clamped to >= 2300 so that the unused branch
+;     stays finite;
+;   * Sc^0.66 is its own term: this MSX version reads ")-1" as ") -1" (a
+;     negative number) and rejects the expression.
+; By-products (Fisher 2023 WER Table 4, after Sathasivan et al. 2020 and
+; Premarathna et al. 2022): dTHM/dt = -KTHM*dCl/dt, dHAA/dt = -KHAA*dCl/dt,
+; with dCl/dt the total chlorine reaction rate, as in Fisher's listing.
+; ---------------------------------------------------------------------------
+
+[OPTIONS]
+  AREA_UNITS  M2             ;not used (no wall species); as in Fisher's listing
+  RATE_UNITS  HR             ;rates in concentration per hour
+  SOLVER      RK5            ;as in Fisher 2023 WER Table 4
+  COUPLING    NONE           ;no equilibrium equations
+  TIMESTEP    300            ;s
+  RTOL        0.001          ;as in Fisher 2023 WER Table 4
+  ATOL        0.0001         ;as in Fisher 2023 WER Table 4
+
+[SPECIES]
+  BULK  CL    MG             ;free chlorine [mg/L]
+  BULK  FA    MG             ;fast reducing agents of water A (R1) [mg Cl-equiv/L]
+  BULK  SA    MG             ;slow reducing agents of water A (R1) [mg Cl-equiv/L]
+  BULK  FB    MG             ;fast reducing agents of water B (R2) [mg Cl-equiv/L]
+  BULK  SB    MG             ;slow reducing agents of water B (R2) [mg Cl-equiv/L]
+  BULK  THM   MG             ;total trihalomethanes [mg/L]
+  BULK  HAA   MG             ;haloacetic acids [mg/L]
+
+[COEFFICIENTS]
+  CONSTANT  LU  1.0     ;metres per network length unit: 1 for SI networks, 0.3048 for US units
+; water temperature for this run [C]
+  CONSTANT  TC     20.0
+; water A (R1), Greenvale: 2RA coefficients at 20 C
+  CONSTANT  KFA20  0.164      ;fast rate coefficient [L/mg/h]
+  CONSTANT  KSA20  0.00496    ;slow rate coefficient [L/mg/h]
+  CONSTANT  EORA   10500      ;activation energy / gas constant [K]
+; water B (R2), Mirrabooka: 2RA coefficients at 20 C
+  CONSTANT  KFB20  0.0054     ;fast rate coefficient [L/mg/h]
+  CONSTANT  KSB20  0.0017     ;slow rate coefficient [L/mg/h]
+  CONSTANT  EORB   1300       ;activation energy / gas constant [K]
+; by-product yields (Fisher 2023 WER defaults)
+  CONSTANT  KTHM   0.043      ;[mg THM / mg Cl reacted]
+  CONSTANT  KHAA   0.020      ;[mg HAA / mg Cl reacted]
+; EXBRUF wall reaction (Fisher 2023 WER Tables 5-6, Mirrabooka pipeline)
+  CONSTANT  ABF20  1000       ;biofilm activity at zero chlorine and 20 C [dm/h]
+  CONSTANT  BBF    26         ;decrease of biofilm activity with chlorine [L/mg]
+  CONSTANT  EORW   5000       ;wall E/R [K] ("typical" value in Fisher 2023 WER)
+  CONSTANT  EPS    0.0025     ;absolute pipe roughness [m] (Fisher 2023 WER Table 6)
+
+[TERMS]
+  ;lengths and velocities in metres: LU is metres per network length unit
+  DLU     D*LU
+  LLU     Len*LU
+; Arrhenius factors relative to 20 C (2RA model)
+  TCA     exp(EORA*(TC-20)/(20+273)/(TC+273))
+  TCB     exp(EORB*(TC-20)/(20+273)/(TC+273))
+  TCW     exp(EORW*(TC-20)/(20+273)/(TC+273))
+; bulk reactions of each water's reactants with the common chlorine pool [mg/L/h]
+  RFA     -KFA20*TCA*CL*FA
+  RSA     -KSA20*TCA*CL*SA
+  RFB     -KFB20*TCB*CL*FB
+  RSB     -KSB20*TCB*CL*SB
+  RB      RFA + RSA + RFB + RSB
+; water properties at TC (Fisher 2023 WER eqs 11-12)
+  KV      exp(-3.7188 + 578.92/(TC + 135.56))*1E-6   ;kinematic viscosity [m2/s]
+  DCL     (0.0365*TC + 0.5176)*1E-9                   ;chlorine diffusivity [m2/s]
+  SC      KV/DCL                                      ;Schmidt number
+; Sherwood number. Turbulent: Gnielinski with Swamee-Jain friction factor
+  RET     Re + STEP(2300 - Re)*(2300 - Re)            ;Re, but at least 2300
+  LGF     LOG10(0.27*EPS/DLU + 5.74/(RET^0.9))
+  FD8     0.25/(LGF*LGF)/8                            ;Darcy friction factor / 8
+  SC66    SC^0.66
+  SHT     FD8*(RET - 1000)*SC/(1 + 12.7*(FD8^0.5)*(SC66 - 1))
+; laminar: EPANET's developing-flow form
+  GZ      DLU*Re*SC/LLU
+  SHL     3.65 + 0.0668*GZ/(1 + 0.04*(GZ^0.6667))
+  SH      SHL + STEP(Re - 2300)*(SHT - SHL)
+  KM      SH*DCL*10/DLU*3600                            ;mass-transfer coefficient [dm/h]
+; EXBRUF wall reaction
+  BA      ABF20*TCW*exp(-BBF*CL)                      ;biofilm activity [dm/h]
+  RW      -BA*CL/(1 + BA/KM)                          ;wall reaction [mg/dm2/h]
+  RP      RB + 4/(DLU*10)*RW                            ;total chlorine rate in a pipe [mg/L/h]
+
+[PIPES]
+  RATE  CL   RP
+  RATE  FA   RFA
+  RATE  SA   RSA
+  RATE  FB   RFB
+  RATE  SB   RSB
+  RATE  THM  -KTHM*RP
+  RATE  HAA  -KHAA*RP
+
+[TANKS]
+; bulk reactions only
+  RATE  CL   RB
+  RATE  FA   RFA
+  RATE  SA   RSA
+  RATE  FB   RFB
+  RATE  SB   RSB
+  RATE  THM  -KTHM*RB
+  RATE  HAA  -KHAA*RB
+
+[QUALITY]
+; Initial network water: 50/50 blend of waters A and B after 6 h of bulk
+; reaction at 20 C from the source state below (computed offline; see models/literature.md).
+  GLOBAL  CL   0.473
+  GLOBAL  FA   0.301
+  GLOBAL  SA   1.408
+  GLOBAL  FB   2.002
+  GLOBAL  SB   24.76
+  GLOBAL  THM  0.0227
+  GLOBAL  HAA  0.0105
+; R1: water A (Greenvale) dosed to 1.0 mg/L
+  NODE  R1  CL   1.0
+  NODE  R1  FA   1.13
+  NODE  R1  SA   2.87
+  NODE  R1  FB   0.0
+  NODE  R1  SB   0.0
+  NODE  R1  THM  0.0
+  NODE  R1  HAA  0.0
+; R2: water B (Mirrabooka) dosed to 1.0 mg/L
+  NODE  R2  CL   1.0
+  NODE  R2  FA   0.0
+  NODE  R2  SA   0.0
+  NODE  R2  FB   4.1
+  NODE  R2  SB   49.9
+  NODE  R2  THM  0.0
+  NODE  R2  HAA  0.0
+
+[REPORT]
+; near R1 (n303) and R2 (n336); blended water at the pump inlet (n54); the tank;
+; far from the sources (n215 about 9 h from R1, n187 about 17 h from R2);
+; n1, still mostly initial water after 24 h
+  NODES    n303 n336 n54 T1 n215 n187 n1
+  SPECIES  CL   YES  3
+  SPECIES  THM  YES  4

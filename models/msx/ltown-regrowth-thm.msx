@@ -1,0 +1,154 @@
+[TITLE]
+L-Town: chlorine, TOC, BDOC, bulk and biofilm bacteria, THM (after Abhijith, Kadinski & Ostfeld 2021, Water 13:463)
+
+; ---------------------------------------------------------------------------
+; Bacterial regrowth and trihalomethane formation benchmark for EPANET-MSX.
+;
+; Source of the formulation:
+;   Abhijith, G.R., Kadinski, L., Ostfeld, A. (2021). Modeling Bacterial
+;   Regrowth and Trihalomethane Formation in Water Distribution Systems.
+;   Water 13(4), 463. https://doi.org/10.3390/w13040463 (open access, CC BY
+;   4.0). Equations (1)-(6) and the base parameter values of Table 1.
+;   The paper ran its model in EPANET-MSX with RK5 and a 300 s step, at 25 C.
+;
+; Equations as written here (rates per second; C = chlorine, N = TOC,
+; S = BDOC, Xb = bulk bacteria, Xa = attached bacteria, H = THM):
+;   dC/dt  = -kCN*N*C - kCX*Xb*C - kw*kf/((kw+kf)*Rh)*C          (1)
+;   dN/dt  = -G/Y - YN*kCN*N*C + a*cc*(YX*kCX*Xb*C + kmort*Xb)    (2)
+;   dS/dt  = -G/Y - YN*kCN*S*C + a*cc*(YX*kCX*Xb*C + kmort*Xb)    (3)
+;   dXb/dt = G - YX*kCX*Xb*C - kmort*Xb - kdep*Xb + kdet*tw*Xa/Rh (4)
+;   dXa/dt = mua*exp(-(kinact/kr)*C)*fT*Xa - kmort*Xa
+;            + kdep*Xb*Rh - kdet*tw*Xa                            (5)
+;   dH/dt  = YH1*kCN*N*C + YH2*kCX*Xb*C                           (6)
+;   G      = mub*S/(Ks+S)*exp(-kinact*C)*fT*Xb    (Monod growth, inhibited)
+;   fT     = exp(-((Topt-T)/(Topt-Ti))^2)
+;   kCN, kCX = 3e4, 3e-4 * exp(-6050/(T+273))
+;   kf     = Sh*Dm/D (EPANET's Sherwood correlations), Rh = D/4
+;   tw     = rho*f*U^2/8 with Blasius f = 0.316*Re^-0.25 at T
+;
+; Units: C, N, S in mg/L; Xb in CFU/mL; Xa in CFU/cm2 (AREA_UNITS CM2, Rh in
+; cm in the bacterial exchange terms); H in ug/L. Where the paper mixes
+; CFU/mL and per-litre units, the conversions are explicit here (see
+; models/literature.md). This file is our own implementation of the published
+; equations; it is not InfoWater's DBP model.
+; ---------------------------------------------------------------------------
+
+[OPTIONS]
+  AREA_UNITS      CM2         ;biofilm density per cm2
+  RATE_UNITS      SEC         ;the paper's parameters are per second
+  SOLVER          RK5         ;as in the paper
+  TIMESTEP        300         ;as in the paper
+  RTOL            0.001
+  ATOL            0.0001
+
+[SPECIES]
+  BULK  CL    MG       0.0001  0.001  ;free chlorine (mg/L)
+  BULK  TOC   MG       0.0001  0.001  ;total organic carbon (mg-C/L)
+  BULK  BDOC  MG       0.0001  0.001  ;biodegradable organic carbon (mg-C/L)
+  BULK  XB    CFU/mL   0.000001 0.001 ;suspended bacteria (CFU/mL)
+  WALL  XA    CFU/cm2  0.000001 0.001 ;attached (biofilm) bacteria (CFU/cm2)
+  BULK  THM   UG       0.001   0.001  ;total trihalomethanes (ug/L)
+
+[COEFFICIENTS]
+  CONSTANT  LU  1.0     ;metres per network length unit: 1 for SI networks, 0.3048 for US units
+; base values of Table 1 (Abhijith et al. 2021) unless stated
+  CONSTANT  TC      25          ;water temperature (C), as in the paper
+  CONSTANT  KW      1.04E-7     ;chlorine wall decay coefficient (m/s)
+  CONSTANT  MUB     4.2E-4      ;max. specific growth rate, bulk bacteria (1/s)
+  CONSTANT  MUA     8.6E-7      ;max. specific growth rate, attached bacteria (1/s)
+  CONSTANT  KS      0.195       ;half-saturation constant (mg-C/L)
+  CONSTANT  Y       7000        ;growth yield, 0.007e6 (CFU/mL)/(mg-C/L)
+  CONSTANT  KINACT  0.35        ;growth inactivation by chlorine (L/mg)
+  CONSTANT  TOPT    37          ;optimal temperature for growth (C)
+  CONSTANT  TI      7           ;temperature shape parameter (C)
+  CONSTANT  YX      3.4E5       ;bacteria killed per chlorine used, 0.34e6 (CFU/mL)/(mg/L)
+  CONSTANT  YN      0.98        ;organic carbon oxidised per chlorine used (mg-C/mg-Cl)
+  CONSTANT  A       0.3         ;fraction of dead bacteria returned as BDOC
+  CONSTANT  KMORT   6.3E-5      ;natural mortality (1/s)
+  CONSTANT  KDEP    6.3E-5      ;deposition (attachment) rate, = kmort (1/s)
+  CONSTANT  KDET    6.618E-7    ;detachment coefficient (m.s/g)
+  CONSTANT  KR      100         ;resistance factor of attached bacteria to chlorine
+  CONSTANT  YH1     118.435     ;THM yield, chlorination of NOM (ug/mg-Cl)
+  CONSTANT  YH2     4.487       ;THM yield, chlorination of bacteria (ug/mg-Cl)
+; constants added for unit conversion and the wall terms (not in Table 1)
+  CONSTANT  CC      1.0E-6      ;cell carbon: 1e-9 mg-C/CFU (paper) in (mg-C/L)/(CFU/mL)
+  CONSTANT  DM      1.21E-9     ;molecular diffusivity of chlorine (m2/s), EPANET default
+  CONSTANT  RHO     997050      ;density of water at 25 C (g/m3)
+
+[TERMS]
+  ;lengths and velocities in metres: LU is metres per network length unit
+  DLU     D*LU
+  LLU     Len*LU
+  ULU     U*LU
+; temperature-dependent rate constants (Table 1)
+  KCN     3.0E4*EXP(-6050/(TC+273))       ;chlorine-NOM (L/mg-C/s)
+  KCX     3.0E-4*EXP(-6050/(TC+273))      ;chlorine-bacteria (L/CFU/s)
+  FT      EXP(-(((TOPT-TC)/(TOPT-TI))^2)) ;temperature factor for growth
+; water properties at TC: viscosity from a standard Vogel-type fit (Pa.s),
+; divided by density (kg/m3) for kinematic viscosity (m2/s)
+  NU      2.414E-5*(10^(247.8/(TC+273.15-140)))/(RHO/1000)
+  RE25    ULU*DLU/NU                          ;Reynolds number at TC
+; chlorine wall decay with mass transfer (EPANET correlations)
+  SC      NU/DM                           ;Schmidt number
+  SHT     0.0149*(RE25^0.88)*(SC^0.3333)  ;turbulent Sherwood number
+  GZ      DLU*RE25*SC/LLU
+  SHL     3.65 + 0.0668*GZ/(1 + 0.04*(GZ^0.6667)) ;laminar Sherwood number
+  SH      STEP(RE25-2300)*SHT + STEP(2300-RE25)*SHL
+  KF      SH*DM/DLU                         ;mass-transfer coefficient (m/s)
+  RH      DLU/4                             ;hydraulic radius (m)
+  RW      KW*KF/((KW+KF)*RH)              ;wall decay rate constant (1/s)
+; wall shear stress (Blasius) in g/(m.s2); zero when there is no flow
+  FB      0.316*(RE25^(-0.25))
+  TAUW    RHO*FB*ULU*ULU/8
+  RHC     25*DLU                            ;hydraulic radius in cm (D in m)
+; reaction rates
+  RCN     KCN*TOC*CL                      ;chlorine used by NOM (mg/L/s)
+  RCX     KCX*1000*XB*CL                  ;chlorine used by bacteria (mg/L/s); XB per litre
+  GROW    MUB*BDOC/(KS+BDOC)*EXP(-KINACT*CL)*FT*XB   ;growth (CFU/mL/s)
+  DEAD    YX*RCX + KMORT*XB               ;dead bacteria (CFU/mL/s)
+
+[PIPES]
+  RATE  CL    -RCN - RCX - RW*CL
+  RATE  TOC   -GROW/Y - YN*RCN + A*CC*DEAD
+  RATE  BDOC  -GROW/Y - YN*KCN*BDOC*CL + A*CC*DEAD
+  RATE  XB    GROW - DEAD - KDEP*XB + KDET*TAUW*XA/RHC
+  RATE  XA    MUA*EXP(-(KINACT/KR)*CL)*FT*XA - KMORT*XA + KDEP*XB*RHC - KDET*TAUW*XA
+  RATE  THM   YH1*RCN + YH2*RCX
+
+[TANKS]
+; no wall: no wall decay, deposition or detachment
+  RATE  CL    -RCN - RCX
+  RATE  TOC   -GROW/Y - YN*RCN + A*CC*DEAD
+  RATE  BDOC  -GROW/Y - YN*KCN*BDOC*CL + A*CC*DEAD
+  RATE  XB    GROW - DEAD
+  RATE  THM   YH1*RCN + YH2*RCX
+
+[QUALITY]
+; Source waters follow the paper's Test Problem 2 scenarios (BDOC = 30% of
+; TOC, 0.001 CFU/mL, no THM): R1 as scenario 2b (1.0 mg/L chlorine, TOC 2.0),
+; R2 as scenario 2a (0.5 mg/L chlorine, TOC 1.0). The network starts with
+; partly reacted water.
+  GLOBAL  CL    0.2
+  GLOBAL  TOC   1.0
+  GLOBAL  BDOC  0.3
+  GLOBAL  XB    1.0
+  GLOBAL  XA    1.0
+  GLOBAL  THM   60
+  NODE  R1  CL    1.0
+  NODE  R1  TOC   2.0
+  NODE  R1  BDOC  0.6
+  NODE  R1  XB    0.001
+  NODE  R1  THM   0
+  NODE  R2  CL    0.5
+  NODE  R2  TOC   1.0
+  NODE  R2  BDOC  0.3
+  NODE  R2  XB    0.001
+  NODE  R2  THM   0
+
+[REPORT]
+  NODES  n300 n111 n305 n226 n54 T1 n34 n2
+  SPECIES  CL    YES  3
+  SPECIES  TOC   YES  3
+  SPECIES  BDOC  YES  3
+  SPECIES  XB    YES  3
+  SPECIES  THM   YES  2

@@ -22,6 +22,9 @@ The tables in this repository's READMEs are generated from the files here by [`t
 | `yardstick-real.json`, `yardstick-real.md` | The acceptance check on L-Town and the NW Model, every sixth step | `yardstick-real` |
 | `stress.json`, `yardstick-stress.json`, `yardstick-stress.md` | The stress cases (water age and tracers on BWSN2, full coupling on Net3): 85a303d, `bit` and `near`, one checked run each in step and solve mode at 1 and 8 threads; and the acceptance check on them | `stress`, `yardstick-stress` |
 | `private.json` | The four utility models: labels, times, return codes, whether results were identical, and the load average; no sizes, memory or results (`tools/private-summary.py`) | `private` |
+| `literature.json`, `literature.md`, `yardstick-literature.json`, `yardstick-literature.md` | The published reaction models on L-Town and dispersion on BWSN2 ([models/literature.md](../models/literature.md)): 85a303d, `bit` and `near`, one checked run each at 1 and 8 threads; and the acceptance check on them | `literature`, `yardstick-literature` |
+| `literature-large-8.json`, `literature-large-1.json` | The same models on NW Model and BWSN2: 85a303d, `bit` and `near` on 8 threads; `bit` and `near` on 1 thread | `literature-large` |
+| `private-literature-*.json` | The same models on the utility models, as `private.json` (labels, times, return codes, identical or not, load) | `private-literature` |
 | `status.json` | The last check against upstream (`tools/check.py`), used to report what changed since | - |
 
 Each run in the timing files records the case, the mode, the thread count, the build, the times of each phase in seconds (`open`, `H` for `MSXsolveH`, `Q` for the water quality, `report`, `close` and `total`), the number of steps, the peak memory (`rss_kb`) and, for the checked run, a hash of every concentration after every step (`hash`) and in solve mode the MD5 of the output file and the report.

@@ -30,7 +30,10 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS = os.path.join(HERE, "models")
 PRIVATE = os.path.join(MODELS, "private")
 KINDS = {"chlorine": "chlorine", "bacteria": "bacterial regrowth", "chloramine": "chloramine",
-         "arsenic": "arsenic", "dispersion": "dispersion", "age": "water age"}
+         "arsenic": "arsenic", "dispersion": "dispersion", "age": "water age",
+         "dbp": "chlorine with THM and HAA", "regrowth-thm": "regrowth with THM", "psm": "two-reactant chlorine",
+         "temperature": "temperature and chlorine", "inactivation": "intrusion and inactivation",
+         "podds": "PODDS discolouration", "vcdm": "VCDM discolouration"}
 SOLVERS = {"EUL": "Euler", "RK5": "RK5", "ROS2": "ROS2"}
 
 
@@ -104,7 +107,7 @@ def load_cases(spec, label="Private model", cases_file=None, names=False):
             out += [c for c in allc if c.get("group", "main") == "main"]
         elif s == "public":
             out += allc
-        elif s in ("output", "real", "stress"):
+        elif s in ("output", "real", "stress", "literature", "literature-large"):
             out += [c for c in allc if c.get("group") == s]
         elif s == "private" or s.startswith("private:"):
             pc = private_cases(label, cases_file, names)

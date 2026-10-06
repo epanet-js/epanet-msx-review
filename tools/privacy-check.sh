@@ -4,8 +4,8 @@
 #   tools/privacy-check.sh            check every tracked file and commit message
 #   tools/privacy-check.sh --staged   also check the commit message in .git/COMMIT_EDITMSG
 #
-# The patterns come from the files in models/private/ (which git ignores): each
-# file's name without its extension, and the first word of that name (split at
+# The patterns come from the files in models/private/ (which git ignores; the
+# cases*.json lists of runs are left out): each file's name without its extension, and the first word of that name (split at
 # "-", "_", "." or a space), ignoring words under four letters and a few generic
 # ones. Put a file models/private/.patterns (one word per line) to add more,
 # such as a utility's name or node IDs. Run it before every commit.
@@ -16,7 +16,7 @@ cd "$HERE"
 PAT=$(mktemp)
 trap 'rm -f "$PAT" "$PAT.hits"' EXIT
 
-find models/private -type f ! -name README.md ! -name .gitignore ! -name .patterns |
+find models/private -type f ! -name README.md ! -name .gitignore ! -name .patterns ! -name 'cases*.json' |
 while IFS= read -r f; do
     b=$(basename "$f"); stem=${b%.*}
     echo "$stem"

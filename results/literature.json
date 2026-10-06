@@ -1,0 +1,1337 @@
+{
+ "builds": [
+  "base",
+  "bit",
+  "near"
+ ],
+ "threads": [
+  1,
+  8
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 0,
+ "metric": "total",
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-05",
+ "start": {
+  "load": [
+   10.45,
+   11.81,
+   13.53
+  ],
+  "time": "2026-10-05 21:46"
+ },
+ "end": {
+  "load": [
+   7.77,
+   6.81,
+   9.19
+  ],
+  "time": "2026-10-05 22:08"
+ },
+ "build_info": {
+  "base": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "bit": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "near": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n"
+ },
+ "results": [
+  {
+   "case": "ltown-dbp",
+   "name": "L-Town 24 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 33.153218,
+      "open": 0.006682,
+      "H": 0.221541,
+      "Q": 32.92322,
+      "report": 0.0,
+      "close": 0.001775,
+      "steps": 288,
+      "hash": "f2033ae81a60a42a",
+      "rss_kb": 19808
+     },
+     "times": [],
+     "best": 33.153218,
+     "best_Q": 32.92322,
+     "rss_kb": 19808,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.408443,
+      "open": 0.011951,
+      "H": 0.047163,
+      "Q": 1.341586,
+      "report": 0.0,
+      "close": 0.007743,
+      "steps": 288,
+      "hash": "f2033ae81a60a42a",
+      "rss_kb": 29728
+     },
+     "times": [],
+     "best": 1.408443,
+     "best_Q": 1.341586,
+     "rss_kb": 29728,
+     "rc": 0,
+     "identical": true,
+     "speedup": 23.538913537857056
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 1.339363,
+      "open": 0.00696,
+      "H": 0.032304,
+      "Q": 1.289931,
+      "report": 0.0,
+      "close": 0.010168,
+      "steps": 288,
+      "hash": "f2033ae81a60a42a",
+      "rss_kb": 28000
+     },
+     "times": [],
+     "best": 1.339363,
+     "best_Q": 1.289931,
+     "rss_kb": 28000,
+     "rc": 0,
+     "identical": true,
+     "speedup": 24.752974361692836
+    }
+   },
+   "load_start": [
+    10.45,
+    11.81,
+    13.53
+   ],
+   "load_end": [
+    8.96,
+    11.31,
+    13.28
+   ]
+  },
+  {
+   "case": "ltown-dbp",
+   "name": "L-Town 24 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 8.087578,
+      "open": 0.005887,
+      "H": 0.216767,
+      "Q": 7.862797,
+      "report": 0.0,
+      "close": 0.002127,
+      "steps": 288,
+      "hash": "f2033ae81a60a42a",
+      "rss_kb": 20896
+     },
+     "times": [],
+     "best": 8.087578,
+     "best_Q": 7.862797,
+     "rss_kb": 20896,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.540207,
+      "open": 0.006171,
+      "H": 0.035723,
+      "Q": 0.496337,
+      "report": 0.0,
+      "close": 0.001976,
+      "steps": 288,
+      "hash": "f2033ae81a60a42a",
+      "rss_kb": 28224
+     },
+     "times": [],
+     "best": 0.540207,
+     "best_Q": 0.496337,
+     "rss_kb": 28224,
+     "rc": 0,
+     "identical": true,
+     "speedup": 14.971257314325806
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.480676,
+      "open": 0.006078,
+      "H": 0.035771,
+      "Q": 0.436936,
+      "report": 0.0,
+      "close": 0.001891,
+      "steps": 288,
+      "hash": "f2033ae81a60a42a",
+      "rss_kb": 30240
+     },
+     "times": [],
+     "best": 0.480676,
+     "best_Q": 0.436936,
+     "rss_kb": 30240,
+     "rc": 0,
+     "identical": true,
+     "speedup": 16.825425026421126
+    }
+   },
+   "load_start": [
+    8.96,
+    11.31,
+    13.28
+   ],
+   "load_end": [
+    11.46,
+    11.78,
+    13.42
+   ]
+  },
+  {
+   "case": "ltown-regrowth-thm",
+   "name": "L-Town 24 h, bacterial regrowth in bulk and biofilm with THM formation (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 81.819903,
+      "open": 0.006093,
+      "H": 0.217511,
+      "Q": 81.591905,
+      "report": 0.0,
+      "close": 0.004394,
+      "steps": 288,
+      "hash": "47bad97a130b3a10",
+      "rss_kb": 21312
+     },
+     "times": [],
+     "best": 81.819903,
+     "best_Q": 81.591905,
+     "rss_kb": 21312,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 2.176395,
+      "open": 0.007769,
+      "H": 0.031482,
+      "Q": 2.127297,
+      "report": 0.0,
+      "close": 0.009847,
+      "steps": 288,
+      "hash": "47bad97a130b3a10",
+      "rss_kb": 30624
+     },
+     "times": [],
+     "best": 2.176395,
+     "best_Q": 2.127297,
+     "rss_kb": 30624,
+     "rc": 0,
+     "identical": true,
+     "speedup": 37.594234042993115
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 1.921724,
+      "open": 0.006866,
+      "H": 0.031997,
+      "Q": 1.872942,
+      "report": 0.0,
+      "close": 0.009919,
+      "steps": 288,
+      "hash": "c1fcd9511c0e86b3",
+      "rss_kb": 30752
+     },
+     "times": [],
+     "best": 1.921724,
+     "best_Q": 1.872942,
+     "rss_kb": 30752,
+     "rc": 0,
+     "identical": false,
+     "speedup": 42.5763028405744
+    }
+   },
+   "load_start": [
+    11.46,
+    11.78,
+    13.42
+   ],
+   "load_end": [
+    12.84,
+    11.86,
+    13.28
+   ]
+  },
+  {
+   "case": "ltown-regrowth-thm",
+   "name": "L-Town 24 h, bacterial regrowth in bulk and biofilm with THM formation (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 20.167322,
+      "open": 0.007293,
+      "H": 0.211395,
+      "Q": 19.946847,
+      "report": 0.0,
+      "close": 0.001787,
+      "steps": 288,
+      "hash": "47bad97a130b3a10",
+      "rss_kb": 22080
+     },
+     "times": [],
+     "best": 20.167322,
+     "best_Q": 19.946847,
+     "rss_kb": 22080,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 0.723436,
+      "open": 0.007656,
+      "H": 0.032356,
+      "Q": 0.681398,
+      "report": 0.0,
+      "close": 0.002026,
+      "steps": 288,
+      "hash": "47bad97a130b3a10",
+      "rss_kb": 32784
+     },
+     "times": [],
+     "best": 0.723436,
+     "best_Q": 0.681398,
+     "rss_kb": 32784,
+     "rc": 0,
+     "identical": true,
+     "speedup": 27.877133568138714
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.474533,
+      "open": 0.006635,
+      "H": 0.031279,
+      "Q": 0.43435,
+      "report": 0.0,
+      "close": 0.002269,
+      "steps": 288,
+      "hash": "c1fcd9511c0e86b3",
+      "rss_kb": 32800
+     },
+     "times": [],
+     "best": 0.474533,
+     "best_Q": 0.43435,
+     "rss_kb": 32800,
+     "rc": 0,
+     "identical": false,
+     "speedup": 42.49930352578219
+    }
+   },
+   "load_start": [
+    12.84,
+    11.86,
+    13.28
+   ],
+   "load_end": [
+    12.13,
+    11.77,
+    13.21
+   ]
+  },
+  {
+   "case": "ltown-psm",
+   "name": "L-Town 24 h, parallel second-order chlorine decay, two source waters blending (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 127.57419,
+      "open": 0.005994,
+      "H": 0.23219,
+      "Q": 127.332824,
+      "report": 0.0,
+      "close": 0.003182,
+      "steps": 288,
+      "hash": "a58bb2b2c615ae10",
+      "rss_kb": 22784
+     },
+     "times": [],
+     "best": 127.57419,
+     "best_Q": 127.332824,
+     "rss_kb": 22784,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.751195,
+      "open": 0.006053,
+      "H": 0.031414,
+      "Q": 1.711265,
+      "report": 0.0,
+      "close": 0.002463,
+      "steps": 288,
+      "hash": "a58bb2b2c615ae10",
+      "rss_kb": 32320
+     },
+     "times": [],
+     "best": 1.751195,
+     "best_Q": 1.711265,
+     "rss_kb": 32320,
+     "rc": 0,
+     "identical": true,
+     "speedup": 72.84979114261975
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 1.674348,
+      "open": 0.006602,
+      "H": 0.032707,
+      "Q": 1.630302,
+      "report": 0.0,
+      "close": 0.004737,
+      "steps": 288,
+      "hash": "a58bb2b2c615ae10",
+      "rss_kb": 32416
+     },
+     "times": [],
+     "best": 1.674348,
+     "best_Q": 1.630302,
+     "rss_kb": 32416,
+     "rc": 0,
+     "identical": true,
+     "speedup": 76.19335406976327
+    }
+   },
+   "load_start": [
+    12.13,
+    11.77,
+    13.21
+   ],
+   "load_end": [
+    12.07,
+    12.05,
+    13.12
+   ]
+  },
+  {
+   "case": "ltown-psm",
+   "name": "L-Town 24 h, parallel second-order chlorine decay, two source waters blending (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 32.634905,
+      "open": 0.007827,
+      "H": 0.255002,
+      "Q": 32.370378,
+      "report": 0.0,
+      "close": 0.001698,
+      "steps": 288,
+      "hash": "a58bb2b2c615ae10",
+      "rss_kb": 23792
+     },
+     "times": [],
+     "best": 32.634905,
+     "best_Q": 32.370378,
+     "rss_kb": 23792,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.031211,
+      "open": 0.007011,
+      "H": 0.034247,
+      "Q": 0.983725,
+      "report": 0.0,
+      "close": 0.006228,
+      "steps": 288,
+      "hash": "a58bb2b2c615ae10",
+      "rss_kb": 34384
+     },
+     "times": [],
+     "best": 1.031211,
+     "best_Q": 0.983725,
+     "rss_kb": 34384,
+     "rc": 0,
+     "identical": true,
+     "speedup": 31.647165323100705
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.950638,
+      "open": 0.008645,
+      "H": 0.057321,
+      "Q": 0.882525,
+      "report": 0.0,
+      "close": 0.002147,
+      "steps": 288,
+      "hash": "a58bb2b2c615ae10",
+      "rss_kb": 34384
+     },
+     "times": [],
+     "best": 0.950638,
+     "best_Q": 0.882525,
+     "rss_kb": 34384,
+     "rc": 0,
+     "identical": true,
+     "speedup": 34.32947662517173
+    }
+   },
+   "load_start": [
+    12.07,
+    12.05,
+    13.12
+   ],
+   "load_end": [
+    16.93,
+    13.32,
+    13.54
+   ]
+  },
+  {
+   "case": "ltown-temperature",
+   "name": "L-Town 24 h, water temperature from heat exchange with the soil driving chlorine decay (RK5)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 121.113276,
+      "open": 0.005875,
+      "H": 0.225734,
+      "Q": 120.878494,
+      "report": 0.0,
+      "close": 0.003173,
+      "steps": 288,
+      "hash": "d517f73f617498a4",
+      "rss_kb": 21328
+     },
+     "times": [],
+     "best": 121.113276,
+     "best_Q": 120.878494,
+     "rss_kb": 21328,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 3.260447,
+      "open": 0.007311,
+      "H": 0.031274,
+      "Q": 3.213794,
+      "report": 0.0,
+      "close": 0.008068,
+      "steps": 288,
+      "hash": "d517f73f617498a4",
+      "rss_kb": 31984
+     },
+     "times": [],
+     "best": 3.260447,
+     "best_Q": 3.213794,
+     "rss_kb": 31984,
+     "rc": 0,
+     "identical": true,
+     "speedup": 37.14621829460807
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 3.44613,
+      "open": 0.005981,
+      "H": 0.03155,
+      "Q": 3.403924,
+      "report": 0.0,
+      "close": 0.004675,
+      "steps": 288,
+      "hash": "35acdf5108d913ee",
+      "rss_kb": 31936
+     },
+     "times": [],
+     "best": 3.44613,
+     "best_Q": 3.403924,
+     "rss_kb": 31936,
+     "rc": 0,
+     "identical": false,
+     "speedup": 35.144720599629146
+    }
+   },
+   "load_start": [
+    16.93,
+    13.32,
+    13.54
+   ],
+   "load_end": [
+    12.98,
+    13.42,
+    13.59
+   ]
+  },
+  {
+   "case": "ltown-temperature",
+   "name": "L-Town 24 h, water temperature from heat exchange with the soil driving chlorine decay (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 32.227545,
+      "open": 0.006452,
+      "H": 0.210998,
+      "Q": 32.00643,
+      "report": 0.0,
+      "close": 0.003665,
+      "steps": 288,
+      "hash": "d517f73f617498a4",
+      "rss_kb": 23120
+     },
+     "times": [],
+     "best": 32.227545,
+     "best_Q": 32.00643,
+     "rss_kb": 23120,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.129371,
+      "open": 0.007268,
+      "H": 0.034098,
+      "Q": 1.079857,
+      "report": 0.0,
+      "close": 0.008148,
+      "steps": 288,
+      "hash": "d517f73f617498a4",
+      "rss_kb": 32336
+     },
+     "times": [],
+     "best": 1.129371,
+     "best_Q": 1.079857,
+     "rss_kb": 32336,
+     "rc": 0,
+     "identical": true,
+     "speedup": 28.5358354340602
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 0.955975,
+      "open": 0.006106,
+      "H": 0.032421,
+      "Q": 0.910934,
+      "report": 0.0,
+      "close": 0.006514,
+      "steps": 288,
+      "hash": "35acdf5108d913ee",
+      "rss_kb": 32576
+     },
+     "times": [],
+     "best": 0.955975,
+     "best_Q": 0.910934,
+     "rss_kb": 32576,
+     "rc": 0,
+     "identical": false,
+     "speedup": 33.711702711891
+    }
+   },
+   "load_start": [
+    12.98,
+    13.42,
+    13.59
+   ],
+   "load_end": [
+    16.15,
+    14.03,
+    13.79
+   ]
+  },
+  {
+   "case": "ltown-inactivation",
+   "name": "L-Town 24 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 96.896863,
+      "open": 0.005663,
+      "H": 0.222033,
+      "Q": 96.665845,
+      "report": 0.0,
+      "close": 0.003322,
+      "steps": 288,
+      "hash": "f535887409dcd116",
+      "rss_kb": 29824
+     },
+     "times": [],
+     "best": 96.896863,
+     "best_Q": 96.665845,
+     "rss_kb": 29824,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 7.156877,
+      "open": 0.00706,
+      "H": 0.032505,
+      "Q": 7.115143,
+      "report": 0.0,
+      "close": 0.002169,
+      "steps": 288,
+      "hash": "f535887409dcd116",
+      "rss_kb": 42912
+     },
+     "times": [],
+     "best": 7.156877,
+     "best_Q": 7.115143,
+     "rss_kb": 42912,
+     "rc": 0,
+     "identical": true,
+     "speedup": 13.538986767552384
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 5.186387,
+      "open": 0.005928,
+      "H": 0.030845,
+      "Q": 5.147242,
+      "report": 1e-06,
+      "close": 0.002371,
+      "steps": 288,
+      "hash": "8bd84dbb0fa1706d",
+      "rss_kb": 42848
+     },
+     "times": [],
+     "best": 5.186387,
+     "best_Q": 5.147242,
+     "rss_kb": 42848,
+     "rc": 0,
+     "identical": false,
+     "speedup": 18.682921849063714
+    }
+   },
+   "load_start": [
+    16.15,
+    14.03,
+    13.79
+   ],
+   "load_end": [
+    8.05,
+    11.86,
+    12.97
+   ]
+  },
+  {
+   "case": "ltown-inactivation",
+   "name": "L-Town 24 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 18.734524,
+      "open": 0.005414,
+      "H": 0.204526,
+      "Q": 18.522891,
+      "report": 0.0,
+      "close": 0.001693,
+      "steps": 288,
+      "hash": "f535887409dcd116",
+      "rss_kb": 30368
+     },
+     "times": [],
+     "best": 18.734524,
+     "best_Q": 18.522891,
+     "rss_kb": 30368,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.464892,
+      "open": 0.007205,
+      "H": 0.03133,
+      "Q": 1.422204,
+      "report": 0.0,
+      "close": 0.004153,
+      "steps": 288,
+      "hash": "f535887409dcd116",
+      "rss_kb": 43328
+     },
+     "times": [],
+     "best": 1.464892,
+     "best_Q": 1.422204,
+     "rss_kb": 43328,
+     "rc": 0,
+     "identical": true,
+     "speedup": 12.789013797604191
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 1.234137,
+      "open": 0.00583,
+      "H": 0.03105,
+      "Q": 1.189282,
+      "report": 0.0,
+      "close": 0.007975,
+      "steps": 288,
+      "hash": "8bd84dbb0fa1706d",
+      "rss_kb": 43216
+     },
+     "times": [],
+     "best": 1.234137,
+     "best_Q": 1.189282,
+     "rss_kb": 43216,
+     "rc": 0,
+     "identical": false,
+     "speedup": 15.180262807127571
+    }
+   },
+   "load_start": [
+    8.05,
+    11.86,
+    12.97
+   ],
+   "load_end": [
+    10.25,
+    12.08,
+    13.02
+   ]
+  },
+  {
+   "case": "ltown-podds",
+   "name": "L-Town 24 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 136.295929,
+      "open": 0.005767,
+      "H": 0.207402,
+      "Q": 136.079936,
+      "report": 0.0,
+      "close": 0.002824,
+      "steps": 1440,
+      "hash": "2fd5dd9ce4294287",
+      "rss_kb": 18416
+     },
+     "times": [],
+     "best": 136.295929,
+     "best_Q": 136.079936,
+     "rss_kb": 18416,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 11.517194,
+      "open": 0.007204,
+      "H": 0.032681,
+      "Q": 11.470149,
+      "report": 0.0,
+      "close": 0.00716,
+      "steps": 1440,
+      "hash": "2fd5dd9ce4294287",
+      "rss_kb": 27792
+     },
+     "times": [],
+     "best": 11.517194,
+     "best_Q": 11.470149,
+     "rss_kb": 27792,
+     "rc": 0,
+     "identical": true,
+     "speedup": 11.834126350567681
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 11.609982,
+      "open": 0.006032,
+      "H": 0.031573,
+      "Q": 11.570263,
+      "report": 0.0,
+      "close": 0.002114,
+      "steps": 1440,
+      "hash": "2fd5dd9ce4294287",
+      "rss_kb": 27920
+     },
+     "times": [],
+     "best": 11.609982,
+     "best_Q": 11.570263,
+     "rss_kb": 27920,
+     "rc": 0,
+     "identical": true,
+     "speedup": 11.7395469691512
+    }
+   },
+   "load_start": [
+    10.25,
+    12.08,
+    13.02
+   ],
+   "load_end": [
+    5.76,
+    9.39,
+    11.75
+   ]
+  },
+  {
+   "case": "ltown-podds",
+   "name": "L-Town 24 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 31.052311,
+      "open": 0.006309,
+      "H": 0.214618,
+      "Q": 30.829741,
+      "report": 0.0,
+      "close": 0.001643,
+      "steps": 1440,
+      "hash": "2fd5dd9ce4294287",
+      "rss_kb": 19424
+     },
+     "times": [],
+     "best": 31.052311,
+     "best_Q": 30.829741,
+     "rss_kb": 19424,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 2.608005,
+      "open": 0.008454,
+      "H": 0.031094,
+      "Q": 2.567117,
+      "report": 0.0,
+      "close": 0.00134,
+      "steps": 1440,
+      "hash": "2fd5dd9ce4294287",
+      "rss_kb": 28336
+     },
+     "times": [],
+     "best": 2.608005,
+     "best_Q": 2.567117,
+     "rss_kb": 28336,
+     "rc": 0,
+     "identical": true,
+     "speedup": 11.906538139305715
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 2.620098,
+      "open": 0.006049,
+      "H": 0.030118,
+      "Q": 2.578194,
+      "report": 0.0,
+      "close": 0.005737,
+      "steps": 1440,
+      "hash": "2fd5dd9ce4294287",
+      "rss_kb": 28288
+     },
+     "times": [],
+     "best": 2.620098,
+     "best_Q": 2.578194,
+     "rss_kb": 28288,
+     "rc": 0,
+     "identical": true,
+     "speedup": 11.851583795720618
+    }
+   },
+   "load_start": [
+    5.76,
+    9.39,
+    11.75
+   ],
+   "load_end": [
+    9.22,
+    9.86,
+    11.83
+   ]
+  },
+  {
+   "case": "ltown-vcdm",
+   "name": "L-Town 24 h, VCDM discolouration: 17 material strength bands (Euler, 60 s)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 187.335082,
+      "open": 0.011,
+      "H": 0.222091,
+      "Q": 187.09859,
+      "report": 0.0,
+      "close": 0.003401,
+      "steps": 1440,
+      "hash": "2d24972ea466a60a",
+      "rss_kb": 42448
+     },
+     "times": [],
+     "best": 187.335082,
+     "best_Q": 187.09859,
+     "rss_kb": 42448,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 8.41016,
+      "open": 0.007176,
+      "H": 0.030762,
+      "Q": 8.364487,
+      "report": 0.0,
+      "close": 0.007735,
+      "steps": 1440,
+      "hash": "2d24972ea466a60a",
+      "rss_kb": 64656
+     },
+     "times": [],
+     "best": 8.41016,
+     "best_Q": 8.364487,
+     "rss_kb": 64656,
+     "rc": 0,
+     "identical": true,
+     "speedup": 22.274853510515854
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 8.113311,
+      "open": 0.00659,
+      "H": 0.030786,
+      "Q": 8.074418,
+      "report": 0.0,
+      "close": 0.001517,
+      "steps": 1440,
+      "hash": "8f4d5269c5056254",
+      "rss_kb": 64976
+     },
+     "times": [],
+     "best": 8.113311,
+     "best_Q": 8.074418,
+     "rss_kb": 64976,
+     "rc": 0,
+     "identical": false,
+     "speedup": 23.089843591599042
+    }
+   },
+   "load_start": [
+    9.22,
+    9.86,
+    11.83
+   ],
+   "load_end": [
+    5.15,
+    7.45,
+    10.34
+   ]
+  },
+  {
+   "case": "ltown-vcdm",
+   "name": "L-Town 24 h, VCDM discolouration: 17 material strength bands (Euler, 60 s)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 48.841585,
+      "open": 0.005875,
+      "H": 0.20494,
+      "Q": 48.627949,
+      "report": 0.0,
+      "close": 0.002821,
+      "steps": 1440,
+      "hash": "2d24972ea466a60a",
+      "rss_kb": 43056
+     },
+     "times": [],
+     "best": 48.841585,
+     "best_Q": 48.627949,
+     "rss_kb": 43056,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 2.824158,
+      "open": 0.007265,
+      "H": 0.035303,
+      "Q": 2.777773,
+      "report": 0.0,
+      "close": 0.003817,
+      "steps": 1440,
+      "hash": "2d24972ea466a60a",
+      "rss_kb": 65024
+     },
+     "times": [],
+     "best": 2.824158,
+     "best_Q": 2.777773,
+     "rss_kb": 65024,
+     "rc": 0,
+     "identical": true,
+     "speedup": 17.2942112303915
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 2.691264,
+      "open": 0.006928,
+      "H": 0.031072,
+      "Q": 2.642434,
+      "report": 0.0,
+      "close": 0.01083,
+      "steps": 1440,
+      "hash": "8f4d5269c5056254",
+      "rss_kb": 65312
+     },
+     "times": [],
+     "best": 2.691264,
+     "best_Q": 2.642434,
+     "rss_kb": 65312,
+     "rc": 0,
+     "identical": false,
+     "speedup": 18.148195420441844
+    }
+   },
+   "load_start": [
+    5.15,
+    7.45,
+    10.34
+   ],
+   "load_end": [
+    5.94,
+    7.19,
+    10.04
+   ]
+  },
+  {
+   "case": "bwsn2-disp",
+   "name": "BWSN2 6 h, chlorine bulk and wall decay with dispersion (Euler, 60 s)",
+   "mode": "step",
+   "threads": 1,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 135.389041,
+      "open": 0.073042,
+      "H": 0.10875,
+      "Q": 135.196798,
+      "report": 0.0,
+      "close": 0.010451,
+      "steps": 360,
+      "hash": "a535c7f5dce0efb8",
+      "rss_kb": 175136
+     },
+     "times": [],
+     "best": 135.389041,
+     "best_Q": 135.196798,
+     "rss_kb": 175136,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 7.550582,
+      "open": 0.077644,
+      "H": 0.033392,
+      "Q": 7.426965,
+      "report": 0.0,
+      "close": 0.012581,
+      "steps": 360,
+      "hash": "a535c7f5dce0efb8",
+      "rss_kb": 258640
+     },
+     "times": [],
+     "best": 7.550582,
+     "best_Q": 7.426965,
+     "rss_kb": 258640,
+     "rc": 0,
+     "identical": true,
+     "speedup": 17.93094108507132
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 6.04806,
+      "open": 0.075868,
+      "H": 0.03418,
+      "Q": 5.93142,
+      "report": 1e-06,
+      "close": 0.006591,
+      "steps": 360,
+      "hash": "0a39971505e7db02",
+      "rss_kb": 258272
+     },
+     "times": [],
+     "best": 6.04806,
+     "best_Q": 5.93142,
+     "rss_kb": 258272,
+     "rc": 0,
+     "identical": false,
+     "speedup": 22.38553205490686
+    }
+   },
+   "load_start": [
+    5.94,
+    7.19,
+    10.04
+   ],
+   "load_end": [
+    5.16,
+    6.2,
+    9.12
+   ]
+  },
+  {
+   "case": "bwsn2-disp",
+   "name": "BWSN2 6 h, chlorine bulk and wall decay with dispersion (Euler, 60 s)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 27.973739,
+      "open": 0.07392,
+      "H": 0.109769,
+      "Q": 27.783928,
+      "report": 0.0,
+      "close": 0.006122,
+      "steps": 360,
+      "hash": "a535c7f5dce0efb8",
+      "rss_kb": 176464
+     },
+     "times": [],
+     "best": 27.973739,
+     "best_Q": 27.783928,
+     "rss_kb": 176464,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 2.421957,
+      "open": 0.074011,
+      "H": 0.03229,
+      "Q": 2.310229,
+      "report": 0.0,
+      "close": 0.005427,
+      "steps": 360,
+      "hash": "a535c7f5dce0efb8",
+      "rss_kb": 266784
+     },
+     "times": [],
+     "best": 2.421957,
+     "best_Q": 2.310229,
+     "rss_kb": 266784,
+     "rc": 0,
+     "identical": true,
+     "speedup": 11.550056008426244
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 2.218395,
+      "open": 0.074056,
+      "H": 0.032782,
+      "Q": 2.105957,
+      "report": 0.0,
+      "close": 0.0056,
+      "steps": 360,
+      "hash": "0a39971505e7db02",
+      "rss_kb": 264144
+     },
+     "times": [],
+     "best": 2.218395,
+     "best_Q": 2.105957,
+     "rss_kb": 264144,
+     "rc": 0,
+     "identical": false,
+     "speedup": 12.609899950189211
+    }
+   },
+   "load_start": [
+    5.16,
+    6.2,
+    9.12
+   ],
+   "load_end": [
+    7.77,
+    6.81,
+    9.19
+   ]
+  }
+ ]
+}

@@ -1,0 +1,128 @@
+[TITLE]
+Chlorine decay and disinfection (inactivation) of four reference organisms
+; Written by tools/private-reactions.py from models/msx/ltown-inactivation.msx for bwsn2-6h.inp.
+; Sources, equations and assumptions: models/literature.md.
+
+[OPTIONS]
+  RATE_UNITS     MIN
+  SOLVER         ROS2
+  COUPLING       NONE
+  TIMESTEP       300
+  RTOL           1.0e-4
+  ATOL           1.0e-6
+
+[SPECIES]
+  BULK   CL2    MG      1.0e-6  1.0e-4   ;free chlorine (mg/L)
+  BULK   DEMF   MG      1.0e-6  1.0e-4   ;fast chlorine demand of ingress (mg/L as Cl2)
+  BULK   DEMS   MG      1.0e-6  1.0e-4   ;slow chlorine demand of ingress (mg/L as Cl2)
+  BULK   ECOLI  N       1.0     1.0e-3   ;Escherichia coli (organisms/L)
+  BULK   VIRUS  N       1.0e-2  1.0e-3   ;enteric virus (virions/L)
+  BULK   GIARD  N       1.0e-3  1.0e-3   ;Giardia cysts (cysts/L)
+  BULK   MYCO   N       1.0e-2  1.0e-3   ;Mycobacterium aurum (organisms/L)
+  BULK   CT     MGMIN   1.0e-4  1.0e-4   ;chlorine exposure, integral of CL2 dt (mg.min/L)
+  BULK   TAU    MIN     1.0e-4  1.0e-4   ;contact time since entering the network (min)
+  BULK   GLOG   LOG     1.0e-6  1.0e-4   ;Giardia log-inactivation credit (log10)
+  BULK   MLOG   LOG                      ;M. aurum log-inactivation credit (log10)
+
+[COEFFICIENTS]
+  CONSTANT  LU  0.3048     ;metres per network length unit: 1 for SI networks, 0.3048 for US units
+;--- chlorine demand of the water itself ------------------------------------
+  PARAMETER  KB      2.0833e-4   ;bulk decay, 1/min (= 0.3 /day, Listing 5.2 [8])
+  PARAMETER  KW      3.4722e-4   ;wall reaction rate, m/min (= 0.5 m/day)
+  CONSTANT   DMOL    7.2e-8      ;chlorine molecular diffusivity, m2/min [8]
+  CONSTANT   SCNUM   846.15      ;Schmidt number for chlorine [8]
+;--- chlorine demand of the ingress (two pools, [5]) ------------------------
+  CONSTANT   KF2     1.0333e-2   ;fast pool, L/(mg.min)   [5]
+  CONSTANT   KS2     6.6667e-4   ;slow pool, L/(mg.min)   [5]
+;--- Chick-Watson inactivation rate constants, L/(mg.min) -------------------
+  CONSTANT   KEC     215.87      ;E. coli,     from CT(3-log) = 0.032 mg.min/L [3]
+  CONSTANT   KVIR    1.5351      ;enteric virus, from CT(4-log) = 6 mg.min/L at 10 C [1]
+  CONSTANT   KMAU    0.16102     ;M. aurum,    from CT(3-log) = 42.9 mg.min/L [3]
+  CONSTANT   CTMA    42.9        ;M. aurum CT for 3 log10 (mg.min/L) [3]
+;--- Giardia CT99.9 regression of Smith et al. (1995), as given in [1] -------
+  CONSTANT   CTGA    1.059       ;0.353 x 3 log credits
+  CONSTANT   TEMPC   10.0        ;water temperature, deg C (< 12.5 C branch)
+  CONSTANT   PHVAL   7.5         ;pH
+;--- cell-associated chlorine demand (order of magnitude, bounded by [3]) ----
+  CONSTANT   YEC     5.0e-11     ;mg Cl2 per E. coli inactivated
+  CONSTANT   YMAU    2.0e-9      ;mg Cl2 per M. aurum inactivated
+
+[TERMS]
+  ;lengths and velocities in metres: LU is metres per network length unit
+  DLU     D*LU
+;--- wall mass transfer, Sherwood number as in Listing 5.2 of [8] ------------
+  SHT     0.0149*Re^0.88*SCNUM^0.3333           ;turbulent
+  SH      STEP(Re-2300)*SHT + STEP(2300-Re)*3.65
+  KF      SH*DMOL/DLU                             ;mass transfer coeff., m/min
+  KWALL   (4/DLU)*KW*KF/(KW+KF)                   ;wall loss rate, 1/min
+;--- Giardia: CT99.9 (mg.min/L) and the Chick-Watson constant it implies -----
+  CTG     CTGA*(12.006 + EXP(2.46 - 0.073*TEMPC + 0.125*CL2 + 0.389*PHVAL))
+  KGIA    6.9078/CTG                            ;L/(mg.min)
+;--- chlorine sinks ----------------------------------------------------------
+  RDEM    KF2*CL2*DEMF + KS2*CL2*DEMS           ;ingress material
+  RCELL   (YEC*KEC*ECOLI + YMAU*KMAU*MYCO)*CL2  ;cells being inactivated
+
+[PIPES]
+  RATE    CL2    -(KB + KWALL)*CL2 - RDEM - RCELL
+  RATE    DEMF   -KF2*CL2*DEMF
+  RATE    DEMS   -KS2*CL2*DEMS
+  RATE    ECOLI  -KEC*CL2*ECOLI
+  RATE    VIRUS  -KVIR*CL2*VIRUS
+  RATE    GIARD  -KGIA*CL2*GIARD
+  RATE    MYCO   -KMAU*CL2*MYCO
+  RATE    CT      CL2
+  RATE    TAU     1.0
+  RATE    GLOG    3.0*CL2/CTG
+  FORMULA MLOG    3.0*CT/CTMA
+
+[TANKS]
+  RATE    CL2    -KB*CL2 - RDEM - RCELL
+  RATE    DEMF   -KF2*CL2*DEMF
+  RATE    DEMS   -KS2*CL2*DEMS
+  RATE    ECOLI  -KEC*CL2*ECOLI
+  RATE    VIRUS  -KVIR*CL2*VIRUS
+  RATE    GIARD  -KGIA*CL2*GIARD
+  RATE    MYCO   -KMAU*CL2*MYCO
+  RATE    CT      CL2
+  RATE    TAU     1.0
+  RATE    GLOG    3.0*CL2/CTG
+  FORMULA MLOG    3.0*CT/CTMA
+
+[SOURCES]
+  CONCEN  JUNCTION-12500  CL2  1.0
+  MASS  JUNCTION-5416  ECOLI  1.0e9   PINT
+  MASS  JUNCTION-5416  VIRUS  1.0e7   PINT
+  MASS  JUNCTION-5416  GIARD  1.0e5   PINT
+  MASS  JUNCTION-5416  MYCO   1.0e7   PINT
+  MASS  JUNCTION-5416  DEMF   261.0   PINT
+  MASS  JUNCTION-5416  DEMS   39.0    PINT
+
+[QUALITY]
+  GLOBAL  CL2    0.5
+  GLOBAL  DEMF   0.0
+  GLOBAL  DEMS   0.0
+  GLOBAL  ECOLI  0.0
+  GLOBAL  VIRUS  0.0
+  GLOBAL  GIARD  0.0
+  GLOBAL  MYCO   0.0
+  GLOBAL  CT     0.0
+  GLOBAL  TAU    0.0
+  GLOBAL  GLOG   0.0
+  NODE  RESERVOIR-12523  CL2  1.0
+  NODE  RESERVOIR-12524  CL2  1.0
+
+[PATTERNS]
+  PINT  0 0 1 0 0 0 0
+
+[REPORT]
+  SPECIES CL2    YES 4
+  SPECIES DEMF   YES 4
+  SPECIES DEMS   YES 4
+  SPECIES ECOLI  YES 2
+  SPECIES VIRUS  YES 2
+  SPECIES GIARD  YES 2
+  SPECIES MYCO   YES 2
+  SPECIES CT     YES 3
+  SPECIES TAU    YES 2
+  SPECIES GLOG   YES 3
+  SPECIES MLOG   YES 3
