@@ -605,7 +605,12 @@ def split_three(*tags, private=False):
         d8, d1 = load(t + "-8"), load(t + "-1")
         if not d8:
             continue
-        notes.append(conditions(d8))
+        if not notes:
+            notes.append(conditions(d8))
+        else:
+            ls, le = (d8.get("start") or {}).get("load"), (d8.get("end") or {}).get("load")
+            if ls and le:
+                notes.append(f"The runs that follow: load average {ls[0]:.1f} at the start and {le[0]:.1f} at the end.")
         for r8 in rows(d8, "step", 8):
             r1 = rec(d1, r8["case"], "step", 1) if d1 else None
             pairs.append((r1 or {"name": r8["name"], "case": r8["case"], "builds": {}}, r8))

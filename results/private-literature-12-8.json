@@ -1,0 +1,580 @@
+{
+ "builds": [
+  "base",
+  "bit",
+  "near"
+ ],
+ "threads": [
+  8
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 0,
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-06",
+ "start": {
+  "load": [
+   27.15,
+   33.48,
+   31.35
+  ],
+  "time": "2026-10-06 00:40"
+ },
+ "end": {
+  "load": [
+   9.49,
+   12.92,
+   18.62
+  ],
+  "time": "2026-10-06 02:42"
+ },
+ "results": [
+  {
+   "case": "private-1-1",
+   "name": "Utility model 1, chlorine with THM and HAA (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    27.15,
+    33.48,
+    31.35
+   ],
+   "load_end": [
+    9.58,
+    24.46,
+    28.05
+   ],
+   "builds": {
+    "base": {
+     "best": 120.674384,
+     "best_Q": 118.663578,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 2.303237,
+     "best_Q": 1.840494,
+     "rc": 0,
+     "speedup": 52.39338548312657,
+     "identical": true
+    },
+    "near": {
+     "best": 2.400438,
+     "best_Q": 1.925718,
+     "rc": 0,
+     "speedup": 50.271818726415766,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-1-2",
+   "name": "Utility model 1, regrowth with THM (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    9.58,
+    24.46,
+    28.05
+   ],
+   "load_end": [
+    17.58,
+    16.32,
+    22.65
+   ],
+   "builds": {
+    "base": {
+     "best": 314.289145,
+     "best_Q": 312.348562,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 8.370229,
+     "best_Q": 7.669966,
+     "rc": 0,
+     "speedup": 37.548452378065164,
+     "identical": true
+    },
+    "near": {
+     "best": 8.077994,
+     "best_Q": 7.477775,
+     "rc": 0,
+     "speedup": 38.906830705742045,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-3",
+   "name": "Utility model 1, two-reactant chlorine (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    17.58,
+    16.32,
+    22.65
+   ],
+   "load_end": [
+    6.86,
+    15.13,
+    20.99
+   ],
+   "builds": {
+    "base": {
+     "best": 478.633421,
+     "best_Q": 476.235687,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 2.488325,
+     "best_Q": 1.99285,
+     "rc": 0,
+     "speedup": 192.35165060834095,
+     "identical": true
+    },
+    "near": {
+     "best": 2.510644,
+     "best_Q": 2.002972,
+     "rc": 0,
+     "speedup": 190.64169233073267,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-1-4",
+   "name": "Utility model 1, temperature and chlorine (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    6.86,
+    15.13,
+    20.99
+   ],
+   "load_end": [
+    10.19,
+    9.66,
+    15.48
+   ],
+   "builds": {
+    "base": {
+     "best": 444.120024,
+     "best_Q": 442.221427,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 3.953108,
+     "best_Q": 3.478975,
+     "rc": 0,
+     "speedup": 112.34705047269136,
+     "identical": true
+    },
+    "near": {
+     "best": 4.487306,
+     "best_Q": 4.037619,
+     "rc": 0,
+     "speedup": 98.9725291745203,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-5",
+   "name": "Utility model 1, intrusion and inactivation (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    10.19,
+    9.66,
+    15.48
+   ],
+   "load_end": [
+    10.94,
+    10.1,
+    14.37
+   ],
+   "builds": {
+    "base": {
+     "best": 191.451583,
+     "best_Q": 189.461814,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 6.129476,
+     "best_Q": 5.637586,
+     "rc": 0,
+     "speedup": 31.234575843024754,
+     "identical": true
+    },
+    "near": {
+     "best": 5.042713,
+     "best_Q": 4.550515,
+     "rc": 0,
+     "speedup": 37.9659883479389,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-1-6",
+   "name": "Utility model 1, PODDS discolouration (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    10.94,
+    10.1,
+    14.37
+   ],
+   "load_end": [
+    14.85,
+    26.32,
+    24.6
+   ],
+   "builds": {
+    "base": {
+     "best": 656.271684,
+     "best_Q": 654.374453,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 23.964703,
+     "best_Q": 23.510624,
+     "rc": 0,
+     "speedup": 27.38492874290994,
+     "identical": true
+    },
+    "near": {
+     "best": 24.502119,
+     "best_Q": 24.020759,
+     "rc": 0,
+     "speedup": 26.784282779787333,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-1-7",
+   "name": "Utility model 1, VCDM discolouration (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    14.85,
+    26.32,
+    24.6
+   ],
+   "load_end": [
+    11.5,
+    11.48,
+    13.17
+   ],
+   "builds": {
+    "base": {
+     "best": 933.53107,
+     "best_Q": 931.586438,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 33.044668,
+     "best_Q": 32.450109,
+     "rc": 0,
+     "speedup": 28.25058100144931,
+     "identical": true
+    },
+    "near": {
+     "best": 30.102829,
+     "best_Q": 29.486327,
+     "rc": 0,
+     "speedup": 31.011406602349567,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-1",
+   "name": "Utility model 2, chlorine with THM and HAA (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    11.5,
+    11.48,
+    13.17
+   ],
+   "load_end": [
+    10.76,
+    11.4,
+    12.95
+   ],
+   "builds": {
+    "base": {
+     "best": 93.953949,
+     "best_Q": 93.843511,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 1.485196,
+     "best_Q": 1.446538,
+     "rc": 0,
+     "speedup": 63.26030301724486,
+     "identical": true
+    },
+    "near": {
+     "best": 1.520673,
+     "best_Q": 1.483992,
+     "rc": 0,
+     "speedup": 61.78445267325717,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-2-2",
+   "name": "Utility model 2, regrowth with THM (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    10.76,
+    11.4,
+    12.95
+   ],
+   "load_end": [
+    13.89,
+    13.0,
+    13.19
+   ],
+   "builds": {
+    "base": {
+     "best": 242.572045,
+     "best_Q": 242.460069,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 2.782547,
+     "best_Q": 2.743006,
+     "rc": 0,
+     "speedup": 87.17626153304867,
+     "identical": true
+    },
+    "near": {
+     "best": 2.572635,
+     "best_Q": 2.531223,
+     "rc": 0,
+     "speedup": 94.28933564225007,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-3",
+   "name": "Utility model 2, two-reactant chlorine (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    13.89,
+    13.0,
+    13.19
+   ],
+   "load_end": [
+    9.61,
+    10.26,
+    11.73
+   ],
+   "builds": {
+    "base": {
+     "best": 357.188626,
+     "best_Q": 357.075826,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 1.704477,
+     "best_Q": 1.660477,
+     "rc": 0,
+     "speedup": 209.55907647917806,
+     "identical": true
+    },
+    "near": {
+     "best": 1.715417,
+     "best_Q": 1.678036,
+     "rc": 0,
+     "speedup": 208.22262225453053,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-2-4",
+   "name": "Utility model 2, temperature and chlorine (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    9.61,
+    10.26,
+    11.73
+   ],
+   "load_end": [
+    11.93,
+    11.07,
+    11.59
+   ],
+   "builds": {
+    "base": {
+     "best": 347.575653,
+     "best_Q": 347.462614,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 3.403371,
+     "best_Q": 3.36541,
+     "rc": 0,
+     "speedup": 102.126877440044,
+     "identical": true
+    },
+    "near": {
+     "best": 3.857331,
+     "best_Q": 3.818652,
+     "rc": 0,
+     "speedup": 90.10781107454869,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-5",
+   "name": "Utility model 2, intrusion and inactivation (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    11.93,
+    11.07,
+    11.59
+   ],
+   "load_end": [
+    29.42,
+    27.3,
+    18.94
+   ],
+   "builds": {
+    "base": {
+     "best": 186.337336,
+     "best_Q": 186.228222,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 5.440937,
+     "best_Q": 5.400278,
+     "rc": 0,
+     "speedup": 34.247287921179755,
+     "identical": true
+    },
+    "near": {
+     "best": 4.012552,
+     "best_Q": 3.974397,
+     "rc": 0,
+     "speedup": 46.43860964294045,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-2-6",
+   "name": "Utility model 2, PODDS discolouration (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    29.42,
+    27.3,
+    18.94
+   ],
+   "load_end": [
+    10.7,
+    16.48,
+    16.61
+   ],
+   "builds": {
+    "base": {
+     "best": 429.226254,
+     "best_Q": 429.118566,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 15.595098,
+     "best_Q": 15.557081,
+     "rc": 0,
+     "speedup": 27.52315208278909,
+     "identical": true
+    },
+    "near": {
+     "best": 15.681436,
+     "best_Q": 15.642503,
+     "rc": 0,
+     "speedup": 27.37161660449974,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-2-7",
+   "name": "Utility model 2, VCDM discolouration (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    10.7,
+    16.48,
+    16.61
+   ],
+   "load_end": [
+    9.49,
+    12.92,
+    18.62
+   ],
+   "builds": {
+    "base": {
+     "best": 608.460973,
+     "best_Q": 608.345095,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 22.127669,
+     "best_Q": 22.083563,
+     "rc": 0,
+     "speedup": 27.497743797595668,
+     "identical": true
+    },
+    "near": {
+     "best": 24.165077,
+     "best_Q": 24.124542,
+     "rc": 0,
+     "speedup": 25.17935171487349,
+     "identical": false
+    }
+   }
+  }
+ ]
+}

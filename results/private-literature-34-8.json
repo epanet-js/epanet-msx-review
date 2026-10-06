@@ -1,0 +1,112 @@
+{
+ "builds": [
+  "base",
+  "bit",
+  "near"
+ ],
+ "threads": [
+  8
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 0,
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-06",
+ "start": {
+  "load": [
+   11.98,
+   11.1,
+   12.92
+  ],
+  "time": "2026-10-06 03:01"
+ },
+ "end": {
+  "load": [
+   16.21,
+   25.92,
+   35.02
+  ]
+ },
+ "results": [
+  {
+   "case": "private-3-1",
+   "name": "Utility model 3, chlorine with THM and HAA (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    11.98,
+    11.1,
+    12.92
+   ],
+   "load_end": [
+    8.6,
+    10.28,
+    12.37
+   ],
+   "builds": {
+    "base": {
+     "best": 1114.424301,
+     "best_Q": 1089.122842,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 39.938731,
+     "best_Q": 34.561704,
+     "rc": 0,
+     "speedup": 27.903347780378905,
+     "identical": true
+    },
+    "near": {
+     "best": 41.073759,
+     "best_Q": 35.619863,
+     "rc": 0,
+     "speedup": 27.132269559258017,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-3-2",
+   "name": "Utility model 3, intrusion and inactivation (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    8.6,
+    10.28,
+    12.37
+   ],
+   "load_end": [
+    16.21,
+    25.92,
+    35.02
+   ],
+   "builds": {
+    "base": {
+     "best": 2081.202362,
+     "best_Q": 2059.467983,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 126.976106,
+     "best_Q": 121.371876,
+     "rc": 0,
+     "speedup": 16.390503911027167,
+     "identical": true
+    },
+    "near": {
+     "best": 98.638183,
+     "best_Q": 93.423144,
+     "rc": 0,
+     "speedup": 21.099358267781554,
+     "identical": false
+    }
+   }
+  }
+ ],
+ "stopped": "stopped after two of the three models on Utility model 3, at the user's request"
+}

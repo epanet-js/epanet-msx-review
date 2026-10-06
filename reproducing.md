@@ -103,3 +103,13 @@ tools/try.py bit near --cases private --quick
 ```
 
 [models/private/README.md](models/private/README.md) explains how to report back without sharing the model.
+
+## 8. The published reaction models
+
+```sh
+tools/try.py bit near --cases literature --quick                         # the seven models on L-Town, dispersion on BWSN2
+tools/run-all.sh literature yardstick-literature                         # the table, and the acceptance check of near (about an hour)
+tools/private-reactions.py models/private/town.inp --kinds literature    # the seven models for a network of your own
+```
+
+[models/literature.md](models/literature.md) gives their sources, equations and assumptions. On L-Town the unpatched code takes up to about three minutes per model on one thread; on the larger networks (`--cases literature-large`) it takes many minutes even on eight, which is why `tools/run-all.sh` runs it on eight threads only there.

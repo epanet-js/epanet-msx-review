@@ -1,0 +1,1174 @@
+{
+ "builds": [
+  "base",
+  "bit",
+  "near"
+ ],
+ "threads": [
+  8
+ ],
+ "modes": [
+  "step"
+ ],
+ "reps": 0,
+ "metric": "total",
+ "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+ "date": "2026-10-06",
+ "start": {
+  "load": [
+   9.65,
+   8.07,
+   8.12
+  ],
+  "time": "2026-10-05 22:22"
+ },
+ "end": {
+  "load": [
+   10.95,
+   15.93,
+   25.38
+  ],
+  "time": "2026-10-06 00:15"
+ },
+ "build_info": {
+  "base": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "bit": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n",
+  "near": "msx 85a303dca05859389eced63fabd5ea145c096333\nepanet 1e2fc3d909c0df654ead95e6e98c3307ce1375b1\ncc cc: Apple clang version 15.0.0 (clang-1500.0.40.1)\ncflags -O3 -DNDEBUG  -Xpreprocessor -fopenmp -DUSE_OPENMP -I/opt/homebrew/opt/libomp/include\n"
+ },
+ "results": [
+  {
+   "case": "nw-dbp",
+   "name": "NW Model 12 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 147.344565,
+      "open": 0.092007,
+      "H": 0.105859,
+      "Q": 147.13587,
+      "report": 0.0,
+      "close": 0.010829,
+      "steps": 144,
+      "hash": "6df1c9593bc705fc",
+      "rss_kb": 186976
+     },
+     "times": [],
+     "best": 147.344565,
+     "best_Q": 147.13587,
+     "rss_kb": 186976,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 2.93408,
+      "open": 0.096866,
+      "H": 0.021905,
+      "Q": 2.80983,
+      "report": 0.0,
+      "close": 0.005479,
+      "steps": 144,
+      "hash": "6df1c9593bc705fc",
+      "rss_kb": 267184
+     },
+     "times": [],
+     "best": 2.93408,
+     "best_Q": 2.80983,
+     "rss_kb": 267184,
+     "rc": 0,
+     "identical": true,
+     "speedup": 50.21831885974479
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 3.251858,
+      "open": 0.097967,
+      "H": 0.023269,
+      "Q": 3.124514,
+      "report": 0.0,
+      "close": 0.006108,
+      "steps": 144,
+      "hash": "6df1c9593bc705fc",
+      "rss_kb": 265840
+     },
+     "times": [],
+     "best": 3.251858,
+     "best_Q": 3.124514,
+     "rss_kb": 265840,
+     "rc": 0,
+     "identical": true,
+     "speedup": 45.3108853461621
+    }
+   },
+   "load_start": [
+    9.65,
+    8.07,
+    8.12
+   ],
+   "load_end": [
+    117.77,
+    61.44,
+    30.11
+   ]
+  },
+  {
+   "case": "nw-regrowth-thm",
+   "name": "NW Model 12 h, bacterial regrowth in bulk and biofilm with THM formation (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 250.048616,
+      "open": 0.09442,
+      "H": 0.11222,
+      "Q": 249.833925,
+      "report": 0.0,
+      "close": 0.008051,
+      "steps": 144,
+      "hash": "652ee364cf699a2f",
+      "rss_kb": 205312
+     },
+     "times": [],
+     "best": 250.048616,
+     "best_Q": 249.833925,
+     "rss_kb": 205312,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 5.58755,
+      "open": 0.096485,
+      "H": 0.022373,
+      "Q": 5.463684,
+      "report": 0.0,
+      "close": 0.005008,
+      "steps": 144,
+      "hash": "652ee364cf699a2f",
+      "rss_kb": 296544
+     },
+     "times": [],
+     "best": 5.58755,
+     "best_Q": 5.463684,
+     "rss_kb": 296544,
+     "rc": 0,
+     "identical": true,
+     "speedup": 44.75102969995794
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 5.147166,
+      "open": 0.102566,
+      "H": 0.022929,
+      "Q": 5.016069,
+      "report": 0.0,
+      "close": 0.005602,
+      "steps": 144,
+      "hash": "61fb20089ed0fad8",
+      "rss_kb": 296832
+     },
+     "times": [],
+     "best": 5.147166,
+     "best_Q": 5.016069,
+     "rss_kb": 296832,
+     "rc": 0,
+     "identical": false,
+     "speedup": 48.57986239417963
+    }
+   },
+   "load_start": [
+    117.77,
+    61.44,
+    30.11
+   ],
+   "load_end": [
+    26.67,
+    37.63,
+    27.96
+   ]
+  },
+  {
+   "case": "nw-psm",
+   "name": "NW Model 12 h, parallel second-order chlorine decay, two source waters blending (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 515.984266,
+      "open": 0.092911,
+      "H": 0.107975,
+      "Q": 515.738943,
+      "report": 0.0,
+      "close": 0.044437,
+      "steps": 144,
+      "hash": "615e32d5905b4058",
+      "rss_kb": 221664
+     },
+     "times": [],
+     "best": 515.984266,
+     "best_Q": 515.738943,
+     "rss_kb": 221664,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 4.861012,
+      "open": 0.104487,
+      "H": 0.023911,
+      "Q": 4.725238,
+      "report": 0.0,
+      "close": 0.007376,
+      "steps": 144,
+      "hash": "615e32d5905b4058",
+      "rss_kb": 309856
+     },
+     "times": [],
+     "best": 4.861012,
+     "best_Q": 4.725238,
+     "rss_kb": 309856,
+     "rc": 0,
+     "identical": true,
+     "speedup": 106.14749891586362
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 4.58265,
+      "open": 0.114946,
+      "H": 0.022659,
+      "Q": 4.439057,
+      "report": 0.0,
+      "close": 0.005988,
+      "steps": 144,
+      "hash": "615e32d5905b4058",
+      "rss_kb": 309888
+     },
+     "times": [],
+     "best": 4.58265,
+     "best_Q": 4.439057,
+     "rss_kb": 309888,
+     "rc": 0,
+     "identical": true,
+     "speedup": 112.59517222567729
+    }
+   },
+   "load_start": [
+    26.67,
+    37.63,
+    27.96
+   ],
+   "load_end": [
+    56.88,
+    48.72,
+    38.03
+   ]
+  },
+  {
+   "case": "nw-temperature",
+   "name": "NW Model 12 h, water temperature from heat exchange with the soil driving chlorine decay (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 362.110512,
+      "open": 0.09487,
+      "H": 0.116345,
+      "Q": 361.889339,
+      "report": 0.0,
+      "close": 0.009958,
+      "steps": 144,
+      "hash": "6bfd696577ea2225",
+      "rss_kb": 205344
+     },
+     "times": [],
+     "best": 362.110512,
+     "best_Q": 361.889339,
+     "rss_kb": 205344,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 6.683434,
+      "open": 0.09537,
+      "H": 0.021208,
+      "Q": 6.561752,
+      "report": 0.0,
+      "close": 0.005104,
+      "steps": 144,
+      "hash": "6bfd696577ea2225",
+      "rss_kb": 287856
+     },
+     "times": [],
+     "best": 6.683434,
+     "best_Q": 6.561752,
+     "rss_kb": 287856,
+     "rc": 0,
+     "identical": true,
+     "speedup": 54.18030790758164
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 8.501937,
+      "open": 0.096404,
+      "H": 0.025896,
+      "Q": 8.366001,
+      "report": 0.0,
+      "close": 0.013636,
+      "steps": 144,
+      "hash": "7342b55dcea32040",
+      "rss_kb": 287024
+     },
+     "times": [],
+     "best": 8.501937,
+     "best_Q": 8.366001,
+     "rss_kb": 287024,
+     "rc": 0,
+     "identical": false,
+     "speedup": 42.591530847617435
+    }
+   },
+   "load_start": [
+    56.88,
+    48.72,
+    38.03
+   ],
+   "load_end": [
+    21.25,
+    30.88,
+    33.24
+   ]
+  },
+  {
+   "case": "nw-inactivation",
+   "name": "NW Model 12 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 239.744612,
+      "open": 0.095777,
+      "H": 0.126165,
+      "Q": 239.514913,
+      "report": 0.0,
+      "close": 0.007757,
+      "steps": 144,
+      "hash": "e8d4474650714c79",
+      "rss_kb": 284832
+     },
+     "times": [],
+     "best": 239.744612,
+     "best_Q": 239.514913,
+     "rss_kb": 284832,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 10.116886,
+      "open": 0.094849,
+      "H": 0.021027,
+      "Q": 9.994505,
+      "report": 0.0,
+      "close": 0.006505,
+      "steps": 144,
+      "hash": "e8d4474650714c79",
+      "rss_kb": 405312
+     },
+     "times": [],
+     "best": 10.116886,
+     "best_Q": 9.994505,
+     "rss_kb": 405312,
+     "rc": 0,
+     "identical": true,
+     "speedup": 23.697470941157192
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 8.793994,
+      "open": 0.093841,
+      "H": 0.020873,
+      "Q": 8.672267,
+      "report": 0.0,
+      "close": 0.007013,
+      "steps": 144,
+      "hash": "df6a402024e236c6",
+      "rss_kb": 405200
+     },
+     "times": [],
+     "best": 8.793994,
+     "best_Q": 8.672267,
+     "rss_kb": 405200,
+     "rc": 0,
+     "identical": false,
+     "speedup": 27.262312437329385
+    }
+   },
+   "load_start": [
+    21.25,
+    30.88,
+    33.24
+   ],
+   "load_end": [
+    14.05,
+    32.07,
+    34.62
+   ]
+  },
+  {
+   "case": "nw-podds",
+   "name": "NW Model 12 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 497.021529,
+      "open": 0.093162,
+      "H": 0.107922,
+      "Q": 496.752481,
+      "report": 0.0,
+      "close": 0.067964,
+      "steps": 720,
+      "hash": "b51ffe2e865637fb",
+      "rss_kb": 172272
+     },
+     "times": [],
+     "best": 497.021529,
+     "best_Q": 496.752481,
+     "rss_kb": 172272,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 52.739385,
+      "open": 0.1209,
+      "H": 0.029313,
+      "Q": 52.57604,
+      "report": 0.0,
+      "close": 0.013132,
+      "steps": 720,
+      "hash": "b51ffe2e865637fb",
+      "rss_kb": 256688
+     },
+     "times": [],
+     "best": 52.739385,
+     "best_Q": 52.57604,
+     "rss_kb": 256688,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.42410551431345
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 56.406518,
+      "open": 0.102443,
+      "H": 0.023516,
+      "Q": 56.27216,
+      "report": 0.0,
+      "close": 0.008399,
+      "steps": 720,
+      "hash": "b51ffe2e865637fb",
+      "rss_kb": 257728
+     },
+     "times": [],
+     "best": 56.406518,
+     "best_Q": 56.27216,
+     "rss_kb": 257728,
+     "rc": 0,
+     "identical": true,
+     "speedup": 8.811420144742847
+    }
+   },
+   "load_start": [
+    14.05,
+    32.07,
+    34.62
+   ],
+   "load_end": [
+    57.46,
+    33.44,
+    31.1
+   ]
+  },
+  {
+   "case": "nw-vcdm",
+   "name": "NW Model 12 h, VCDM discolouration: 17 material strength bands (Euler, 60 s)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 526.906348,
+      "open": 0.09966,
+      "H": 0.11053,
+      "Q": 526.684274,
+      "report": 0.0,
+      "close": 0.011884,
+      "steps": 720,
+      "hash": "ea26d902f37d6595",
+      "rss_kb": 437152
+     },
+     "times": [],
+     "best": 526.906348,
+     "best_Q": 526.684274,
+     "rss_kb": 437152,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 54.496358,
+      "open": 0.100183,
+      "H": 0.022312,
+      "Q": 54.326108,
+      "report": 0.0,
+      "close": 0.047755,
+      "steps": 720,
+      "hash": "ea26d902f37d6595",
+      "rss_kb": 641680
+     },
+     "times": [],
+     "best": 54.496358,
+     "best_Q": 54.326108,
+     "rss_kb": 641680,
+     "rc": 0,
+     "identical": true,
+     "speedup": 9.668652499677133
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 50.550798,
+      "open": 0.107411,
+      "H": 0.023861,
+      "Q": 50.407458,
+      "report": 1e-06,
+      "close": 0.012067,
+      "steps": 720,
+      "hash": "fbbb7cb9a903a7d5",
+      "rss_kb": 565856
+     },
+     "times": [],
+     "best": 50.550798,
+     "best_Q": 50.407458,
+     "rss_kb": 565856,
+     "rc": 0,
+     "identical": false,
+     "speedup": 10.423304257234475
+    }
+   },
+   "load_start": [
+    57.46,
+    33.44,
+    31.1
+   ],
+   "load_end": [
+    80.61,
+    40.27,
+    28.35
+   ]
+  },
+  {
+   "case": "bwsn2-dbp",
+   "name": "BWSN2 6 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 141.860783,
+      "open": 0.021306,
+      "H": 0.115548,
+      "Q": 141.71386,
+      "report": 0.0,
+      "close": 0.010069,
+      "steps": 72,
+      "hash": "ed4f803d55bbaad7",
+      "rss_kb": 269504
+     },
+     "times": [],
+     "best": 141.860783,
+     "best_Q": 141.71386,
+     "rss_kb": 269504,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 2.363178,
+      "open": 0.021832,
+      "H": 0.033901,
+      "Q": 2.298473,
+      "report": 0.0,
+      "close": 0.008972,
+      "steps": 72,
+      "hash": "ed4f803d55bbaad7",
+      "rss_kb": 397008
+     },
+     "times": [],
+     "best": 2.363178,
+     "best_Q": 2.298473,
+     "rss_kb": 397008,
+     "rc": 0,
+     "identical": true,
+     "speedup": 60.029664714211115
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 2.199845,
+      "open": 0.019847,
+      "H": 0.032652,
+      "Q": 2.135682,
+      "report": 0.0,
+      "close": 0.011664,
+      "steps": 72,
+      "hash": "ed4f803d55bbaad7",
+      "rss_kb": 397088
+     },
+     "times": [],
+     "best": 2.199845,
+     "best_Q": 2.135682,
+     "rss_kb": 397088,
+     "rc": 0,
+     "identical": true,
+     "speedup": 64.48671747327653
+    }
+   },
+   "load_start": [
+    80.61,
+    40.27,
+    28.35
+   ],
+   "load_end": [
+    135.09,
+    86.6,
+    49.71
+   ]
+  },
+  {
+   "case": "bwsn2-regrowth-thm",
+   "name": "BWSN2 6 h, bacterial regrowth in bulk and biofilm with THM formation (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 239.796716,
+      "open": 0.019118,
+      "H": 0.113468,
+      "Q": 239.654831,
+      "report": 0.0,
+      "close": 0.009299,
+      "steps": 72,
+      "hash": "61c76efdac1a2adc",
+      "rss_kb": 294096
+     },
+     "times": [],
+     "best": 239.796716,
+     "best_Q": 239.654831,
+     "rss_kb": 294096,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 4.765968,
+      "open": 0.0209,
+      "H": 0.033205,
+      "Q": 4.703247,
+      "report": 0.0,
+      "close": 0.008616,
+      "steps": 72,
+      "hash": "61c76efdac1a2adc",
+      "rss_kb": 444624
+     },
+     "times": [],
+     "best": 4.765968,
+     "best_Q": 4.703247,
+     "rss_kb": 444624,
+     "rc": 0,
+     "identical": true,
+     "speedup": 50.314378107448476
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 4.494697,
+      "open": 0.019927,
+      "H": 0.034404,
+      "Q": 4.4302,
+      "report": 0.0,
+      "close": 0.010166,
+      "steps": 72,
+      "hash": "03e327eab9df5793",
+      "rss_kb": 444736
+     },
+     "times": [],
+     "best": 4.494697,
+     "best_Q": 4.4302,
+     "rss_kb": 444736,
+     "rc": 0,
+     "identical": false,
+     "speedup": 53.35103033641644
+    }
+   },
+   "load_start": [
+    135.09,
+    86.6,
+    49.71
+   ],
+   "load_end": [
+    20.11,
+    60.2,
+    49.57
+   ]
+  },
+  {
+   "case": "bwsn2-psm",
+   "name": "BWSN2 6 h, parallel second-order chlorine decay, two source waters blending (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 436.51276,
+      "open": 0.018651,
+      "H": 0.124659,
+      "Q": 436.359449,
+      "report": 0.0,
+      "close": 0.010001,
+      "steps": 72,
+      "hash": "65df46b14e4bc980",
+      "rss_kb": 319920
+     },
+     "times": [],
+     "best": 436.51276,
+     "best_Q": 436.359449,
+     "rss_kb": 319920,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 1.927109,
+      "open": 0.020859,
+      "H": 0.034037,
+      "Q": 1.865057,
+      "report": 0.0,
+      "close": 0.007156,
+      "steps": 72,
+      "hash": "65df46b14e4bc980",
+      "rss_kb": 464864
+     },
+     "times": [],
+     "best": 1.927109,
+     "best_Q": 1.865057,
+     "rss_kb": 464864,
+     "rc": 0,
+     "identical": true,
+     "speedup": 226.51171262237892
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 1.899098,
+      "open": 0.018835,
+      "H": 0.031415,
+      "Q": 1.841053,
+      "report": 0.0,
+      "close": 0.007795,
+      "steps": 72,
+      "hash": "65df46b14e4bc980",
+      "rss_kb": 464752
+     },
+     "times": [],
+     "best": 1.899098,
+     "best_Q": 1.841053,
+     "rss_kb": 464752,
+     "rc": 0,
+     "identical": true,
+     "speedup": 229.85267742896892
+    }
+   },
+   "load_start": [
+    20.11,
+    60.2,
+    49.57
+   ],
+   "load_end": [
+    29.74,
+    50.45,
+    50.5
+   ]
+  },
+  {
+   "case": "bwsn2-temperature",
+   "name": "BWSN2 6 h, water temperature from heat exchange with the soil driving chlorine decay (RK5)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 339.681626,
+      "open": 0.018751,
+      "H": 0.108635,
+      "Q": 339.543718,
+      "report": 0.0,
+      "close": 0.010522,
+      "steps": 72,
+      "hash": "8d9222d6b028e0a7",
+      "rss_kb": 296816
+     },
+     "times": [],
+     "best": 339.681626,
+     "best_Q": 339.543718,
+     "rss_kb": 296816,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 3.98157,
+      "open": 0.021989,
+      "H": 0.033419,
+      "Q": 3.919372,
+      "report": 0.0,
+      "close": 0.00679,
+      "steps": 72,
+      "hash": "8d9222d6b028e0a7",
+      "rss_kb": 430096
+     },
+     "times": [],
+     "best": 3.98157,
+     "best_Q": 3.919372,
+     "rss_kb": 430096,
+     "rc": 0,
+     "identical": true,
+     "speedup": 85.31348839779282
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 4.332927,
+      "open": 0.019428,
+      "H": 0.033203,
+      "Q": 4.273132,
+      "report": 0.0,
+      "close": 0.007164,
+      "steps": 72,
+      "hash": "caa628fc0124b6e1",
+      "rss_kb": 430528
+     },
+     "times": [],
+     "best": 4.332927,
+     "best_Q": 4.273132,
+     "rss_kb": 430528,
+     "rc": 0,
+     "identical": false,
+     "speedup": 78.39541861656105
+    }
+   },
+   "load_start": [
+    29.74,
+    50.45,
+    50.5
+   ],
+   "load_end": [
+    15.62,
+    26.01,
+    38.47
+   ]
+  },
+  {
+   "case": "bwsn2-inactivation",
+   "name": "BWSN2 6 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 261.00391,
+      "open": 0.021073,
+      "H": 0.114937,
+      "Q": 260.85866,
+      "report": 0.0,
+      "close": 0.00924,
+      "steps": 72,
+      "hash": "07146d84d190b67f",
+      "rss_kb": 418864
+     },
+     "times": [],
+     "best": 261.00391,
+     "best_Q": 260.85866,
+     "rss_kb": 418864,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 8.982641,
+      "open": 0.021269,
+      "H": 0.034209,
+      "Q": 8.854557,
+      "report": 1e-06,
+      "close": 0.072605,
+      "steps": 72,
+      "hash": "07146d84d190b67f",
+      "rss_kb": 610864
+     },
+     "times": [],
+     "best": 8.982641,
+     "best_Q": 8.854557,
+     "rss_kb": 610864,
+     "rc": 0,
+     "identical": true,
+     "speedup": 29.056477933382848
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 6.43832,
+      "open": 0.023255,
+      "H": 0.034773,
+      "Q": 6.368612,
+      "report": 0.0,
+      "close": 0.01168,
+      "steps": 72,
+      "hash": "31cb32b3a43d230d",
+      "rss_kb": 594736
+     },
+     "times": [],
+     "best": 6.43832,
+     "best_Q": 6.368612,
+     "rss_kb": 594736,
+     "rc": 0,
+     "identical": false,
+     "speedup": 40.53913287938469
+    }
+   },
+   "load_start": [
+    15.62,
+    26.01,
+    38.47
+   ],
+   "load_end": [
+    29.5,
+    30.58,
+    36.6
+   ]
+  },
+  {
+   "case": "bwsn2-podds",
+   "name": "BWSN2 6 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 362.105772,
+      "open": 0.020837,
+      "H": 0.113908,
+      "Q": 361.961075,
+      "report": 0.0,
+      "close": 0.009952,
+      "steps": 360,
+      "hash": "69640cb8232e9b91",
+      "rss_kb": 248032
+     },
+     "times": [],
+     "best": 362.105772,
+     "best_Q": 361.961075,
+     "rss_kb": 248032,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 22.222224,
+      "open": 0.021246,
+      "H": 0.03282,
+      "Q": 22.161448,
+      "report": 1e-06,
+      "close": 0.006709,
+      "steps": 360,
+      "hash": "69640cb8232e9b91",
+      "rss_kb": 398048
+     },
+     "times": [],
+     "best": 22.222224,
+     "best_Q": 22.161448,
+     "rss_kb": 398048,
+     "rc": 0,
+     "identical": true,
+     "speedup": 16.294758436419325
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 22.392385,
+      "open": 0.022344,
+      "H": 0.033661,
+      "Q": 22.329777,
+      "report": 1e-06,
+      "close": 0.006602,
+      "steps": 360,
+      "hash": "69640cb8232e9b91",
+      "rss_kb": 397808
+     },
+     "times": [],
+     "best": 22.392385,
+     "best_Q": 22.329777,
+     "rss_kb": 397808,
+     "rc": 0,
+     "identical": true,
+     "speedup": 16.170933645522798
+    }
+   },
+   "load_start": [
+    29.5,
+    30.58,
+    36.6
+   ],
+   "load_end": [
+    24.21,
+    37.61,
+    37.62
+   ]
+  },
+  {
+   "case": "bwsn2-vcdm",
+   "name": "BWSN2 6 h, VCDM discolouration: 17 material strength bands (Euler, 60 s)",
+   "mode": "step",
+   "threads": 8,
+   "builds": {
+    "base": {
+     "check": {
+      "rc": 0,
+      "total": 329.977392,
+      "open": 0.025097,
+      "H": 0.111803,
+      "Q": 329.822328,
+      "report": 1e-06,
+      "close": 0.018163,
+      "steps": 360,
+      "hash": "99f4f3d686a9bafb",
+      "rss_kb": 641184
+     },
+     "times": [],
+     "best": 329.977392,
+     "best_Q": 329.822328,
+     "rss_kb": 641184,
+     "rc": 0,
+     "identical": true,
+     "speedup": 1.0
+    },
+    "bit": {
+     "check": {
+      "rc": 0,
+      "total": 21.642404,
+      "open": 0.025966,
+      "H": 0.031927,
+      "Q": 21.547531,
+      "report": 0.0,
+      "close": 0.03698,
+      "steps": 360,
+      "hash": "99f4f3d686a9bafb",
+      "rss_kb": 969408
+     },
+     "times": [],
+     "best": 21.642404,
+     "best_Q": 21.547531,
+     "rss_kb": 969408,
+     "rc": 0,
+     "identical": true,
+     "speedup": 15.246799385133002
+    },
+    "near": {
+     "check": {
+      "rc": 0,
+      "total": 23.059019,
+      "open": 0.025832,
+      "H": 0.034709,
+      "Q": 22.955089,
+      "report": 0.0,
+      "close": 0.043389,
+      "steps": 360,
+      "hash": "08c871c438f17766",
+      "rss_kb": 903424
+     },
+     "times": [],
+     "best": 23.059019,
+     "best_Q": 22.955089,
+     "rss_kb": 903424,
+     "rc": 0,
+     "identical": false,
+     "speedup": 14.31012273332183
+    }
+   },
+   "load_start": [
+    24.21,
+    37.61,
+    37.62
+   ],
+   "load_end": [
+    10.95,
+    15.93,
+    25.38
+   ]
+  }
+ ]
+}

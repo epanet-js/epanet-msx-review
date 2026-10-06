@@ -323,12 +323,58 @@ Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.
 **On the two larger public networks** (`--cases literature-large`), NW Model 12 h and BWSN2 6 h, the same seven models were written by `tools/private-reactions.py --kinds literature` ([how](models/literature.md#on-other-networks)). There the unpatched code ran on 8 threads only: on one thread it took 567 s for the first model on NW Model, and would take hours for all fourteen. The two comparisons that matter, near-identical on one thread against unpatched on eight, and both on eight, need only its 8-thread runs.
 
 <!-- literature-large -->
+| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 | Bit-identical results |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| NW Model 12 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5) | - | 147 | 15.5 | 2.93 | 19.9 | 3.25 | 7.41x | 45.31x | identical |
+| NW Model 12 h, bacterial regrowth in bulk and biofilm with THM formation (RK5) | - | 250 | 36.4 | 5.59 | 26.8 | 5.15 | 9.34x | 48.58x | identical |
+| NW Model 12 h, parallel second-order chlorine decay, two source waters blending (RK5) | - | 516 | 17.2 | 4.86 | 17.2 | 4.58 | 29.98x | 112.60x | identical |
+| NW Model 12 h, water temperature from heat exchange with the soil driving chlorine decay (RK5) | - | 362 | 40.3 | 6.68 | 55.5 | 8.50 | 6.52x | 42.59x | identical |
+| NW Model 12 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2) | - | 240 | 80.2 | 10.1 | 52.5 | 8.79 | 4.57x | 27.26x | identical |
+| NW Model 12 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s) | - | 497 | 166 | 52.7 | 163 | 56.4 | 3.05x | 8.81x | identical |
+| NW Model 12 h, VCDM discolouration: 17 material strength bands (Euler, 60 s) | - | 527 | 112 | 54.5 | 99.0 | 50.6 | 5.32x | 10.42x | identical |
+| BWSN2 6 h, chlorine (two reactants, temperature, wall) with THM and HAA (RK5) | - | 142 | 11.0 | 2.36 | 10.4 | 2.20 | 13.59x | 64.49x | identical |
+| BWSN2 6 h, bacterial regrowth in bulk and biofilm with THM formation (RK5) | - | 240 | 17.9 | 4.77 | 16.7 | 4.49 | 14.39x | 53.35x | identical |
+| BWSN2 6 h, parallel second-order chlorine decay, two source waters blending (RK5) | - | 437 | 13.4 | 1.93 | 13.3 | 1.90 | 32.94x | 229.85x | identical |
+| BWSN2 6 h, water temperature from heat exchange with the soil driving chlorine decay (RK5) | - | 340 | 31.2 | 3.98 | 30.6 | 4.33 | 11.11x | 78.40x | identical |
+| BWSN2 6 h, microbial intrusion: chlorine demand and inactivation of four organisms (ROS2) | - | 261 | 43.6 | 8.98 | 32.1 | 6.44 | 8.13x | 40.54x | identical |
+| BWSN2 6 h, PODDS discolouration: shear-driven erosion and regeneration (RK5, 60 s) | - | 362 | 77.5 | 22.2 | 86.6 | 22.4 | 4.18x | 16.17x | identical |
+| BWSN2 6 h, VCDM discolouration: 17 material strength bands (Euler, 60 s) | - | 330 | 63.9 | 21.6 | 57.5 | 23.1 | 5.73x | 14.31x | identical |
+| **Median** | | | | | | | **7.77x** | **43.95x** | |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 9.7 at the start and 10.9 at the end; measured 2026-10-06.
 <!-- /literature-large -->
 
-**On the four utility models**, the same way: all seven models on Utility models 1 and 2, and DBP, intrusion and PODDS on Utility models 3 and 4, the unpatched code on 8 threads only.
+**On the utility models**, the same way: all seven models on Utility models 1 and 2. On Utility model 3, the largest, only DBP and the intrusion model were run, on 8 threads, before the run was stopped (the unpatched code took 19 and 35 minutes for them); Utility model 4 was not run.
 
 <!-- private-literature -->
+| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 | Bit-identical results |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Utility model 1, chlorine with THM and HAA (RK5) | - | 121 | 9.25 | 2.30 | 9.20 | 2.40 | 13.12x | 50.27x | identical |
+| Utility model 1, regrowth with THM (RK5) | - | 314 | 16.2 | 8.37 | 15.2 | 8.08 | 20.74x | 38.91x | identical |
+| Utility model 1, two-reactant chlorine (RK5) | - | 479 | 11.0 | 2.49 | 10.6 | 2.51 | 45.37x | 190.64x | identical |
+| Utility model 1, temperature and chlorine (RK5) | - | 444 | 22.8 | 3.95 | 24.4 | 4.49 | 18.19x | 98.97x | identical |
+| Utility model 1, intrusion and inactivation (ROS2) | - | 191 | 36.3 | 6.13 | 27.6 | 5.04 | 6.93x | 37.97x | identical |
+| Utility model 1, PODDS discolouration (RK5) | - | 656 | 97.8 | 24.0 | 97.9 | 24.5 | 6.70x | 26.78x | identical |
+| Utility model 1, VCDM discolouration (Euler) | - | 934 | 89.7 | 33.0 | 87.8 | 30.1 | 10.64x | 31.01x | identical |
+| Utility model 2, chlorine with THM and HAA (RK5) | - | 94.0 | 8.17 | 1.49 | 8.21 | 1.52 | 11.44x | 61.78x | identical |
+| Utility model 2, regrowth with THM (RK5) | - | 243 | 16.6 | 2.78 | 15.3 | 2.57 | 15.82x | 94.29x | identical |
+| Utility model 2, two-reactant chlorine (RK5) | - | 357 | 9.88 | 1.70 | 9.98 | 1.72 | 35.79x | 208.22x | identical |
+| Utility model 2, temperature and chlorine (RK5) | - | 348 | 23.3 | 3.40 | 24.4 | 3.86 | 14.27x | 90.11x | identical |
+| Utility model 2, intrusion and inactivation (ROS2) | - | 186 | 34.2 | 5.44 | 24.8 | 4.01 | 7.52x | 46.44x | identical |
+| Utility model 2, PODDS discolouration (RK5) | - | 429 | 76.5 | 15.6 | 76.8 | 15.7 | 5.59x | 27.37x | identical |
+| Utility model 2, VCDM discolouration (Euler) | - | 608 | 75.0 | 22.1 | 73.4 | 24.2 | 8.29x | 25.18x | identical |
+| Utility model 3, chlorine with THM and HAA (RK5) | - | 1,114 | - | 39.9 | - | 41.1 | - | 27.13x | identical |
+| Utility model 3, intrusion and inactivation (ROS2) | - | 2,081 | - | 127 | - | 98.6 | - | 21.10x | identical |
+| **Median** | | | | | | | **12.28x** | **42.67x** | |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 27.1 at the start and 9.5 at the end; measured 2026-10-06. The runs that follow: load average 12.0 at the start and 16.2 at the end.
 <!-- /private-literature -->
+
+The bit-identical builds gave the unpatched results bit for bit in every run of these models with the unpatched code, on every network (on the larger networks, the 8-thread runs). On one thread, the near-identical build was a median 8 times faster than the unpatched code on eight threads on NW Model and BWSN2, and 12 times on the utility models, against 6 times on L-Town. With both on eight threads it was 44, 43 and 17 times faster. The two-reactant chlorine model gains most (30 to 45 times on one thread against the unpatched code on eight, on the larger networks) and PODDS least (3 to 7 times), but every one of the 38 cases gained.
+
+These are single runs on a machine in use. During the NW Model and BWSN2 runs, other work pushed the load average as high as 135 at times. The unpatched 8-thread runs, minutes long, were the most exposed to it: NW Model DBP took 147 s here, against 95 s at a load average of 7 in an earlier, stopped run. So the 8-thread speed-ups on these two networks are probably overstated, by up to about half. The utility-model runs saw load averages up to 30. `tools/run-all.sh literature-large private-literature` measures them again; differences of 20 to 30 % between the bit-identical and near-identical builds, either way, are noise here.
+
+The near-identical results differ slightly from the unpatched ones on most of these cases, as they do on the main cases. Unlike the main cases, they have not been judged against [the acceptance rule](2-near-identical/README.md#how-within-tolerance-was-decided) here; `tools/run-all.sh yardstick-literature` does that on the L-Town cases (about an hour).
 
 ## Your own models
 
