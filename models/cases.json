@@ -1,5 +1,5 @@
 {
- "_comment": "Benchmark cases: an EPANET network (inp/) and an MSX reaction file (msx/). reps repeats a short run inside one process so that it can be timed reliably. Sorted by size of network. Cases in group \"output\" report every node, link and species every 5 minutes; tools/bench.py runs them with --cases output. Cases in group \"real\" are larger real-world networks with three types of reactions each; tools/bench.py runs them with --cases real.",
+ "_comment": "Benchmark cases: an EPANET network (inp/) and an MSX reaction file (msx/). reps repeats a short run inside one process so that it can be timed reliably. Sorted by size of network. Cases in group \"output\" report every node, link and species every 5 minutes; tools/bench.py runs them with --cases output. Cases in group \"real\" are larger real-world networks with three types of reactions each; tools/bench.py runs them with --cases real. Cases in group \"stress\" exercise paths the main cases do not: water age (segments that never merge) and full coupling; tools/bench.py runs them with --cases stress.",
  "cases": [
   {
    "id": "bwsn2-2src",
@@ -113,6 +113,22 @@
    "msx": "msx/nw-chloramine.msx",
    "reps": 1,
    "group": "real"
+  },
+  {
+   "id": "bwsn2-age",
+   "name": "BWSN2 48 h, water age and two source tracers (Euler)",
+   "inp": "inp/bwsn2-48h.inp",
+   "msx": "msx/bwsn2-age-tracers.msx",
+   "reps": 1,
+   "group": "stress"
+  },
+  {
+   "id": "net3-chlm-full",
+   "name": "Net3, chloramine decay with full coupling (ROS2)",
+   "inp": "inp/Net3.inp",
+   "msx": "msx/net3-chloramine-full.msx",
+   "reps": 1,
+   "group": "stress"
   }
  ]
 }

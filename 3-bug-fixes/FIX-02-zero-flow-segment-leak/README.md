@@ -68,7 +68,7 @@ A segment is a 72-byte structure plus two arrays of one `double` per species and
 
 ## How to reproduce
 
-The reviewer's test network has a reservoir feeding a junction with a demand of 50 gpm, and 50 dead-end pipes, 100 ft long, from that junction to junctions without demand. It runs for 30 days with a 5-minute quality step and one species decaying at first order (RK5). The test measures the heap in use at day 10 and at day 30.
+A test network has a reservoir feeding a junction with a demand of 50 gpm, and 50 dead-end pipes, 100 ft long, from that junction to junctions without demand. It runs for 30 days with a 5-minute quality step and one species decaying at first order (RK5). The test measures the heap in use at day 10 and at day 30.
 
 - **Without the fix**, the heap grows by 30.7 MB between day 10 and day 30: 107 bytes per dead-end pipe per quality step (50 pipes, 5,760 steps).
 - **With the fix**, it does not grow.

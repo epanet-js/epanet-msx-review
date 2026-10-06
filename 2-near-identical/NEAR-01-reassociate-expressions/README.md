@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Category** | [Near-identical](../README.md): results change at the level of rounding, by less than the unpatched code's own results differ between platforms |
+| **Category** | [Near-identical](../README.md): results change at the level of rounding, about as much as the unpatched code's own results differ between platforms |
 | **Area** | Chemistry (expression interpreter) |
 | **Results** | <!-- results:NEAR-01 -->Differs from 85a303d in 30 of 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP), by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
 | **Files** | `mathexpr.c` (+391 / -22 lines) |

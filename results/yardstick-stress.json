@@ -1,0 +1,7371 @@
+{
+ "meta": {
+  "builds": [
+   "base",
+   "base@nofma",
+   "base@fmafast",
+   "base@x86",
+   "bit@conv",
+   "only:NEAR-01",
+   "only:NEAR-02",
+   "only:NEAR-03",
+   "near"
+  ],
+  "ref": "base",
+  "samples": [
+   "base@nofma",
+   "base@fmafast",
+   "base@x86"
+  ],
+  "conv": "bit@conv",
+  "candidates": [
+   "only:NEAR-01",
+   "only:NEAR-02",
+   "only:NEAR-03",
+   "near"
+  ],
+  "cases": [
+   {
+    "id": "bwsn2-age",
+    "name": "BWSN2 48 h, water age and two source tracers (Euler)",
+    "msx": "models/msx/bwsn2-age-tracers.msx"
+   },
+   {
+    "id": "net3-chlm-full",
+    "name": "Net3, chloramine decay with full coupling (ROS2)",
+    "msx": "models/msx/net3-chloramine-full.msx"
+   }
+  ],
+  "dumpevery": 1,
+  "date": "2026-10-05",
+  "machine": "Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1)",
+  "load_start": [
+   9.29,
+   17.07,
+   21.0
+  ],
+  "load_end": [
+   7.85,
+   12.28,
+   18.02
+  ]
+ },
+ "results": {
+  "bwsn2-age": {
+   "base": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "786fdb7d61caadb3",
+    "seconds": 76.54,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 2.7711166694643907e-13,
+       "maxabs_at": {
+        "t": 169500,
+        "object": "link 10511"
+       },
+       "maxabs_ref": 47.08333333333334,
+       "maxrel": 7.365542931551098e-15,
+       "p99": 4.973799150320701e-14,
+       "ratioA": 5.5422333389287814e-11,
+       "ratioB": 5.584372178982132e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "A"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "A"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "base@nofma": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "99c2c37711b861f2",
+    "seconds": 77.38,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.019621851170112947,
+       "maxabs_at": {
+        "t": 137700,
+        "object": "node 5675"
+       },
+       "maxabs_ref": 11.754940015615317,
+       "maxrel": 0.0016692429858465624,
+       "p99": 2.687711301874174e-05,
+       "ratioA": 3.9243702340225894,
+       "ratioB": 0.9019492196268399,
+       "overA": 18,
+       "overB": 0,
+       "differ": 26952,
+       "verdict": "B"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.0038980091890183366,
+       "maxabs_at": {
+        "t": 162300,
+        "object": "node 4780"
+       },
+       "maxabs_ref": 0.3603569608626754,
+       "maxrel": 0.029193525317718284,
+       "p99": 1.9626932821559246e-06,
+       "ratioA": 0.7796018378036673,
+       "ratioB": 0.37624274952527903,
+       "overA": 0,
+       "overB": 0,
+       "differ": 25167,
+       "verdict": "A"
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.000847762429988852,
+       "maxabs_at": {
+        "t": 143400,
+        "object": "node 11696"
+       },
+       "maxabs_ref": 0.6788623488251561,
+       "maxrel": 0.00537340059856619,
+       "p99": 4.5371645441827314e-07,
+       "ratioA": 0.1695524859977704,
+       "ratioB": 0.07938696111033955,
+       "overA": 0,
+       "overB": 0,
+       "differ": 8320,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "B"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.019621851170109395,
+       "maxabs_at": {
+        "t": 137700,
+        "object": "node 5675"
+       },
+       "maxabs_ref": 11.754940015615313,
+       "maxrel": 0.0016692429858462606,
+       "p99": 2.68771129832146e-05,
+       "ratioA": 3.924370234021879,
+       "ratioB": 0.9019492196266766,
+       "overA": 18,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "B"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.0038980091890183366,
+       "maxabs_at": {
+        "t": 162300,
+        "object": "node 4780"
+       },
+       "maxabs_ref": 0.3603569608626754,
+       "maxrel": 0.029193525317718284,
+       "p99": 1.9626932821559246e-06,
+       "ratioA": 0.7796018378036673,
+       "ratioB": 0.37624274952527903,
+       "overA": 0,
+       "overB": 0,
+       "differ": 25167,
+       "verdict": "A"
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.000847762429988852,
+       "maxabs_at": {
+        "t": 143400,
+        "object": "node 11696"
+       },
+       "maxabs_ref": 0.6788623488251561,
+       "maxrel": 0.00537340059856619,
+       "p99": 4.5371645441827314e-07,
+       "ratioA": 0.1695524859977704,
+       "ratioB": 0.07938696111033955,
+       "overA": 0,
+       "overB": 0,
+       "differ": 8320,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "B"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "base@fmafast": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "786fdb7d61caadb3",
+    "seconds": 76.58,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 2.7711166694643907e-13,
+       "maxabs_at": {
+        "t": 169500,
+        "object": "link 10511"
+       },
+       "maxabs_ref": 47.08333333333334,
+       "maxrel": 7.365542931551098e-15,
+       "p99": 4.973799150320701e-14,
+       "ratioA": 5.5422333389287814e-11,
+       "ratioB": 5.584372178982132e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "A"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "A"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "base@x86": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "d0aa92510b027193",
+    "seconds": 90.96,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.02020219696584391,
+       "maxabs_at": {
+        "t": 137700,
+        "object": "node 5675"
+       },
+       "maxabs_ref": 11.754940015615317,
+       "maxrel": 0.0017186133607663859,
+       "p99": 2.6794501598743628e-05,
+       "ratioA": 4.040439393168782,
+       "ratioB": 0.9286257259888158,
+       "overA": 26,
+       "overB": 0,
+       "differ": 26950,
+       "verdict": "B"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.013203664740705001,
+       "maxabs_at": {
+        "t": 162300,
+        "object": "node 4780"
+       },
+       "maxabs_ref": 0.3603569608626754,
+       "maxrel": 0.09237439372581266,
+       "p99": 2.0244321966000893e-06,
+       "ratioA": 2.6407329481410002,
+       "ratioB": 1.274441101844581,
+       "overA": 2,
+       "overB": 1,
+       "differ": 25167,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.001272575570280876,
+       "maxabs_at": {
+        "t": 120900,
+        "object": "node 11696"
+       },
+       "maxabs_ref": 0.354636699622641,
+       "maxrel": 0.0077125592516693155,
+       "p99": 5.760169122837042e-07,
+       "ratioA": 0.2545151140561752,
+       "ratioB": 0.12289910377321622,
+       "overA": 0,
+       "overB": 0,
+       "differ": 8320,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.020202196965840358,
+       "maxabs_at": {
+        "t": 137700,
+        "object": "node 5675"
+       },
+       "maxabs_ref": 11.754940015615313,
+       "maxrel": 0.001718613360766084,
+       "p99": 2.679450158321827e-05,
+       "ratioA": 4.0404393931680715,
+       "ratioB": 0.9286257259886525,
+       "overA": 26,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "B"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.013203664740705001,
+       "maxabs_at": {
+        "t": 162300,
+        "object": "node 4780"
+       },
+       "maxabs_ref": 0.3603569608626754,
+       "maxrel": 0.09237439372581266,
+       "p99": 2.0244321966000893e-06,
+       "ratioA": 2.6407329481410002,
+       "ratioB": 1.274441101844581,
+       "overA": 2,
+       "overB": 1,
+       "differ": 25167,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 0.001272575570280876,
+       "maxabs_at": {
+        "t": 120900,
+        "object": "node 11696"
+       },
+       "maxabs_ref": 0.354636699622641,
+       "maxrel": 0.0077125592516693155,
+       "p99": 5.760169122837042e-07,
+       "ratioA": 0.2545151140561752,
+       "ratioB": 0.12289910377321622,
+       "overA": 0,
+       "overB": 0,
+       "differ": 8320,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "bit@conv": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "0d764bbd7308c7a1",
+    "seconds": 28.74,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 2.7711166694643907e-13,
+       "maxabs_at": {
+        "t": 169500,
+        "object": "link 10511"
+       },
+       "maxabs_ref": 47.08333333333362,
+       "maxrel": 7.365542931551152e-15,
+       "p99": 4.973799150320701e-14,
+       "ratioA": 5.5422333389287814e-11,
+       "ratioB": 5.584372178982163e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "A"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "A"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "only:NEAR-01": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "786fdb7d61caadb3",
+    "seconds": 8.9,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 2.7711166694643907e-13,
+       "maxabs_at": {
+        "t": 169500,
+        "object": "link 10511"
+       },
+       "maxabs_ref": 47.08333333333334,
+       "maxrel": 7.365542931551098e-15,
+       "p99": 4.973799150320701e-14,
+       "ratioA": 5.5422333389287814e-11,
+       "ratioB": 5.584372178982132e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "A"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "A"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance where a platform is not",
+     1
+    ]
+   },
+   "only:NEAR-02": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "786fdb7d61caadb3",
+    "seconds": 8.94,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 2.7711166694643907e-13,
+       "maxabs_at": {
+        "t": 169500,
+        "object": "link 10511"
+       },
+       "maxabs_ref": 47.08333333333334,
+       "maxrel": 7.365542931551098e-15,
+       "p99": 4.973799150320701e-14,
+       "ratioA": 5.5422333389287814e-11,
+       "ratioB": 5.584372178982132e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "A"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "A"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance where a platform is not",
+     1
+    ]
+   },
+   "only:NEAR-03": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "786fdb7d61caadb3",
+    "seconds": 8.91,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 2.7711166694643907e-13,
+       "maxabs_at": {
+        "t": 169500,
+        "object": "link 10511"
+       },
+       "maxabs_ref": 47.08333333333334,
+       "maxrel": 7.365542931551098e-15,
+       "p99": 4.973799150320701e-14,
+       "ratioA": 5.5422333389287814e-11,
+       "ratioB": 5.584372178982132e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "A"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "A"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance where a platform is not",
+     1
+    ]
+   },
+   "near": {
+    "rc": 0,
+    "steps": 576,
+    "hash": "786fdb7d61caadb3",
+    "seconds": 8.81,
+    "cached": false,
+    "vs_ref": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 12527,
+     "nl": 14831,
+     "objects": 27358,
+     "steps": 576,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "AGE",
+       "units": "HR",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "maxabs": 2.7711166694643907e-13,
+       "maxabs_at": {
+        "t": 169500,
+        "object": "link 10511"
+       },
+       "maxabs_ref": 47.08333333333334,
+       "maxrel": 7.365542931551098e-15,
+       "p99": 4.973799150320701e-14,
+       "ratioA": 5.5422333389287814e-11,
+       "ratioB": 5.584372178982132e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 27355,
+       "verdict": "A"
+      },
+      {
+       "id": "TR1",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TR2",
+       "units": "FRAC",
+       "atol": 0.01,
+       "rtol": 0.001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "A"
+    },
+    "report": {
+     "lines": 42,
+     "lines_new": 42,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {},
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance where a platform is not",
+     1
+    ]
+   }
+  },
+  "net3-chlm-full": {
+   "base": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "2fd7a0153d548aa7",
+    "seconds": 41.95,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.677335974999716e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 86"
+       },
+       "maxabs_ref": 4.5045537843374996e-10,
+       "maxrel": 0.0,
+       "p99": 7.376623765046859e-12,
+       "ratioA": 0.00667730589671617,
+       "ratioB": 0.00667730589671617,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535123843156144e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.0019772333495412914,
+       "p99": 1.3576768571394292e-09,
+       "ratioA": 0.1178849321296402,
+       "ratioB": 0.1178849321296402,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4504673475688556e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.0003155855492889932,
+       "p99": 1.3539944854403837e-09,
+       "ratioA": 0.13136711176594373,
+       "ratioB": 0.13136711176594373,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.97103163229747e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 15"
+       },
+       "maxabs_ref": 1.8015555061959457e-09,
+       "maxrel": 0.0018114191067766581,
+       "p99": 6.83364586968656e-11,
+       "ratioA": 0.006970906047555739,
+       "ratioB": 0.006970906047555739,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.388157713864029e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.372493280912438e-14,
+       "ratioA": 3.388157680908809e-06,
+       "ratioB": 3.388157680908809e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715287792428e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 56"
+       },
+       "maxabs_ref": 5.051238452273432e-10,
+       "maxrel": 0.0,
+       "p99": 8.271870510130652e-12,
+       "ratioA": 0.0074876774657480945,
+       "ratioB": 0.0074876774657480945,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17564450898093e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772333495408525,
+       "p99": 7.636593579739932e-08,
+       "ratioA": 2.392627582421861,
+       "ratioB": 2.392627582421861,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 9.926167350636332e-24,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 2.8180000000000005e-08,
+       "maxrel": 3.5224156673656245e-16,
+       "p99": 0.0,
+       "ratioA": 9.923370944704114e-16,
+       "ratioB": 9.923370944704114e-16,
+       "overA": 0,
+       "overB": 0,
+       "differ": 13,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 3.548616039744499e-07,
+       "maxrel": 2.9836735567032734e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 10,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.541098841762901e-21,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 7.0856512065558535e-06,
+       "maxrel": 3.586260130066523e-16,
+       "p99": 0.0,
+       "ratioA": 2.3729592276199684e-13,
+       "ratioB": 2.3729592276199684e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 16,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3552527156068805e-19,
+       "maxabs_at": {
+        "t": 57600,
+        "object": "link 98"
+       },
+       "maxabs_ref": 0.00022407454453173348,
+       "maxrel": 6.04822256110823e-16,
+       "p99": 5.421010862427522e-20,
+       "ratioA": 4.1819165944216095e-12,
+       "ratioB": 4.1819165944216095e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 195,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "base@nofma": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "d42e0844b5e093b8",
+    "seconds": 42.24,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.737599682284873e-17,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 3.1134629283499018e-12,
+       "maxrel": 0.0,
+       "p99": 3.76986044269076e-19,
+       "ratioA": 1.7375996281853528e-09,
+       "ratioB": 1.7375996281853528e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.643840379172314e-11,
+       "maxabs_at": {
+        "t": 50400,
+        "object": "node 91"
+       },
+       "maxabs_ref": 2.039317576581965e-05,
+       "maxrel": 2.277154099243192e-06,
+       "p99": 1.8065571775818275e-12,
+       "ratioA": 0.003857228908227478,
+       "ratioB": 0.003857228908227478,
+       "overA": 0,
+       "overB": 0,
+       "differ": 213,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.30650158529032e-11,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 1.2593698982788495e-05,
+       "maxrel": 3.4195684613201506e-06,
+       "p99": 1.6162606278710302e-12,
+       "ratioA": 0.003824815797150983,
+       "ratioB": 0.003824815797150983,
+       "overA": 0,
+       "overB": 0,
+       "differ": 213,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.242967644160123e-14,
+       "maxabs_at": {
+        "t": 50400,
+        "object": "node 91"
+       },
+       "maxabs_ref": 2.0744010157535946e-08,
+       "maxrel": 2.582392034545526e-06,
+       "p99": 2.3265360167562474e-15,
+       "ratioA": 3.2422950621430947e-06,
+       "ratioB": 3.2422950621430947e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.6590244446617718e-17,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 7.95754257816989e-12,
+       "maxrel": 0.0,
+       "p99": 4.343853665323083e-19,
+       "ratioA": 1.6590243126442058e-09,
+       "ratioB": 1.6590243126442058e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.9484794165736992e-17,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 3.4913210977947784e-12,
+       "maxrel": 0.0,
+       "p99": 4.227380766798665e-19,
+       "ratioA": 1.9484793485460287e-09,
+       "ratioB": 1.9484793485460287e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.612044349044329e-09,
+       "maxabs_at": {
+        "t": 50400,
+        "object": "node 91"
+       },
+       "maxabs_ref": 0.001147065255650295,
+       "maxrel": 2.277154099278778e-06,
+       "p99": 1.0161433387431705e-10,
+       "ratioA": 0.020945530614452503,
+       "ratioB": 0.020945530614452503,
+       "overA": 0,
+       "overB": 0,
+       "differ": 213,
+       "verdict": "A"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.734723475976807e-17,
+       "maxabs_at": {
+        "t": 71700,
+        "object": "node 24"
+       },
+       "maxabs_ref": 0.004000000000000007,
+       "maxrel": 4.33680868994201e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 4.231032868236107e-11,
+       "ratioB": 4.231032868236107e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.589415207398531e-19,
+       "maxabs_at": {
+        "t": 10800,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.00019999999999999963,
+       "maxrel": 3.7947076036992734e-15,
+       "p99": 3.7947076036992655e-19,
+       "ratioA": 2.5298050691328467e-11,
+       "ratioB": 2.5298050691328467e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3234889800848443e-22,
+       "maxabs_at": {
+        "t": 24300,
+        "object": "node 96"
+       },
+       "maxabs_ref": 2.8179999999999942e-08,
+       "maxrel": 4.696554223154177e-15,
+       "p99": 3.970466940254533e-23,
+       "ratioA": 1.3231161259605486e-14,
+       "ratioB": 1.3231161259605486e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.641126335305207e-21,
+       "maxabs_at": {
+        "t": 21600,
+        "object": "node 96"
+       },
+       "maxabs_ref": 3.548616039744507e-07,
+       "maxrel": 4.624694012890081e-15,
+       "p99": 5.293955920339377e-22,
+       "ratioA": 1.635323201163392e-13,
+       "ratioB": 1.635323201163392e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 208,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.3881317890172014e-20,
+       "maxabs_at": {
+        "t": 85200,
+        "object": "node 97"
+       },
+       "maxabs_ref": 7.085651206555866e-06,
+       "maxrel": 4.781680173422022e-15,
+       "p99": 2.371692252312041e-20,
+       "ratioA": 3.1639456368266237e-12,
+       "ratioB": 3.1639456368266237e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.734723475976807e-17,
+       "maxabs_at": {
+        "t": 71700,
+        "object": "node 24"
+       },
+       "maxabs_ref": 0.003985502015982921,
+       "maxrel": 4.352584615489107e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 4.246047289146803e-11,
+       "ratioB": 4.246047289146803e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 210,
+       "verdict": "A"
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.5178830414797062e-18,
+       "maxabs_at": {
+        "t": 21600,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.00022407454453173282,
+       "maxrel": 6.7740092684412345e-15,
+       "p99": 7.047314121155779e-19,
+       "ratioA": 4.68374658575221e-11,
+       "ratioB": 4.68374658575221e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 215,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "A"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.677335974999716e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 86"
+       },
+       "maxabs_ref": 4.5045537843374996e-10,
+       "maxrel": 0.0,
+       "p99": 7.376623765046841e-12,
+       "ratioA": 0.00667730589671617,
+       "ratioB": 0.00667730589671617,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535123842952856e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.0019772333495418023,
+       "p99": 1.3575791211411254e-09,
+       "ratioA": 0.11788493212852535,
+       "ratioB": 0.11788493212852535,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.450467347577326e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.0003155868151885625,
+       "p99": 1.3537221280053678e-09,
+       "ratioA": 0.13136711176686652,
+       "ratioB": 0.13136711176686652,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.971031632297594e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 15"
+       },
+       "maxabs_ref": 1.8015555061959457e-09,
+       "maxrel": 0.0018113621554572252,
+       "p99": 6.833645869686601e-11,
+       "ratioA": 0.006970906047555863,
+       "ratioB": 0.006970906047555863,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.3881577138640086e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.3724932809124485e-14,
+       "ratioA": 3.388157680908789e-06,
+       "ratioB": 3.388157680908789e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715287792433e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "node 50"
+       },
+       "maxabs_ref": 5.051238452273432e-10,
+       "maxrel": 0.0,
+       "p99": 8.271870510130615e-12,
+       "ratioA": 0.0074876774657481,
+       "ratioB": 0.0074876774657481,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17564450887251e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772333495408525,
+       "p99": 7.636043839090228e-08,
+       "ratioA": 2.392627582421861,
+       "ratioB": 2.392627582421861,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.734723475976807e-17,
+       "maxabs_at": {
+        "t": 71700,
+        "object": "node 24"
+       },
+       "maxabs_ref": 0.004000000000000007,
+       "maxrel": 4.33680868994201e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 4.231032868236107e-11,
+       "ratioB": 4.231032868236107e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.589415207398531e-19,
+       "maxabs_at": {
+        "t": 10800,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.00019999999999999963,
+       "maxrel": 3.7947076036992734e-15,
+       "p99": 3.7947076036992655e-19,
+       "ratioA": 2.5298050691328467e-11,
+       "ratioB": 2.5298050691328467e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3234889800848443e-22,
+       "maxabs_at": {
+        "t": 24300,
+        "object": "node 96"
+       },
+       "maxabs_ref": 2.8179999999999942e-08,
+       "maxrel": 4.696554223154177e-15,
+       "p99": 3.970466940254533e-23,
+       "ratioA": 1.3231161259605486e-14,
+       "ratioB": 1.3231161259605486e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.641126335305207e-21,
+       "maxabs_at": {
+        "t": 21600,
+        "object": "node 96"
+       },
+       "maxabs_ref": 3.548616039744507e-07,
+       "maxrel": 4.624694012890081e-15,
+       "p99": 5.293955920339377e-22,
+       "ratioA": 1.635323201163392e-13,
+       "ratioB": 1.635323201163392e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 208,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.3881317890172014e-20,
+       "maxabs_at": {
+        "t": 85200,
+        "object": "node 97"
+       },
+       "maxabs_ref": 7.085651206555866e-06,
+       "maxrel": 4.781680173422022e-15,
+       "p99": 2.371692252312041e-20,
+       "ratioA": 3.1639456368266237e-12,
+       "ratioB": 3.1639456368266237e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.734723475976807e-17,
+       "maxabs_at": {
+        "t": 71700,
+        "object": "node 24"
+       },
+       "maxabs_ref": 0.003985502015982921,
+       "maxrel": 4.352584615489107e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 4.246047289146803e-11,
+       "ratioB": 4.246047289146803e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 210,
+       "verdict": "A"
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.5178830414797062e-18,
+       "maxabs_at": {
+        "t": 21600,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.00022407454453173282,
+       "maxrel": 6.7740092684412345e-15,
+       "p99": 7.047314121155779e-19,
+       "ratioA": 4.68374658575221e-11,
+       "ratioB": 4.68374658575221e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 215,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "base@fmafast": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "da2b7535094f32d1",
+    "seconds": 42.08,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.5360305817377696e-17,
+       "maxabs_at": {
+        "t": 69900,
+        "object": "node 92"
+       },
+       "maxabs_ref": 2.050385363524921e-12,
+       "maxrel": 0.0,
+       "p99": 5.408928116938787e-19,
+       "ratioA": 1.536030550243224e-09,
+       "ratioB": 1.536030550243224e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.5073071721818745e-10,
+       "maxabs_at": {
+        "t": 76500,
+        "object": "node 31"
+       },
+       "maxabs_ref": 1.609375910955265e-05,
+       "maxrel": 2.1792964268367042e-05,
+       "p99": 2.6585434022416086e-12,
+       "ratioA": 0.030210988076216746,
+       "ratioB": 0.030210988076216746,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.091047051600613e-11,
+       "maxabs_at": {
+        "t": 76500,
+        "object": "node 31"
+       },
+       "maxabs_ref": 2.0797871927620557e-06,
+       "maxrel": 3.8903244907741355e-05,
+       "p99": 2.1288702493100233e-12,
+       "ratioA": 0.007926198980334774,
+       "ratioB": 0.007926198980334774,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.874660369581187e-13,
+       "maxabs_at": {
+        "t": 76500,
+        "object": "node 31"
+       },
+       "maxabs_ref": 3.5918195380927677e-09,
+       "maxrel": 5.067108554161868e-06,
+       "p99": 3.4226105580563865e-15,
+       "ratioA": 1.8745930375822032e-05,
+       "ratioB": 1.8745930375822032e-05,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.2867590112357488e-16,
+       "maxabs_at": {
+        "t": 76500,
+        "object": "node 31"
+       },
+       "maxabs_ref": 7.593140580218585e-12,
+       "maxrel": 0.0,
+       "p99": 6.660940481382314e-19,
+       "ratioA": 1.2867589135303355e-08,
+       "ratioB": 1.2867589135303355e-08,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.7224473520388717e-17,
+       "maxabs_at": {
+        "t": 69900,
+        "object": "node 92"
+       },
+       "maxabs_ref": 2.299225602817157e-12,
+       "maxrel": 0.0,
+       "p99": 6.065370075201246e-19,
+       "ratioA": 1.722447312435922e-09,
+       "ratioB": 1.722447312435922e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.972772776690987e-08,
+       "maxabs_at": {
+        "t": 76500,
+        "object": "node 31"
+       },
+       "maxabs_ref": 0.0009052337958227418,
+       "maxrel": 2.1792964268396417e-05,
+       "p99": 1.4953643347778545e-10,
+       "ratioA": 0.1962501444826927,
+       "ratioB": 0.1962501444826927,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.1275702593849246e-17,
+       "maxabs_at": {
+        "t": 70800,
+        "object": "node 97"
+       },
+       "maxabs_ref": 0.00400000000000001,
+       "maxrel": 2.8189256484623064e-15,
+       "p99": 5.204170427930421e-18,
+       "ratioA": 2.75017136435347e-11,
+       "ratioB": 2.75017136435347e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 200,
+       "verdict": "A"
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 5.963111948670274e-19,
+       "maxabs_at": {
+        "t": 46200,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.00019999999999999982,
+       "maxrel": 2.98155597433514e-15,
+       "p99": 1.8973538018496328e-19,
+       "ratioA": 1.9877039828900925e-11,
+       "ratioB": 1.9877039828900925e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 199,
+       "verdict": "A"
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.224227306578481e-22,
+       "maxabs_at": {
+        "t": 81300,
+        "object": "node 97"
+       },
+       "maxabs_ref": 2.818000000000001e-08,
+       "maxrel": 4.344312656417603e-15,
+       "p99": 4.301339185275744e-23,
+       "ratioA": 1.2238824165135075e-14,
+       "ratioB": 1.2238824165135075e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 202,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.5352472168984194e-21,
+       "maxabs_at": {
+        "t": 81300,
+        "object": "node 97"
+       },
+       "maxabs_ref": 3.548616039744498e-07,
+       "maxrel": 4.326326657219747e-15,
+       "p99": 5.293955920339377e-22,
+       "ratioA": 1.5298184785076894e-13,
+       "ratioB": 1.5298184785076894e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 201,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.658681209898652e-20,
+       "maxabs_at": {
+        "t": 74100,
+        "object": "node 24"
+       },
+       "maxabs_ref": 7.085651206555868e-06,
+       "maxrel": 6.5748102384552786e-15,
+       "p99": 1.4399560103323106e-20,
+       "ratioA": 4.350425250636608e-12,
+       "ratioB": 4.350425250636608e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 203,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.214306433183765e-17,
+       "maxabs_at": {
+        "t": 74400,
+        "object": "node 97"
+       },
+       "maxabs_ref": 0.003985502015982927,
+       "maxrel": 3.0468092308423682e-15,
+       "p99": 5.204170427930421e-18,
+       "ratioA": 2.9722331024027564e-11,
+       "ratioB": 2.9722331024027564e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 201,
+       "verdict": "A"
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.505213034913027e-19,
+       "maxabs_at": {
+        "t": 70200,
+        "object": "link 43"
+       },
+       "maxabs_ref": 0.00022407454453173404,
+       "maxrel": 2.9031468293319417e-15,
+       "p99": 2.710505431213761e-19,
+       "ratioA": 2.007319965322368e-11,
+       "ratioB": 2.007319965322368e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 204,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "A"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.677335974999716e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 86"
+       },
+       "maxabs_ref": 4.5045537843374996e-10,
+       "maxrel": 0.0,
+       "p99": 7.376623765046859e-12,
+       "ratioA": 0.00667730589671617,
+       "ratioB": 0.00667730589671617,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535123843156144e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.0019772333495412914,
+       "p99": 1.3577658412779209e-09,
+       "ratioA": 0.1178849321296402,
+       "ratioB": 0.1178849321296402,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4504673475688556e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.00031549366716848595,
+       "p99": 1.3539501725546392e-09,
+       "ratioA": 0.13136711176594373,
+       "ratioB": 0.13136711176594373,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.97103163229747e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 15"
+       },
+       "maxabs_ref": 1.8015555061959457e-09,
+       "maxrel": 0.0018114191067766581,
+       "p99": 6.83364586968656e-11,
+       "ratioA": 0.006970906047555739,
+       "ratioB": 0.006970906047555739,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.388157713864029e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.372493280912438e-14,
+       "ratioA": 3.388157680908809e-06,
+       "ratioB": 3.388157680908809e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715287792428e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 56"
+       },
+       "maxabs_ref": 5.051238452273432e-10,
+       "maxrel": 0.0,
+       "p99": 8.271870510130652e-12,
+       "ratioA": 0.0074876774657480945,
+       "ratioB": 0.0074876774657480945,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17564450898093e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772333495408525,
+       "p99": 7.637094093231045e-08,
+       "ratioA": 2.392627582421861,
+       "ratioB": 2.392627582421861,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.1275702593849246e-17,
+       "maxabs_at": {
+        "t": 70800,
+        "object": "node 97"
+       },
+       "maxabs_ref": 0.00400000000000001,
+       "maxrel": 2.8189256484623064e-15,
+       "p99": 5.204170427930421e-18,
+       "ratioA": 2.75017136435347e-11,
+       "ratioB": 2.75017136435347e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 200,
+       "verdict": "A"
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 5.963111948670274e-19,
+       "maxabs_at": {
+        "t": 46200,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.00019999999999999982,
+       "maxrel": 2.98155597433514e-15,
+       "p99": 1.8973538018496328e-19,
+       "ratioA": 1.9877039828900925e-11,
+       "ratioB": 1.9877039828900925e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 199,
+       "verdict": "A"
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.224227306578481e-22,
+       "maxabs_at": {
+        "t": 81300,
+        "object": "node 97"
+       },
+       "maxabs_ref": 2.818000000000001e-08,
+       "maxrel": 4.344312656417603e-15,
+       "p99": 4.301339185275744e-23,
+       "ratioA": 1.2238824165135075e-14,
+       "ratioB": 1.2238824165135075e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 202,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.5352472168984194e-21,
+       "maxabs_at": {
+        "t": 81300,
+        "object": "node 97"
+       },
+       "maxabs_ref": 3.548616039744498e-07,
+       "maxrel": 4.326326657219747e-15,
+       "p99": 5.293955920339377e-22,
+       "ratioA": 1.5298184785076894e-13,
+       "ratioB": 1.5298184785076894e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 201,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.658681209898652e-20,
+       "maxabs_at": {
+        "t": 74100,
+        "object": "node 24"
+       },
+       "maxabs_ref": 7.085651206555868e-06,
+       "maxrel": 6.5748102384552786e-15,
+       "p99": 1.4399560103323106e-20,
+       "ratioA": 4.350425250636608e-12,
+       "ratioB": 4.350425250636608e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 203,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.214306433183765e-17,
+       "maxabs_at": {
+        "t": 74400,
+        "object": "node 97"
+       },
+       "maxabs_ref": 0.003985502015982927,
+       "maxrel": 3.0468092308423682e-15,
+       "p99": 5.204170427930421e-18,
+       "ratioA": 2.9722331024027564e-11,
+       "ratioB": 2.9722331024027564e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 201,
+       "verdict": "A"
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.505213034913027e-19,
+       "maxabs_at": {
+        "t": 70200,
+        "object": "link 43"
+       },
+       "maxabs_ref": 0.00022407454453173404,
+       "maxrel": 2.9031468293319417e-15,
+       "p99": 2.710505431213761e-19,
+       "ratioA": 2.007319965322368e-11,
+       "ratioB": 2.007319965322368e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 205,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "base@x86": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "de01d98f2cfee6a3",
+    "seconds": 61.23,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.9408751989207714e-17,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 3.1134629283499018e-12,
+       "maxrel": 0.0,
+       "p99": 2.6869966633603526e-19,
+       "ratioA": 1.9408751384923433e-09,
+       "ratioB": 1.9408751384923433e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.771172043197382e-11,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 2.2384762402647807e-05,
+       "maxrel": 2.1314374293439087e-06,
+       "p99": 1.6650136630357425e-12,
+       "ratioA": 0.0038985017003180106,
+       "ratioB": 0.0038985017003180106,
+       "overA": 0,
+       "overB": 0,
+       "differ": 213,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.7811515029811476e-11,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 1.2593698982788495e-05,
+       "maxrel": 3.7964632230097223e-06,
+       "p99": 1.1599891648882032e-12,
+       "ratioA": 0.0042463757263290665,
+       "ratioB": 0.0042463757263290665,
+       "overA": 0,
+       "overB": 0,
+       "differ": 213,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.6993001517994144e-14,
+       "maxabs_at": {
+        "t": 68700,
+        "object": "node 72"
+       },
+       "maxabs_ref": 1.9367423059572505e-08,
+       "maxrel": 1.393732219044631e-06,
+       "p99": 1.8938530366981785e-15,
+       "ratioA": 2.6987774681497214e-06,
+       "ratioB": 2.6987774681497214e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.8455503151177392e-17,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 7.95754257816989e-12,
+       "maxrel": 0.0,
+       "p99": 3.9243135593258565e-19,
+       "ratioA": 1.8455501682572988e-09,
+       "ratioB": 1.8455501682572988e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.17642499244577e-17,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 3.4913210977947784e-12,
+       "maxrel": 0.0,
+       "p99": 3.013097759688926e-19,
+       "ratioA": 2.1764249164597876e-09,
+       "ratioB": 2.1764249164597876e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.683665233180893e-09,
+       "maxabs_at": {
+        "t": 52800,
+        "object": "node 5"
+       },
+       "maxabs_ref": 0.0012590870349433439,
+       "maxrel": 2.131437429424132e-06,
+       "p99": 9.36528638288085e-11,
+       "ratioA": 0.019746088103127012,
+       "ratioB": 0.019746088103127012,
+       "overA": 0,
+       "overB": 0,
+       "differ": 213,
+       "verdict": "A"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.7755575615628914e-17,
+       "maxabs_at": {
+        "t": 86400,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.0039999999999999975,
+       "maxrel": 6.938893903907233e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 6.769652589177787e-11,
+       "ratioB": 6.769652589177787e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0570971181733668e-18,
+       "maxabs_at": {
+        "t": 63300,
+        "object": "link 25"
+       },
+       "maxabs_ref": 0.00020000000000000012,
+       "maxrel": 5.285485590866831e-15,
+       "p99": 7.860465750519907e-19,
+       "ratioA": 3.5236570605778875e-11,
+       "ratioB": 3.5236570605778875e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.9190590211230242e-22,
+       "maxabs_at": {
+        "t": 86100,
+        "object": "node 97"
+       },
+       "maxabs_ref": 2.8180000000000038e-08,
+       "maxrel": 6.810003623573533e-15,
+       "p99": 7.940933880509066e-23,
+       "ratioA": 1.9185183826427955e-14,
+       "ratioB": 1.9185183826427955e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.4352197233561135e-21,
+       "maxabs_at": {
+        "t": 86100,
+        "object": "node 97"
+       },
+       "maxabs_ref": 3.548616039744495e-07,
+       "maxrel": 6.862449180417538e-15,
+       "p99": 9.529120656610879e-22,
+       "ratioA": 2.4266086210811626e-13,
+       "ratioB": 2.4266086210811626e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 208,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.707999820014133e-20,
+       "maxabs_at": {
+        "t": 81600,
+        "object": "node 97"
+       },
+       "maxabs_ref": 7.085651206555873e-06,
+       "maxrel": 1.087832239453509e-14,
+       "p99": 3.8116482626443515e-20,
+       "ratioA": 7.197976323780569e-12,
+       "ratioB": 7.197976323780569e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.7755575615628914e-17,
+       "maxabs_at": {
+        "t": 85800,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.003985502015982911,
+       "maxrel": 6.964135384782583e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 6.793675662634897e-11,
+       "ratioB": 6.793675662634897e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 210,
+       "verdict": "A"
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.032879073410321e-18,
+       "maxabs_at": {
+        "t": 86100,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.0002240745445317341,
+       "maxrel": 9.072333841662315e-15,
+       "p99": 5.421010862427522e-19,
+       "ratioA": 6.2728748916324e-11,
+       "ratioB": 6.2728748916324e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 215,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "A"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.677335974999716e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 86"
+       },
+       "maxabs_ref": 4.5045537843374996e-10,
+       "maxrel": 0.0,
+       "p99": 7.376623765046841e-12,
+       "ratioA": 0.00667730589671617,
+       "ratioB": 0.00667730589671617,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535123842952856e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.0019772333495418023,
+       "p99": 1.3577327065858278e-09,
+       "ratioA": 0.11788493212852535,
+       "ratioB": 0.11788493212852535,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.450467347577326e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.0003156444354408979,
+       "p99": 1.3538744664669187e-09,
+       "ratioA": 0.13136711176686652,
+       "ratioB": 0.13136711176686652,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.971031632297594e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 15"
+       },
+       "maxabs_ref": 1.8015555061959457e-09,
+       "maxrel": 0.0018113621554572252,
+       "p99": 6.833645869686601e-11,
+       "ratioA": 0.006970906047555863,
+       "ratioB": 0.006970906047555863,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.3881577138640086e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.3724932809124485e-14,
+       "ratioA": 3.388157680908789e-06,
+       "ratioB": 3.388157680908789e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715287792433e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "node 50"
+       },
+       "maxabs_ref": 5.051238452273432e-10,
+       "maxrel": 0.0,
+       "p99": 8.271870510130615e-12,
+       "ratioA": 0.0074876774657481,
+       "ratioB": 0.0074876774657481,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17564450887251e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772333495408525,
+       "p99": 7.636907718920313e-08,
+       "ratioA": 2.392627582421861,
+       "ratioB": 2.392627582421861,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.7755575615628914e-17,
+       "maxabs_at": {
+        "t": 86400,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.0039999999999999975,
+       "maxrel": 6.938893903907233e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 6.769652589177787e-11,
+       "ratioB": 6.769652589177787e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0570971181733668e-18,
+       "maxabs_at": {
+        "t": 63300,
+        "object": "link 25"
+       },
+       "maxabs_ref": 0.00020000000000000012,
+       "maxrel": 5.285485590866831e-15,
+       "p99": 7.860465750519907e-19,
+       "ratioA": 3.5236570605778875e-11,
+       "ratioB": 3.5236570605778875e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.9190590211230242e-22,
+       "maxabs_at": {
+        "t": 86100,
+        "object": "node 97"
+       },
+       "maxabs_ref": 2.8180000000000038e-08,
+       "maxrel": 6.810003623573533e-15,
+       "p99": 7.940933880509066e-23,
+       "ratioA": 1.9185183826427955e-14,
+       "ratioB": 1.9185183826427955e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.4352197233561135e-21,
+       "maxabs_at": {
+        "t": 86100,
+        "object": "node 97"
+       },
+       "maxabs_ref": 3.548616039744495e-07,
+       "maxrel": 6.862449180417538e-15,
+       "p99": 9.529120656610879e-22,
+       "ratioA": 2.4266086210811626e-13,
+       "ratioB": 2.4266086210811626e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 208,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.707999820014133e-20,
+       "maxabs_at": {
+        "t": 81600,
+        "object": "node 97"
+       },
+       "maxabs_ref": 7.085651206555873e-06,
+       "maxrel": 1.087832239453509e-14,
+       "p99": 3.8116482626443515e-20,
+       "ratioA": 7.197976323780569e-12,
+       "ratioB": 7.197976323780569e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 211,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.7755575615628914e-17,
+       "maxabs_at": {
+        "t": 85800,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.003985502015982911,
+       "maxrel": 6.964135384782583e-15,
+       "p99": 1.214306433183765e-17,
+       "ratioA": 6.793675662634897e-11,
+       "ratioB": 6.793675662634897e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 210,
+       "verdict": "A"
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.032879073410321e-18,
+       "maxabs_at": {
+        "t": 86100,
+        "object": "node 96"
+       },
+       "maxabs_ref": 0.0002240745445317341,
+       "maxrel": 9.072333841662315e-15,
+       "p99": 5.421010862427522e-19,
+       "ratioA": 6.2728748916324e-11,
+       "ratioB": 6.2728748916324e-11,
+       "overA": 0,
+       "overB": 0,
+       "differ": 215,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    }
+   },
+   "bit@conv": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "da91ba7a046808a8",
+    "seconds": 65.37,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.677335974999716e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 86"
+       },
+       "maxabs_ref": 3.836820186837528e-10,
+       "maxrel": 0.0,
+       "p99": 7.376623765046859e-12,
+       "ratioA": 0.006677310355360551,
+       "ratioB": 0.006677310355360551,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535123843156144e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.3979158289551173e-05,
+       "maxrel": 0.0019733316124674167,
+       "p99": 1.3576768571394292e-09,
+       "ratioA": 0.11788632183174502,
+       "ratioB": 0.11788632183174502,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4504673475688556e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0887758630701132e-05,
+       "maxrel": 0.0003154859864706599,
+       "p99": 1.3539944854403837e-09,
+       "ratioA": 0.1313653860568085,
+       "ratioB": 0.1313653860568085,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.97103163229747e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 15"
+       },
+       "maxabs_ref": 1.8712658225189204e-09,
+       "maxrel": 0.001808143800548545,
+       "p99": 6.83364586968656e-11,
+       "ratioA": 0.006970901188206014,
+       "ratioB": 0.006970901188206014,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.388157713864029e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 1.0065405433743352e-12,
+       "maxrel": 0.0,
+       "p99": 3.372493280912438e-14,
+       "ratioA": 3.3881576797608477e-06,
+       "ratioB": 3.3881576797608477e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715287792428e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 56"
+       },
+       "maxabs_ref": 4.3024669234941894e-10,
+       "maxrel": 0.0,
+       "p99": 8.271870510130652e-12,
+       "ratioA": 0.007487683072283676,
+       "ratioB": 0.007487683072283676,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17564450898093e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.0013487678255480083,
+       "maxrel": 0.00197333161246698,
+       "p99": 7.636593579739932e-08,
+       "ratioA": 2.392055252684236,
+       "ratioB": 2.392055252684236,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 9.926167350636332e-24,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 2.8179999999999995e-08,
+       "maxrel": 3.522415667365626e-16,
+       "p99": 0.0,
+       "ratioA": 9.923370944704114e-16,
+       "ratioB": 9.923370944704114e-16,
+       "overA": 0,
+       "overB": 0,
+       "differ": 13,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 3.5486160397445003e-07,
+       "maxrel": 2.9836735567032725e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 10,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.541098841762901e-21,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 7.085651206555856e-06,
+       "maxrel": 3.586260130066522e-16,
+       "p99": 0.0,
+       "ratioA": 2.3729592276199684e-13,
+       "ratioB": 2.3729592276199684e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 16,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3552527156068805e-19,
+       "maxabs_at": {
+        "t": 57600,
+        "object": "link 98"
+       },
+       "maxabs_ref": 0.0002240745445317336,
+       "maxrel": 6.048222561108227e-16,
+       "p99": 5.421010862427522e-20,
+       "ratioA": 4.181916594421607e-12,
+       "ratioB": 4.181916594421607e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 195,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 15,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.03680363655425989,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 6.34456421907359e-05,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 3.147059940639544e-05,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 9.890626159049343e-05,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 0.00027518740676212,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 0.03680363655425989,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "DIGITS"
+    }
+   },
+   "only:NEAR-01": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "2fd7a0153d548aa7",
+    "seconds": 7.67,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.677335974999716e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 86"
+       },
+       "maxabs_ref": 4.5045537843374996e-10,
+       "maxrel": 0.0,
+       "p99": 7.376623765046859e-12,
+       "ratioA": 0.00667730589671617,
+       "ratioB": 0.00667730589671617,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535123843156144e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.0019772333495412914,
+       "p99": 1.3576768571394292e-09,
+       "ratioA": 0.1178849321296402,
+       "ratioB": 0.1178849321296402,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4504673475688556e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.0003155855492889932,
+       "p99": 1.3539944854403837e-09,
+       "ratioA": 0.13136711176594373,
+       "ratioB": 0.13136711176594373,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.97103163229747e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 15"
+       },
+       "maxabs_ref": 1.8015555061959457e-09,
+       "maxrel": 0.0018114191067766581,
+       "p99": 6.83364586968656e-11,
+       "ratioA": 0.006970906047555739,
+       "ratioB": 0.006970906047555739,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.388157713864029e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.372493280912438e-14,
+       "ratioA": 3.388157680908809e-06,
+       "ratioB": 3.388157680908809e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715287792428e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 56"
+       },
+       "maxabs_ref": 5.051238452273432e-10,
+       "maxrel": 0.0,
+       "p99": 8.271870510130652e-12,
+       "ratioA": 0.0074876774657480945,
+       "ratioB": 0.0074876774657480945,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17564450898093e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772333495408525,
+       "p99": 7.636593579739932e-08,
+       "ratioA": 2.392627582421861,
+       "ratioB": 2.392627582421861,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 9.926167350636332e-24,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 2.8180000000000005e-08,
+       "maxrel": 3.5224156673656245e-16,
+       "p99": 0.0,
+       "ratioA": 9.923370944704114e-16,
+       "ratioB": 9.923370944704114e-16,
+       "overA": 0,
+       "overB": 0,
+       "differ": 13,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 3.548616039744499e-07,
+       "maxrel": 2.9836735567032734e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 10,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.541098841762901e-21,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 7.0856512065558535e-06,
+       "maxrel": 3.586260130066523e-16,
+       "p99": 0.0,
+       "ratioA": 2.3729592276199684e-13,
+       "ratioB": 2.3729592276199684e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 16,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3552527156068805e-19,
+       "maxabs_at": {
+        "t": 57600,
+        "object": "link 98"
+       },
+       "maxabs_ref": 0.00022407454453173348,
+       "maxrel": 6.04822256110823e-16,
+       "p99": 5.421010862427522e-20,
+       "ratioA": 4.1819165944216095e-12,
+       "ratioB": 4.1819165944216095e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 195,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance, as every platform is",
+     1
+    ]
+   },
+   "only:NEAR-02": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "ce22236d51fbcd7e",
+    "seconds": 3.42,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.1880614565776963e-16,
+       "maxabs_at": {
+        "t": 900,
+        "object": "node 96"
+       },
+       "maxabs_ref": 1.503307404967474e-10,
+       "maxrel": 0.0,
+       "p99": 4.7897347394489634e-18,
+       "ratioA": 3.188056663948506e-08,
+       "ratioB": 3.188056663948506e-08,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 5.3703874301151006e-14,
+       "maxabs_at": {
+        "t": 83400,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.3756732747527725e-05,
+       "maxrel": 1.2754989582763774e-08,
+       "p99": 4.9908537284209296e-14,
+       "ratioA": 4.352768225234485e-06,
+       "ratioB": 4.352768225234485e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 5.269748142223323e-14,
+       "maxabs_at": {
+        "t": 71700,
+        "object": "node 39"
+       },
+       "maxabs_ref": 6.01617639391794e-06,
+       "maxrel": 2.4213235558544344e-08,
+       "p99": 4.871955299415732e-14,
+       "ratioA": 4.97996864670753e-06,
+       "ratioB": 4.97996864670753e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.622994899870339e-14,
+       "maxabs_at": {
+        "t": 76500,
+        "object": "link 5"
+       },
+       "maxabs_ref": 2.2291747424829835e-08,
+       "maxrel": 3.2018604667851307e-06,
+       "p99": 4.3183619196620113e-14,
+       "ratioA": 4.621964583199387e-06,
+       "ratioB": 4.621964583199387e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.5750226870999354e-17,
+       "maxabs_at": {
+        "t": 86400,
+        "object": "node 77"
+       },
+       "maxabs_ref": 3.940512043844757e-12,
+       "maxrel": 0.0,
+       "p99": 3.7779582494203865e-17,
+       "ratioA": 4.575022506820622e-09,
+       "ratioB": 4.575022506820622e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.5749731023117616e-16,
+       "maxabs_at": {
+        "t": 900,
+        "object": "node 96"
+       },
+       "maxabs_ref": 1.6857528032992253e-10,
+       "maxrel": 0.0,
+       "p99": 5.371029683407157e-18,
+       "ratioA": 3.574967075800992e-08,
+       "ratioB": 3.574967075800992e-08,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.0207089000283682e-12,
+       "maxabs_at": {
+        "t": 83400,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.0013362569437631365,
+       "maxrel": 1.2754989766212826e-08,
+       "p99": 2.80723070874081e-12,
+       "ratioA": 2.794355372560304e-05,
+       "ratioB": 2.794355372560304e-05,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 18600,
+        "object": "node 97"
+       },
+       "maxabs_ref": 3.5486160397445024e-07,
+       "maxrel": 2.9836735567032764e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 6,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.6940658945086007e-21,
+       "maxabs_at": {
+        "t": 3000,
+        "object": "link 93"
+       },
+       "maxabs_ref": 7.0856512065558595e-06,
+       "maxrel": 2.3908400867110163e-16,
+       "p99": 0.0,
+       "ratioA": 1.5819728184133121e-13,
+       "ratioB": 1.5819728184133121e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 38,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3552527156068805e-19,
+       "maxabs_at": {
+        "t": 57600,
+        "object": "link 98"
+       },
+       "maxabs_ref": 0.0002240745445317336,
+       "maxrel": 6.048222561108227e-16,
+       "p99": 2.710505431213761e-20,
+       "ratioA": 4.181916594421607e-12,
+       "ratioB": 4.181916594421607e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 186,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "A"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.67733653300958e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "node 62"
+       },
+       "maxabs_ref": 4.5045537843375037e-10,
+       "maxrel": 0.0,
+       "p99": 7.376624992611375e-12,
+       "ratioA": 0.006677306454723519,
+       "ratioB": 0.006677306454723519,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535660727434227e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.001977220569336338,
+       "p99": 1.3577269591273157e-09,
+       "ratioA": 0.11788928053640813,
+       "ratioB": 0.11788928053640813,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4505158288091047e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.0003156059469366364,
+       "p99": 1.3540400455228848e-09,
+       "ratioA": 0.1313716572384287,
+       "ratioB": 0.1313716572384287,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.970744844225903e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 5"
+       },
+       "maxabs_ref": 1.8015555061959525e-09,
+       "maxrel": 0.0018093660651535475,
+       "p99": 6.833269832607176e-11,
+       "ratioA": 0.006970619264650725,
+       "ratioB": 0.006970619264650725,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.388004976663579e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.372364752798413e-14,
+       "ratioA": 3.388004943709845e-06,
+       "ratioB": 3.388004943709845e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715913523883e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "node 62"
+       },
+       "maxabs_ref": 5.051238452273426e-10,
+       "maxrel": 0.0,
+       "p99": 8.271871886675667e-12,
+       "ratioA": 0.007487678091476389,
+       "ratioB": 0.007487678091476389,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17594649298297e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772205693357123,
+       "p99": 7.636875390881195e-08,
+       "ratioA": 2.392611834531168,
+       "ratioB": 2.392611834531168,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 9.926167350636332e-24,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 2.8180000000000005e-08,
+       "maxrel": 3.5224156673656245e-16,
+       "p99": 0.0,
+       "ratioA": 9.923370944704114e-16,
+       "ratioB": 9.923370944704114e-16,
+       "overA": 0,
+       "overB": 0,
+       "differ": 13,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 3.548616039744499e-07,
+       "maxrel": 2.9836735567032764e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 16,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.541098841762901e-21,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 7.0856512065558535e-06,
+       "maxrel": 3.586260130066523e-16,
+       "p99": 0.0,
+       "ratioA": 2.3729592276199684e-13,
+       "ratioB": 2.3729592276199684e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 51,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0842021724855044e-19,
+       "maxabs_at": {
+        "t": 27300,
+        "object": "link 5"
+       },
+       "maxabs_ref": 0.00022407454453173364,
+       "maxrel": 4.838578048886578e-16,
+       "p99": 2.710505431213761e-20,
+       "ratioA": 3.345533275537284e-12,
+       "ratioB": 3.345533275537284e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 188,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 3,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 8.242188465889703e-07,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 2.069078246308537e-06,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 2.069078246308537e-06,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "DIGITS"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance, as every platform is",
+     1
+    ]
+   },
+   "only:NEAR-03": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "2fd7a0153d548aa7",
+    "seconds": 7.36,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      }
+     ],
+     "verdict": "IDENTICAL"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.677335974999716e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 86"
+       },
+       "maxabs_ref": 4.5045537843374996e-10,
+       "maxrel": 0.0,
+       "p99": 7.376623765046859e-12,
+       "ratioA": 0.00667730589671617,
+       "ratioB": 0.00667730589671617,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535123843156144e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.0019772333495412914,
+       "p99": 1.3576768571394292e-09,
+       "ratioA": 0.1178849321296402,
+       "ratioB": 0.1178849321296402,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4504673475688556e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.0003155855492889932,
+       "p99": 1.3539944854403837e-09,
+       "ratioA": 0.13136711176594373,
+       "ratioB": 0.13136711176594373,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.97103163229747e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 15"
+       },
+       "maxabs_ref": 1.8015555061959457e-09,
+       "maxrel": 0.0018114191067766581,
+       "p99": 6.83364586968656e-11,
+       "ratioA": 0.006970906047555739,
+       "ratioB": 0.006970906047555739,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.388157713864029e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.372493280912438e-14,
+       "ratioA": 3.388157680908809e-06,
+       "ratioB": 3.388157680908809e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715287792428e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "link 56"
+       },
+       "maxabs_ref": 5.051238452273432e-10,
+       "maxrel": 0.0,
+       "p99": 8.271870510130652e-12,
+       "ratioA": 0.0074876774657480945,
+       "ratioB": 0.0074876774657480945,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17564450898093e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772333495408525,
+       "p99": 7.636593579739932e-08,
+       "ratioA": 2.392627582421861,
+       "ratioB": 2.392627582421861,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 9.926167350636332e-24,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 2.8180000000000005e-08,
+       "maxrel": 3.5224156673656245e-16,
+       "p99": 0.0,
+       "ratioA": 9.923370944704114e-16,
+       "ratioB": 9.923370944704114e-16,
+       "overA": 0,
+       "overB": 0,
+       "differ": 13,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 3.548616039744499e-07,
+       "maxrel": 2.9836735567032734e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 10,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.541098841762901e-21,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 7.0856512065558535e-06,
+       "maxrel": 3.586260130066523e-16,
+       "p99": 0.0,
+       "ratioA": 2.3729592276199684e-13,
+       "ratioB": 2.3729592276199684e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 16,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3552527156068805e-19,
+       "maxabs_at": {
+        "t": 57600,
+        "object": "link 98"
+       },
+       "maxabs_ref": 0.00022407454453173348,
+       "maxrel": 6.04822256110823e-16,
+       "p99": 5.421010862427522e-20,
+       "ratioA": 4.1819165944216095e-12,
+       "ratioB": 4.1819165944216095e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 195,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 0,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 0.0,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "IDENTICAL"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance, as every platform is",
+     1
+    ]
+   },
+   "near": {
+    "rc": 0,
+    "steps": 288,
+    "hash": "ce22236d51fbcd7e",
+    "seconds": 3.4,
+    "cached": false,
+    "vs_ref": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.1880614565776963e-16,
+       "maxabs_at": {
+        "t": 900,
+        "object": "node 96"
+       },
+       "maxabs_ref": 1.503307404967474e-10,
+       "maxrel": 0.0,
+       "p99": 4.7897347394489634e-18,
+       "ratioA": 3.188056663948506e-08,
+       "ratioB": 3.188056663948506e-08,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 5.3703874301151006e-14,
+       "maxabs_at": {
+        "t": 83400,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.3756732747527725e-05,
+       "maxrel": 1.2754989582763774e-08,
+       "p99": 4.9908537284209296e-14,
+       "ratioA": 4.352768225234485e-06,
+       "ratioB": 4.352768225234485e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 5.269748142223323e-14,
+       "maxabs_at": {
+        "t": 71700,
+        "object": "node 39"
+       },
+       "maxabs_ref": 6.01617639391794e-06,
+       "maxrel": 2.4213235558544344e-08,
+       "p99": 4.871955299415732e-14,
+       "ratioA": 4.97996864670753e-06,
+       "ratioB": 4.97996864670753e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.622994899870339e-14,
+       "maxabs_at": {
+        "t": 76500,
+        "object": "link 5"
+       },
+       "maxabs_ref": 2.2291747424829835e-08,
+       "maxrel": 3.2018604667851307e-06,
+       "p99": 4.3183619196620113e-14,
+       "ratioA": 4.621964583199387e-06,
+       "ratioB": 4.621964583199387e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 4.5750226870999354e-17,
+       "maxabs_at": {
+        "t": 86400,
+        "object": "node 77"
+       },
+       "maxabs_ref": 3.940512043844757e-12,
+       "maxrel": 0.0,
+       "p99": 3.7779582494203865e-17,
+       "ratioA": 4.575022506820622e-09,
+       "ratioB": 4.575022506820622e-09,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.5749731023117616e-16,
+       "maxabs_at": {
+        "t": 900,
+        "object": "node 96"
+       },
+       "maxabs_ref": 1.6857528032992253e-10,
+       "maxrel": 0.0,
+       "p99": 5.371029683407157e-18,
+       "ratioA": 3.574967075800992e-08,
+       "ratioB": 3.574967075800992e-08,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.0207089000283682e-12,
+       "maxabs_at": {
+        "t": 83400,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.0013362569437631365,
+       "maxrel": 1.2754989766212826e-08,
+       "p99": 2.80723070874081e-12,
+       "ratioA": 2.794355372560304e-05,
+       "ratioB": 2.794355372560304e-05,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 18600,
+        "object": "node 97"
+       },
+       "maxabs_ref": 3.5486160397445024e-07,
+       "maxrel": 2.9836735567032764e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 6,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.6940658945086007e-21,
+       "maxabs_at": {
+        "t": 3000,
+        "object": "link 93"
+       },
+       "maxabs_ref": 7.0856512065558595e-06,
+       "maxrel": 2.3908400867110163e-16,
+       "p99": 0.0,
+       "ratioA": 1.5819728184133121e-13,
+       "ratioB": 1.5819728184133121e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 38,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.3552527156068805e-19,
+       "maxabs_at": {
+        "t": 57600,
+        "object": "link 98"
+       },
+       "maxabs_ref": 0.0002240745445317336,
+       "maxrel": 6.048222561108227e-16,
+       "p99": 2.710505431213761e-20,
+       "ratioA": 4.181916594421607e-12,
+       "ratioB": 4.181916594421607e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 186,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "A"
+    },
+    "vs_conv": {
+     "nn": 97,
+     "nl": 119,
+     "objects": 216,
+     "steps": 288,
+     "unmatched": [
+      0,
+      0
+     ],
+     "species": [
+      {
+       "id": "HOCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.67733653300958e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "node 62"
+       },
+       "maxabs_ref": 4.5045537843375037e-10,
+       "maxrel": 0.0,
+       "p99": 7.376624992611375e-12,
+       "ratioA": 0.006677306454723519,
+       "ratioB": 0.006677306454723519,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4535660727434227e-09,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 2.398061180193549e-05,
+       "maxrel": 0.001977220569336338,
+       "p99": 1.3577269591273157e-09,
+       "ratioA": 0.11788928053640813,
+       "ratioB": 0.11788928053640813,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH2CL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.4505158288091047e-09,
+       "maxabs_at": {
+        "t": 84300,
+        "object": "node 1"
+       },
+       "maxabs_ref": 1.0886308163353563e-05,
+       "maxrel": 0.0003156059469366364,
+       "p99": 1.3540400455228848e-09,
+       "ratioA": 0.1313716572384287,
+       "ratioB": 0.1313716572384287,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NHCL2",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 6.970744844225903e-11,
+       "maxabs_at": {
+        "t": 1200,
+        "object": "link 5"
+       },
+       "maxabs_ref": 1.8015555061959525e-09,
+       "maxrel": 0.0018093660651535475,
+       "p99": 6.833269832607176e-11,
+       "ratioA": 0.006970619264650725,
+       "ratioB": 0.006970619264650725,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "I",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 3.388004976663579e-14,
+       "maxabs_at": {
+        "t": 1500,
+        "object": "link 111"
+       },
+       "maxabs_ref": 9.726589662356949e-13,
+       "maxrel": 0.0,
+       "p99": 3.372364752798413e-14,
+       "ratioA": 3.388004943709845e-06,
+       "ratioB": 3.388004943709845e-06,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "OCL",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 7.487715913523883e-11,
+       "maxabs_at": {
+        "t": 300,
+        "object": "node 62"
+       },
+       "maxabs_ref": 5.051238452273426e-10,
+       "maxrel": 0.0,
+       "p99": 8.271871886675667e-12,
+       "ratioA": 0.007487678091476389,
+       "ratioB": 0.007487678091476389,
+       "overA": 0,
+       "overB": 0,
+       "differ": 214,
+       "verdict": "A"
+      },
+      {
+       "id": "NH4",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 8.17594649298297e-08,
+       "maxabs_at": {
+        "t": 84000,
+        "object": "node 1"
+       },
+       "maxabs_ref": 0.001348849581993098,
+       "maxrel": 0.0019772205693357123,
+       "p99": 7.636875390881195e-08,
+       "ratioA": 2.392611834531168,
+       "ratioB": 2.392611834531168,
+       "overA": 209,
+       "overB": 209,
+       "differ": 214,
+       "verdict": "FAIL"
+      },
+      {
+       "id": "ALK",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "TOC",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 9.926167350636332e-24,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 2.8180000000000005e-08,
+       "maxrel": 3.5224156673656245e-16,
+       "p99": 0.0,
+       "ratioA": 9.923370944704114e-16,
+       "ratioB": 9.923370944704114e-16,
+       "overA": 0,
+       "overB": 0,
+       "differ": 13,
+       "verdict": "A"
+      },
+      {
+       "id": "OH",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0587911840678754e-22,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 3.548616039744499e-07,
+       "maxrel": 2.9836735567032764e-16,
+       "p99": 0.0,
+       "ratioA": 1.0550472265570272e-14,
+       "ratioB": 1.0550472265570272e-14,
+       "overA": 0,
+       "overB": 0,
+       "differ": 16,
+       "verdict": "A"
+      },
+      {
+       "id": "CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 2.541098841762901e-21,
+       "maxabs_at": {
+        "t": 15600,
+        "object": "node 79"
+       },
+       "maxabs_ref": 7.0856512065558535e-06,
+       "maxrel": 3.586260130066523e-16,
+       "p99": 0.0,
+       "ratioA": 2.3729592276199684e-13,
+       "ratioB": 2.3729592276199684e-13,
+       "overA": 0,
+       "overB": 0,
+       "differ": 51,
+       "verdict": "A"
+      },
+      {
+       "id": "HCO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "verdict": "IDENTICAL",
+       "maxabs": 0.0,
+       "maxrel": 0.0,
+       "p99": 0.0,
+       "ratioA": 0.0,
+       "ratioB": 0.0,
+       "overA": 0,
+       "overB": 0,
+       "differ": 0
+      },
+      {
+       "id": "H2CO3",
+       "units": "MOLES",
+       "atol": 1e-08,
+       "rtol": 0.0001,
+       "precision": 2,
+       "maxabs": 1.0842021724855044e-19,
+       "maxabs_at": {
+        "t": 27300,
+        "object": "link 5"
+       },
+       "maxabs_ref": 0.00022407454453173364,
+       "maxrel": 4.838578048886578e-16,
+       "p99": 2.710505431213761e-20,
+       "ratioA": 3.345533275537284e-12,
+       "ratioB": 3.345533275537284e-12,
+       "overA": 0,
+       "overB": 0,
+       "differ": 188,
+       "verdict": "A"
+      }
+     ],
+     "verdict": "FAIL"
+    },
+    "report": {
+     "lines": 396,
+     "lines_new": 396,
+     "differ_lines": 3,
+     "differ_lines_epanet": 0,
+     "differ_numbers": 0,
+     "max_abs": 0.0,
+     "max_last_digit_units": 0.0,
+     "structure_differs": 0,
+     "mass_balance": {
+      "HOCL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH3": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NH2CL": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "NHCL2": {
+       "max_rel": 8.242188465889703e-07,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "I": {
+       "max_rel": 2.069078246308537e-06,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "ALK": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "TOC": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      },
+      "H": {
+       "max_rel": 0.0,
+       "ratio_diff": 0.0,
+       "ratio": [
+        1.0,
+        1.0
+       ]
+      }
+     },
+     "mb_max_rel": 2.069078246308537e-06,
+     "mb_max_ratio_diff": 0.0,
+     "verdict": "DIGITS"
+    },
+    "judgement": [
+     "PASS",
+     "within tolerance, as every platform is",
+     1
+    ]
+   }
+  }
+ }
+}

@@ -4,6 +4,9 @@ like the public larger networks.
 
   tools/private-reactions.py models/private/town.inp
       writes models/private/town-chlorine.msx, town-bacteria.msx and town-chloramine.msx
+  tools/private-reactions.py models/private/town.inp --kinds chlorine,age
+      only those: age is water age in hours (Euler, 300 s), which keeps water parcels from
+      merging, so it shows what long runs with many segments cost
 
 The reactions are those of the larger public cases (models/msx/nw-*.msx), from the EPANET-MSX
 manual: chlorine bulk and wall decay (Euler), bacterial regrowth with chlorine inhibition
@@ -32,6 +35,26 @@ SOURCES = {   # concentrations entering the network, per kind of reaction
     "bacteria": [("CL2", "1.2"), ("S", "0.4"), ("Xb", "0.01")],
     "chloramine": [("NH2CL", "3.0E-5"), ("NH3", "5.0E-6"), ("ALK", "0.004"), ("H", "2.818E-8"), ("TOC", "2.0E-4")],
 }
+AGE = """[TITLE]
+Water age
+
+[OPTIONS]
+  RATE_UNITS     HR
+  SOLVER         EUL
+  TIMESTEP       300
+
+[SPECIES]
+  BULK  AGE  HR  0.01  0.001     ;water age, hours
+
+[PIPES]
+  RATE  AGE  1
+
+[TANKS]
+  RATE  AGE  1
+
+[REPORT]
+  SPECIES AGE YES
+"""
 RESERVOIR_ONLY = {"chloramine": {"NH2CL", "NH3"}}   # reservoirs keep the global ALK, H and TOC already
 
 
@@ -94,6 +117,7 @@ def main():
     ap.add_argument("inp")
     ap.add_argument("--out", default=None, help="folder for the .msx files (default: next to the network)")
     ap.add_argument("--no-junction-sources", action="store_true")
+    ap.add_argument("--kinds", default="chlorine,bacteria,chloramine", help="any of chlorine, bacteria, chloramine, age")
     a = ap.parse_args()
     reservoirs, junctions = inflow_points(a.inp)
     if a.no_junction_sources:
@@ -102,9 +126,14 @@ def main():
         raise SystemExit("No reservoirs and no junctions with a negative demand: nowhere for water to enter")
     stem = os.path.splitext(os.path.basename(a.inp))[0]
     out = a.out or os.path.dirname(os.path.abspath(a.inp))
-    for kind in TEMPLATES:
+    for kind in a.kinds.split(","):
         path = os.path.join(out, f"{stem}-{kind}.msx")
-        write(kind, a.inp, path, reservoirs, junctions)
+        if kind == "age":
+            open(path, "w").write(AGE)
+        elif kind in TEMPLATES:
+            write(kind, a.inp, path, reservoirs, junctions)
+        else:
+            raise SystemExit(f"Unknown kind {kind}")
         print(path)
     print(f"Sources: {len(reservoirs)} reservoirs, {len(junctions)} junctions with a negative demand")
 

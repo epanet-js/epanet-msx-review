@@ -41,7 +41,7 @@ tools/try.py bit --cases output --quick    # the output-heavy cases
 tools/try.py only:NEAR-01 only:NEAR-02 only:NEAR-03 near --quick
 ```
 
-Each `only:NEAR-NN` is the bit-identical series plus that one change. Where results differ, `tools/try.py` builds 85a303d three other ways (without fused multiply-add, with it across statements, and for x86-64 under Rosetta on macOS; with clang and `-march=native` on Linux) (four ways on Linux) and a converged reference, and applies [the acceptance rule](2-near-identical/README.md#how-within-tolerance-was-decided) species by species. The platform samples take a few minutes the first time and are reused afterwards. The full acceptance table, and the check that results do not depend on the thread count, come from:
+Each `only:NEAR-NN` is the bit-identical series plus that one change. Where results differ, `tools/try.py` builds 85a303d three other ways (without fused multiply-add, with it across statements, and for x86-64 under Rosetta on macOS, and on Linux four ways, with clang and `-march=native` in place of x86-64) and a converged reference, and applies [the acceptance rule](2-near-identical/README.md#how-within-tolerance-was-decided) species by species. The platform samples take a few minutes the first time and are reused afterwards. The full acceptance table, and the check that results do not depend on the thread count, come from:
 
 ```sh
 tools/yardstick.py run --builds base,base@nofma,base@fmafast,base@x86,bit@conv,only:NEAR-01,only:NEAR-02,only:NEAR-03,near --cases main,output
@@ -76,7 +76,13 @@ cmake -B build . && cmake --build build --config Release
 cd Examples && ../build/src/run/runepanetmsx example.inp example.msx out.rpt
 ```
 
-With [BIT-01](1-bit-identical/BIT-01-build-defaults/), that command compiles with optimisation and, on macOS, finds Homebrew's libomp. MSX has no unit tests of its own; the report of the example should match `Examples/example.rpt` apart from the date and time.
+With [BIT-01](1-bit-identical/BIT-01-build-defaults/), that command compiles with optimisation and, on macOS, finds Homebrew's libomp. MSX has no unit tests of its own, and `Examples/example.rpt` at 85a303d is not a report of the example (it ends with an EPANET error), so compare with an unpatched build instead: build a second checkout at 85a303d the same way, run the same command there, and compare the two reports apart from the date and time lines:
+
+```sh
+diff <(grep -v -E 'Page [0-9]|Analysis (begun|ended)' unpatched.rpt) <(grep -v -E 'Page [0-9]|Analysis (begun|ended)' out.rpt)
+```
+
+With the bit-identical patches the reports are the same.
 
 ## 6. Newer versions
 

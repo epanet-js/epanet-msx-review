@@ -12,7 +12,7 @@
 
 ## What was slow
 
-The README's build instructions ([README.md, lines 19-20](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/README.md#L19-L20)) are:
+The README's build instructions ([readme.md, lines 19-20](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/readme.md#L19-L20)) are:
 
 ```sh
 cmake -B build .

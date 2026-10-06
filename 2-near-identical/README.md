@@ -2,7 +2,7 @@
 
 [All changes](../README.md)
 
-**Every change in this folder alters MSX's results.** Each moves concentrations at the level of rounding, by no more than the unpatched code's own results already move between platforms. They apply after the [bit-identical series](../1-bit-identical/README.md) (FIX-01, FIX-02, BIT-01 to BIT-17), each on its own or together, and add no API, no file format and no numerical method: the same Lagrangian transport with the same segments and merging rule, the same integrators and the same Newton solver. The Jacobians are approximated differently, and some arithmetic is done in another order. Results stay independent of the thread count.
+**Every change in this folder alters MSX's results.** Each moves concentrations at the level of rounding: within tolerance where the unpatched code's own results agree between platforms, and within twice the platforms' spread where they do not (NEAR-01 on Net3 arsenic is at that limit; see below). They apply after the [bit-identical series](../1-bit-identical/README.md) (FIX-01, FIX-02, BIT-01 to BIT-17), each on its own or together, and add no API, no file format and no numerical method: the same Lagrangian transport with the same segments and merging rule, the same integrators and the same Newton solver. The Jacobians are approximated differently, and some arithmetic is done in another order. Results stay independent of the thread count.
 
 | ID | Change | Area | Measured, this change alone |
 |---|---|---|---|
@@ -258,6 +258,21 @@ Reference `base`; platform samples `base@nofma`, `base@fmafast`, `base@x86`; con
 | NW Model 12 h, chloramine decay (ROS2) | FAIL: NH4 max 2.1e-06 (rel 0.002), p99 7.8e-10, beyond B 11 | FAIL: NH4 max 8.9e-07 (rel 0.001), p99 8.7e-10, beyond B 12 | FAIL: NH4 max 6.5e-07 (rel 0.0008), p99 8.9e-10, beyond B 10 | PASS: IDENTICAL | PASS: A: NH4 max 2.9e-12 (rel 8e-09), p99 2.2e-12 | PASS: IDENTICAL | PASS: A: NH4 max 2.9e-12 (rel 8e-09), p99 2.2e-12 |
 <!-- /near-real -->
 
+## The stress cases
+
+The same rule on the two stress cases ([README](../README.md#stress-cases)): BWSN2 with water age and source tracing over 48 hours, and Net3 chloramine with full coupling.
+
+<!-- near-stress -->
+8 of 8 judgements pass. The worst verdict of any candidate on these cases is A, while at least one platform sample goes beyond tier B on 1 of the 2 cases.
+
+Reference `base`; platform samples `base@nofma`, `base@fmafast`, `base@x86`; converged reference `bit@conv`; every step compared. 2026-10-05.
+
+| Case | FMA off | FMA across statements | x86-64 | `only:NEAR-01` | `only:NEAR-02` | `only:NEAR-03` | `near` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| BWSN2 48 h, water age and two source tracers (Euler) | B: AGE max 0.02 (rel 0.002), p99 2.7e-05 | IDENTICAL | FAIL: TR1 max 0.013 (rel 0.09), p99 2e-06, beyond B 1 | PASS: IDENTICAL | PASS: IDENTICAL | PASS: IDENTICAL | PASS: IDENTICAL |
+| Net3, chloramine decay with full coupling (ROS2) | A: NH4 max 2.6e-09 (rel 2e-06), p99 1e-10 | A: NH4 max 2e-08 (rel 2e-05), p99 1.5e-10 | A: NH4 max 2.7e-09 (rel 2e-06), p99 9.4e-11 | PASS: IDENTICAL | PASS: A: NH4 max 3e-12 (rel 1e-08), p99 2.8e-12 | PASS: IDENTICAL | PASS: A: NH4 max 3e-12 (rel 1e-08), p99 2.8e-12 |
+<!-- /near-stress -->
+
 ## Limitations
 
 The rule is a yardstick, not a proof. A reviewer should weigh these points:
@@ -277,7 +292,7 @@ Measured during development on a shared machine, so the timings are indicative.
 
 **They would move results beyond rounding:**
 
-- *Simplified Newton* (keep the first iteration's factorised Jacobian for the later iterations of an equilibrium solve): a further 1.13x on the chloramine case, and bit-identical to NEAR-02 on every benchmark case, because their equilibria are linear in the unknowns. On a model with three coupled nonlinear equilibria (written for this check) it moved results by up to 1.9·10<sup>−5</sup> relative, ten times the platforms' spread on the same model. That is still within tier A, but the limit is then Newton's own tolerance, not rounding. A Jacobian kept from an earlier iterate also converges more slowly, and can fail where Newton converges.
+- *Simplified Newton* (keep the first iteration's factorised Jacobian for the later iterations of an equilibrium solve): a further 1.13x on the chloramine case, and bit-identical to NEAR-02 on every benchmark case, because their equilibria are linear in the unknowns. On a model with three coupled nonlinear equilibria (written for this check) it moved results by up to 1.9·10<sup>−5</sup> relative, two to twenty times the platforms' spread on the same model (the unpatched code built without fused multiply-add moved it by 10<sup>−6</sup> to 9·10<sup>−6</sup>). That is still within tier A, but the limit is then Newton's own tolerance, not rounding. A Jacobian kept from an earlier iterate also converges more slowly, and can fail where Newton converges.
 - *Forward differences in Newton for a single equation* (the arsenic models): nothing to gain over central differences with one unknown, and the last-bit change flipped merges on Net3 arsenic (adsorbed arsenate up to 6.3 µg/ft², 47 nodes and links beyond tier B). NEAR-02 keeps central differences there.
 - *Newton's update from f(x)* instead of f(x + ε·eₙ): it would move dissolved CO<sub>2</sub> on the chloramine case by 10<sup>−7</sup> mol/L at all 216 nodes and links, 3.1 times tier B. A fix, not a speed-up, and one that changes results, so it is listed with [the bugs not yet written up](../3-bug-fixes/README.md#found-not-yet-written-up).
 - *Forward differences in ROS2 with a step relative to each concentration* (√ε<sub>machine</sub>·|y|): no faster than NEAR-02's absolute step, and a larger change on HOCL.
@@ -292,7 +307,7 @@ Measured during development on a shared machine, so the timings are indicative.
 - *Not computing rates that are the constant 0* (BWSN2's tracer; chloramine's H, ALK and TOC): bit-identical, no gain; those operations are off the critical path.
 - *Common subexpressions and super-instructions in the interpreter*: about 2 of Richmond's 57 dispatches; nothing removable in the chloramine program (about 95 essential dispatches).
 - *Dispersion: the reciprocal of each pivot* (a Thomas solve with one division per row): 6.4 to 5.8 ns per row, against 3.7 ns for NEAR-03. The divider is pipelined; the dependency chain was the cost.
-- *A better fill-reducing ordering for the dispersion node matrix* (EPANET 2.2's `genmmd`): the nodal solve is about 1 % of KY8's run, so it could save at most 0.6 %.
+- *A better fill-reducing ordering for the dispersion node matrix* (EPANET 2.2's `genmmd`): the nodal solve is about 1-2 % of KY8's run, so it could save at most about 1 %.
 - *Sums in another order, to move water through the nodes in parallel*: moving water level by level would give BWSN2 about 37 nodes per level, 5-7 µs of work against a 1-2 µs barrier, so at most 4-6 % on one case, and would need per-thread segment pools.
 
 ## Running the checks

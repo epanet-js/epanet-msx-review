@@ -37,7 +37,7 @@ Each leaked descriptor also keeps its file's data on disk after `MSXclose` remov
 
 ## How to reproduce
 
-The reviewer's test opens, solves and closes a three-pipe model with one decaying species (`ENopen`, `MSXopen`, `MSXsolveH`, `MSXsolveQ`, `MSXclose`, `ENclose`) once, then 20 more times, and compares the lowest free file descriptor before and after the 20 cycles.
+A test opens, solves and closes a three-pipe model with one decaying species (`ENopen`, `MSXopen`, `MSXsolveH`, `MSXsolveQ`, `MSXclose`, `ENclose`) once, then 20 more times, and compares the lowest free file descriptor before and after the 20 cycles.
 
 - **Without the fix**, it goes from 4 to 64: three descriptors per cycle.
 - **With the fix**, it stays at 3.

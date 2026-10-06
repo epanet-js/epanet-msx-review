@@ -4,11 +4,11 @@ Oct 5, 2026 · @Luke
 
 ## Summary
 
-On seven test cases built from the reaction systems in the EPANET-MSX manual, the 17 groups of bit-identical changes here make the median case **<!-- hl:bit1 -->15.7x<!-- /hl:bit1 --> faster with one thread and <!-- hl:bit8 -->9.1x<!-- /hl:bit8 --> faster with eight**, and every concentration at every step, the binary output file and the report are **bit-for-bit the same** as before. Three near-identical changes take the median to **<!-- hl:near1 -->17.0x<!-- /hl:near1 --> and <!-- hl:near8 -->10.7x<!-- /hl:near8 -->**; they move results by less than the unpatched code already varies between platforms. Even on one thread, the patched code with every change is <!-- hl:near1v8 -->4.5x<!-- /hl:near1v8 --> faster in the median case than the unpatched code on eight threads (<!-- hl:near1v8range -->1.7-6.3x<!-- /hl:near1v8range -->; <!-- hl:bit1v8 -->4.2x<!-- /hl:bit1v8 --> with the bit-identical changes alone). Three bug fixes found on the way come first in the series; they leave every benchmark result unchanged.
+On seven test cases built from the reaction systems in the EPANET-MSX manual, the 17 groups of bit-identical changes here make the median case **<!-- hl:bit1 -->15.7x<!-- /hl:bit1 --> faster with one thread and <!-- hl:bit8 -->9.1x<!-- /hl:bit8 --> faster with eight**, and every concentration at every step, the binary output file and the report are **bit-for-bit the same** as before. Three near-identical changes take the median to **<!-- hl:near1 -->17.0x<!-- /hl:near1 --> and <!-- hl:near8 -->10.7x<!-- /hl:near8 -->**; they move results at the level of rounding, about as much as the unpatched code already varies between platforms (at the limit of the acceptance rule on one case). Even on one thread, the patched code with every change is <!-- hl:near1v8 -->4.5x<!-- /hl:near1v8 --> faster in the median case than the unpatched code on eight threads (<!-- hl:near1v8range -->1.7-6.3x<!-- /hl:near1v8range -->; <!-- hl:bit1v8 -->4.2x<!-- /hl:bit1v8 --> with the bit-identical changes alone). Three bug fixes found on the way come first in the series; they leave every benchmark result unchanged.
 
 The numerical methods are unchanged: the same Lagrangian transport, the same integrators (Euler, RK5, ROS2), the same Newton solver for equilibria, the same dispersion model. The time was going into the work around the math:
 
-- **The expression interpreter re-did work.** Every `[TERMS]` entry was evaluated again each time it was referenced, recursively, in every segment of every pipe at every step, including terms such as `Re^0.88` that change only when the hydraulics do. Two-thirds to three-quarters of the unpatched run time was the interpreter.
+- **The expression interpreter re-did work.** Every `[TERMS]` entry was evaluated again each time it was referenced, recursively, in every segment of every pipe at every step, including terms such as `Re^0.88` that change only when the hydraulics do. About two-thirds to three-quarters of the unpatched run time was the interpreter.
 - **Identical segments were integrated one by one.** Every pipe starts as 100 segments of the same water, and many stay identical, but each was integrated on its own, every step. On BWSN2 that was most of what was left after the interpreter was fixed.
 - **Per-thread variables were expensive.** OpenMP's `threadprivate` variables cost a function call on each access in a shared library on macOS (12-18 % of the time).
 - **Threads waited on each other.** A lock taken twice per pipe in the dispersion code, once the chemistry was fast, kept the dispersion case from getting faster beyond four threads, and the reaction loop gave each thread an equal number of pipes rather than an equal amount of work.
@@ -25,7 +25,8 @@ Every change has its own folder with a write-up, its measurements and a patch ag
 ```sh
 git clone --recurse-submodules https://github.com/epanet-js/epanet-msx-review.git
 cd epanet-msx-review
-tools/try.py bit near --quick        # 85a303d against the patches, on this machine
+tools/try.py bit near --quick        # 85a303d against the patches, on this machine (the near-identical
+                                     # verdicts need numpy, and build the platform samples the first time)
 ```
 
 [reproducing.md](reproducing.md) goes through each claim, and [benchmarking.md](benchmarking.md) explains the tools.
@@ -45,7 +46,7 @@ The figures are the median speed-up per case over the seven main cases, each bui
 | Solve (as `runepanetmsx`), all cores (default) | 10.11x | 10.90x | 2.09x-118.99x | 2.10x-132.15x |
 <!-- /headline -->
 
-**These tables come from one quick pass** (`QUICK=1 tools/run-all.sh`: one timed run per build, on a machine in use, with the load average recorded), so single values can be a few per cent off at one thread and more at eight. `tools/run-all.sh` remakes every table as the best of a checked run and 5 timed runs, interleaved (about 6 hours), and `tools/update-docs.py` writes them into these pages. One value in this pass is not noise: in solve mode with all 10 cores, while the machine was busy (load average about 18), the unpatched KY8 dispersion case took 30-35 s instead of about 2.4 s at 8 threads. Its dispersion code takes a lock twice per pipe ([BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/)), and the likely cause is that when the system takes a core away from the thread holding the lock, every other thread waits for it; the patched builds, which take no lock there, ran normally in the same minutes. That is the top of the range in the last row.
+**These tables come from one quick pass** (`QUICK=1 tools/run-all.sh`: one timed run per build, on a machine in use, with the load average recorded), so single values can be a few per cent off at one thread and more at eight. `tools/run-all.sh` remakes every table as the best of a checked run and 5 timed runs, interleaved (about 6 hours), and `tools/update-docs.py` writes them into these pages. One value in this pass is not noise: in solve mode with all 10 cores, while the machine was busy (load average about 18), the unpatched KY8 dispersion case took 30-35 s, against 8 s on 8 threads in the same pass and about 2.4 s on 8 threads in step mode. The solve-mode rows at 8 threads and all cores were measured while the machine was busy (load average 18 rising to 35) and are the least reliable here. Its dispersion code takes a lock twice per pipe ([BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/)), and the likely cause is that when the system takes a core away from the thread holding the lock, every other thread waits for it; the patched builds, which take no lock there, ran normally in the same minutes. That is the top of the range in the last row.
 
 Per case, step mode, seconds: each build on one and on eight threads, then the patched code with every change against the unpatched code on eight threads, first with the patched code on one thread and then on eight. The headline table above compares builds at the same thread count.
 
@@ -78,21 +79,21 @@ The seven main cases pair public networks with the reaction systems of the MSX m
 | Net3, arsenic adsorption | Net3 | Listing 5.3 | RK5 | Wall species, an equilibrium |
 | MSX example | The manual's 4-node network | Section 3 | RK5 | A tiny network |
 
-Two more cases report every node, link and species every 5 minutes, to measure the output code ([BIT-14](1-bit-identical/BIT-14-report-and-output-file/), [BIT-15](1-bit-identical/BIT-15-link-averages-once/)), and two larger real-world networks run with three kinds of reactions each ([below](#larger-networks)).
+Two more cases report every node, link and species every 5 minutes, to measure the output code ([BIT-14](1-bit-identical/BIT-14-report-and-output-file/), [BIT-15](1-bit-identical/BIT-15-link-averages-once/)), two stress cases exercise water age and full coupling ([below](#stress-cases)), and two larger real-world networks run with three kinds of reactions each ([below](#larger-networks)).
 
 ## How this is organised
 
 | Folder | |
 |---|---|
 | [1-bit-identical/](1-bit-identical/README.md) | 17 groups of changes that leave every result byte-for-byte the same: `BIT-01` to `BIT-17` |
-| [2-near-identical/](2-near-identical/README.md) | 3 changes that move results by rounding, by less than MSX already varies between platforms: `NEAR-01` to `NEAR-03` |
+| [2-near-identical/](2-near-identical/README.md) | 3 changes that move results by rounding, about as much as MSX already varies between platforms: `NEAR-01` to `NEAR-03` |
 | [3-bug-fixes/](3-bug-fixes/README.md) | 3 bugs found on the way, fixed without changing any benchmark result: `FIX-01` to `FIX-03`; and the bugs found but not yet written up |
 | [models/](models/README.md) | The networks, the reaction files and `cases.json`; `private/` for your own |
 | [tools/](benchmarking.md#scripts) | Scripts to build, time and compare MSX |
 | [results/](results/README.md) | The measurements behind every table here |
 | `msx` | Submodule: EPANET-MSX at 85a303d |
 
-Each folder has a write-up (`README.md`): what was slow, what the change does (step by step where a group merges several changes), why the results are unchanged or how far they move, its measurements, and what was tried and not kept. It also has the patch, `<ID>.patch`, whose header says what it changes, what it requires and whether its results are identical. The patches form one series: FIX-01 to FIX-03 first, then BIT-01 to BIT-17, each on top of the ones before it, then NEAR-01 to NEAR-03, each of which applies on its own. [BIT-16](1-bit-identical/BIT-16-epanet-savehydfile-block-copy/) is a patch to the EPANET2.2 submodule; all the others are patches to MSX.
+Each folder has a write-up (`README.md`): what was slow, what the change does (step by step where a group merges several changes), why the results are unchanged or how far they move, its measurements, and what was tried and not kept. It also has the patch, `<ID>.patch`, whose header says what it changes, what it requires and whether its results are identical. The patches form one series: FIX-01 to FIX-03 first, each of which applies on its own; then BIT-01 to BIT-17, built on FIX-01 and FIX-02, each on top of the ones before it; then NEAR-01 to NEAR-03, each of which applies on its own after BIT-17. [BIT-16](1-bit-identical/BIT-16-epanet-savehydfile-block-copy/) is a patch to the EPANET2.2 submodule; all the others are patches to MSX.
 
 ## Bit-identical changes (17)
 
@@ -101,7 +102,7 @@ Each group performs the same floating-point operations in the same order. Every 
 <!-- bit-index -->
 | ID | What changes | Area | Measured, this change alone |
 |---|---|---|---|
-| [BIT-01](1-bit-identical/BIT-01-build-defaults/) | Release build by default; find Homebrew's libomp on macOS | Build | <!-- summary:BIT-01 -->no optimisation to `-O3`: 1.84x median; no OpenMP to 8 threads: 3.54x median<!-- /summary --> |
+| [BIT-01](1-bit-identical/BIT-01-build-defaults/) | Release build by default; find Homebrew's libomp on macOS | Build | <!-- summary:BIT-01 -->no optimisation to `-O3`: 1.84x median; OpenMP found on macOS: the unpatched code on 8 threads 3.54x faster than without OpenMP (median)<!-- /summary --> |
 | [BIT-02](1-bit-identical/BIT-02-terms-evaluated-once/) | Terms and formulas evaluated once per rate evaluation, not per reference | Chemistry | <!-- summary:BIT-02 -->2.50x median, up to 3.00x (Net6, chlorine bulk + wall)<!-- /summary --> |
 | [BIT-03](1-bit-identical/BIT-03-thread-state-without-tls/) | Thread-local chemistry and solver state looked up once per call | Chemistry, threads | <!-- summary:BIT-03 -->within noise on these cases<!-- /summary --> |
 | [BIT-04](1-bit-identical/BIT-04-pipe-invariant-cache/) | Terms and sub-expressions that depend only on hydraulics, cached per pipe | Chemistry | <!-- summary:BIT-04 -->up to 3.39x (Net6, chlorine bulk + wall)<!-- /summary --> |
@@ -122,7 +123,7 @@ Each group performs the same floating-point operations in the same order. Every 
 
 ## Near-identical changes (3)
 
-**These change results**, at the level of rounding, by less than the unpatched code's own results already differ between platforms (built with and without fused multiply-add, and for x86-64). Each was judged on its own, on top of the bit-identical series. [The category page](2-near-identical/README.md) explains how "within tolerance" was decided, shows how much the unpatched code varies between platforms, and has the acceptance table and its limitations.
+**These change results**, at the level of rounding: within tolerance where the unpatched code's own results agree between platforms (built with and without fused multiply-add, and for x86-64), and within twice the platforms' spread where they do not; NEAR-01 is at that limit on Net3 arsenic. Each was judged on its own, on top of the bit-identical series. [The category page](2-near-identical/README.md) explains how "within tolerance" was decided, shows how much the unpatched code varies between platforms, and has the acceptance table and its limitations.
 
 <!-- near-index -->
 | ID | What changes | Area | Measured, this change alone |
@@ -144,7 +145,7 @@ These come first in the series. Each applies on its own to 85a303d and leaves ev
 | [FIX-03](3-bug-fixes/FIX-03-tempfile-descriptor-leak/) | Close the descriptor mkstemp opens for each temporary file name | Files (temporary files) | <!-- summary:FIX-03 -->no change beyond noise (1.00x median at one thread)<!-- /summary --> |
 <!-- /fix-index -->
 
-**FIX-01 can stop a model that appears to run today.** With it, a model whose equilibrium or integration fails in some pipes stops with error 513 or 514 instead of reporting concentrations that were never solved. The error is real; the unpatched code was losing it. It happened on one of the two utility models below.
+**FIX-01 can stop a model that appears to run today.** With it, a model whose equilibrium or integration fails in some pipes stops with error 513 or 514 instead of reporting concentrations that were never solved. The error is real; the unpatched code was losing it. It happened on one of the utility models below.
 
 ## Multithreading
 
@@ -153,7 +154,7 @@ MSX parallelises three things with OpenMP: the reaction loop over pipes (`MSXche
 **What was in the way:**
 
 - **No threads at all on macOS** ([BIT-01](1-bit-identical/BIT-01-build-defaults/)): CMake does not find Homebrew's keg-only libomp, so the library is built single-threaded.
-- **Per-thread variables cost a call on every access** ([BIT-03](1-bit-identical/BIT-03-thread-state-without-tls/)): in a shared library on macOS, each access to a `threadprivate` variable goes through `_tlv_get_addr`, and the chemistry and the three integrators touched them in their innermost loops (12-18 % of all samples). With BIT-02 and BIT-03 the OpenMP build at one thread is as fast as a build without OpenMP; unpatched it was about 8 % slower.
+- **Per-thread variables cost a call on every access** ([BIT-03](1-bit-identical/BIT-03-thread-state-without-tls/)): in a shared library on macOS, each access to a `threadprivate` variable goes through `_tlv_get_addr`, and the chemistry and the three integrators touched them in their innermost loops (12-18 % of all samples). Unpatched, the OpenMP build at one thread was 5-9 % slower than a build without OpenMP; with BIT-02 and BIT-03 the gap is within a few per cent ([build flavours](#build-flavours)).
 - **A lock taken twice per pipe in the dispersion code** ([BIT-11](1-bit-identical/BIT-11-dispersion-mass-without-locks/)): every thread added its pipes' dispersed mass to one total inside `#pragma omp critical`. At 8 threads the main thread spent three-quarters of `segqual_update` waiting for the lock. Once the chemistry was fast, this, not the chemistry, is what kept the KY8 case from getting faster beyond 4 threads. Summing per pipe in pipe order also makes the mass balance the same at any thread count.
 - **Equal numbers of pipes, unequal work** ([BIT-13](1-bit-identical/BIT-13-dynamic-omp-schedules/)): the loops used OpenMP's default static schedule, but the work per pipe is proportional to its number of water parcels, from 1 to over 300, and two of an M1 Pro's ten cores are slower efficiency cores. A dynamic schedule hands out a few pipes at a time.
 - **A data race on the reaction loop's error code** ([FIX-01](3-bug-fixes/FIX-01-reaction-loop-error-race/)): every thread wrote the shared `errcode`, so an error in one pipe could be overwritten by the next pipe's success.
@@ -162,7 +163,7 @@ MSX parallelises three things with OpenMP: the reaction loop over pipes (`MSXche
 
 ### Thread scaling
 
-Whole runs, seconds, step mode. "Unpatched" is 85a303d built with OpenMP; macOS users following its README got the 1-thread column whatever their thread count, because OpenMP was not found.
+Whole runs, seconds, step mode. "Unpatched" is 85a303d built with OpenMP and `-O3`. macOS users following its README got neither: no optimisation and no threads, the `-O0` column of [the build flavours](#build-flavours) whatever their thread count.
 
 <!-- scaling -->
 | Case | Build | 1 thr | 2 thr | 4 thr | 6 thr | 8 thr | 10 thr |
@@ -231,6 +232,22 @@ Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.
 
 Most of the gain in solve mode on BWSN2 is [BIT-14](1-bit-identical/BIT-14-report-and-output-file/): reading the results back for the report in blocks, and formatting them without `printf`, takes the report-and-save phase from several seconds to a few tenths of a second (the last two columns). In read mode, [BIT-15](1-bit-identical/BIT-15-link-averages-once/) lets `MSXgetqual` average each link's segments once for all species. On Net3 chloramine, with 14 species and a small network, the chemistry still dominates, so the gain follows the main cases.
 
+## Stress cases
+
+Two more public cases exercise paths the main cases do not (`--cases stress`). **Water age** keeps water parcels from merging, because neighbouring parcels never have the same age, so the number of segments grows through the run and moving water through the network becomes the main cost: BWSN2 for 48 hours, with water age and the share of the water from each of its two reservoirs. **Full coupling** (`COUPLING FULL`) solves the equilibria again inside every derivative evaluation, the heaviest chemistry path in MSX: Net3 chloramine as in the main case, with full coupling. One checked run per build, in the same layout as the per-case table above; solve mode was checked too.
+
+<!-- stress -->
+| Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 | Bit-identical results |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| BWSN2 48 h, water age and two source tracers (Euler) | 22.9 | 9.07 | 4.50 | 2.30 | 4.46 | 3.65 | 2.03x | 2.48x | identical |
+| Net3, chloramine decay with full coupling (ROS2) | 41.1 | 11.0 | 7.14 | 1.49 | 3.29 | 0.730 | 3.34x | 15.09x | identical |
+| **Median** | | | | | | | **2.69x** | **8.78x** | |
+
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 10.3 at the start and 9.9 at the end; measured 2026-10-05.
+<!-- /stress -->
+
+Every build gave identical results on both cases in step and solve mode, and the near-identical changes pass the acceptance rule on both ([the near-identical page](2-near-identical/README.md#the-stress-cases)). Full coupling gains most from [NEAR-02](2-near-identical/NEAR-02-forward-difference-jacobians/), whose forward-difference Jacobian runs inside every derivative evaluation there. Water age gains least: its rates are a constant, so the chemistry changes have little to save, and what remains is moving water through the nodes, which runs on one thread. The near-identical changes do not touch that case's arithmetic (its results are bit for bit those of the bit-identical build), so the difference between them at 8 threads is noise.
+
 ## Larger networks
 
 Two public networks with three kinds of reactions each, in the same layout as the per-case table above: L-Town (the BattLeDIM 2020 network, 905 pipes, 24 hours of its 5-minute demand patterns) and the NW Model (a 9,979-pipe system with pumps and rules, 12 hours), each with the manual's chlorine bulk and wall decay (Euler), bacterial regrowth (RK5) and chloramine decomposition (ROS2), with sources at the networks' reservoirs (`--cases real`). Whole runs, step mode, one checked run each.
@@ -249,7 +266,7 @@ Two public networks with three kinds of reactions each, in the same layout as th
 Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 6.0 at the start and 9.8 at the end; measured 2026-10-05.
 <!-- /real -->
 
-**Two utility models** that cannot be published were run the same way, each with the same three kinds of reactions: Utility model 1 and Utility model 2, each with several thousand pipes, run for 24 hours. They are not in the repository; the tables below come from `tools/bench.py --cases private`, which labels them without names.
+**Four utility models** that cannot be published were run the same way, for 24 hours each. Utility models 1 and 2 have several thousand pipes and run the same three kinds of reactions as the networks above. Utility models 3 and 4 have tens of thousands of pipes and run chlorine decay and water age, which on networks this size stresses the transport and memory more than the chemistry. They are not in the repository; the table below comes from `tools/bench.py --cases private`, which labels them without names.
 
 <!-- private -->
 | Case | Unpatched, 1 thread (s) | Unpatched, 8 threads | Bit-identical, 1 thread | Bit-identical, 8 threads | Plus near-identical, 1 thread | Plus near-identical, 8 threads | Near-identical on 1 thread against unpatched on 8 | Near-identical against unpatched, both on 8 | Bit-identical results |
@@ -260,12 +277,18 @@ Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.
 | Utility model 2, bacterial regrowth (RK5) | 117 | 44.3 | 8.68 | 3.46 | 6.76 | 3.01 | 6.56x | 14.73x | identical |
 | Utility model 2, chloramine (ROS2) | 699 | 155 | 26.0 | 3.69 | 14.8 | 2.83 | 10.44x | 54.64x | identical |
 | Utility model 2, chlorine (Euler) | 57.7 | 16.7 | 1.35 | 0.625 | 1.34 | 0.638 | 12.45x | 26.14x | identical |
-| **Median** | | | | | | | **10.53x** | **22.07x** | |
+| Utility model 3, chlorine (Euler) | 518 | 138 | 32.5 | 18.3 | 28.0 | 18.1 | 4.91x | 7.61x | identical |
+| Utility model 3, water age (Euler) | 41.9 | 32.5 | 13.3 | 11.9 | 14.1 | 11.9 | 2.30x | 2.74x | identical |
+| Utility model 4, chlorine (Euler) | 250 | 78.5 | 13.6 | 5.53 | 13.1 | 5.22 | 6.00x | 15.05x | identical |
+| Utility model 4, water age (Euler) | 9.98 | 7.11 | 2.94 | 2.19 | 3.03 | 2.25 | 2.34x | 3.16x | identical |
+| **Median** | | | | | | | **6.28x** | **15.09x** | |
 
-Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 25.0 at the start and 7.6 at the end; measured 2026-10-05.
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1), `-O3 -DNDEBUG`, OpenMP; step mode, one checked and timed run per build; load average 25.0 at the start and 13.0 at the end; measured 2026-10-05.
 <!-- /private -->
 
-<!-- hl:private -->The bit-identical builds gave the unpatched results bit for bit in every run. Even on one thread, the code with every change was 10.5x faster than the unpatched code on eight threads (median over the six cases), and 22.1x faster with both on eight threads.<!-- /hl:private --> The chloramine files used here set pH and alkalinity where water enters the network, as `tools/private-reactions.py` now does; an earlier file for one of the models did not, the equilibria had no solution in the water entering there, and with [FIX-01](3-bug-fixes/FIX-01-reaction-loop-error-race/) that run stopped with error 514, an error the unpatched code had been losing.
+<!-- hl:private -->The bit-identical builds gave the unpatched results bit for bit in every run. Even on one thread, the code with every change was 6.3x faster than the unpatched code on eight threads (median over the 10 cases), and 15.1x faster with both on eight threads.<!-- /hl:private --> The chloramine files used here set pH and alkalinity where water enters the network, as `tools/private-reactions.py` now does; an earlier file for one of the models did not, the equilibria had no solution in the water entering there, and with [FIX-01](3-bug-fixes/FIX-01-reaction-loop-error-race/) that run stopped with error 514, an error the unpatched code had been losing.
+
+Water age gains least on Utility models 3 and 4. The unpatched code was already fast there, because a water-age rate is one addition per segment, so what is left is mostly EPANET's own hydraulics (about a third of the patched run on the largest model) and moving water through the nodes, which runs on one thread. Chlorine decay, whose Sherwood-number terms the interpreter used to recompute in every segment, gains as much as on the public networks.
 
 ## Your own models
 
@@ -325,7 +348,7 @@ Besides the experiments in each change's folder, these were measured or examined
 
 - *Fewer initial segments.* At the start of a run every pipe is cut into 100 segments (`initSegs`). With [BIT-06](1-bit-identical/BIT-06-identical-segments-once/) identical segments are reacted once, which removes most of that cost; using fewer segments, or merging them more eagerly, would change the results.
 - *Multiplying by the reciprocal* of the tridiagonal pivot in the dispersion solve, or of other divisors: changes the last bits, and was no faster than [NEAR-03](2-near-identical/NEAR-03-dispersion-pivot-chain/).
-- *A better fill-reducing ordering* (EPANET 2.2's `genmmd`) for the dispersion matrix: a different elimination order changes rounding, and the nodal solve is about 1 % of the dispersion case.
+- *A better fill-reducing ordering* (EPANET 2.2's `genmmd`) for the dispersion matrix: a different elimination order changes rounding, and the nodal solve is about 1-2 % of the dispersion case.
 - *Simplified Newton*, and *Newton's update from f(x)*: see [the near-identical page](2-near-identical/README.md#tried-and-rejected).
 
 **No measurable gain, or not worth the complexity:**

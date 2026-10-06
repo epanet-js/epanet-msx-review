@@ -93,4 +93,4 @@ Bit-identical, but no faster or not worth the complexity:
 They would change results:
 
 - *Multiplying by the reciprocal of each pivot* instead of dividing: it changes the last bits, and gains little (6.4 to 5.8 ns per row in a micro-benchmark), because the divider is pipelined and the cost is the chain of dependent operations. [NEAR-03](../../2-near-identical/NEAR-03-dispersion-pivot-chain/) takes the divisions off that chain (3.7 ns per row), as a near-identical change.
-- *EPANET 2.2's `genmmd` ordering* for the junction matrix: a different elimination order changes the rounding. It could also save at most 0.6 %: after the bit-identical series, `solve_nodequal()` is about 0.011 s of a 0.68 s KY8 run, and the sparse solve about 1.2 % of its samples.
+- *EPANET 2.2's `genmmd` ordering* for the junction matrix: a different elimination order changes the rounding. It could also save at most 0.6 %: when this was measured during development, `solve_nodequal()` was about 0.011 s of a 0.68 s KY8 run and the sparse solve about 1.2 % of its samples; with the whole series the run is shorter, so about 2 %.

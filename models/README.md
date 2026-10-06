@@ -27,6 +27,13 @@ The pipe counts include only pipes; MSX also routes water through pumps and valv
 | BWSN2, 2 species, every node and link every 5 min | `bwsn2-out` | BWSN2, `Report Timestep 0:05` | Two first-order decaying species (Euler) | 6 h |
 | Net3 chloramine, 14 species, every node and link every 5 min | `net3-chlm-out` | Net3, `Report Timestep 0:05` | Listing 5.5 with every species reported | 24 h |
 
+**Stress cases** (`--cases stress`) exercise paths the main cases do not:
+
+| Case | ID | Network | Reactions | Duration |
+|---|---|---|---|---|
+| BWSN2 48 h, water age and two source tracers (Euler) | `bwsn2-age` | BWSN2 | Water age, and the share of water from each reservoir (written for this case) | 48 h |
+| Net3, chloramine decay with full coupling (ROS2) | `net3-chlm-full` | Net3 | Listing 5.5 with `COUPLING FULL` | 24 h |
+
 **Larger real-world networks** (`--cases real`), each with three kinds of reactions: chlorine bulk and wall decay (Euler), bacterial regrowth (RK5) and chloramine decomposition (ROS2), with the sources at the networks' reservoirs:
 
 | Case | Network | Pipes | Duration | Unpatched, 1 thread |
@@ -50,6 +57,7 @@ The networks were downloaded in September 2026 and are byte-identical to their s
 | `richmond-12h.inp` | Richmond, University of Exeter Centre for Water Systems | EPANET-Benchmarks, `Richmond_standard.inp`, as edited for epanet-performance (`richmond-chlorine-72h.inp`) | `Duration 72:00` → `12:00` | As above |
 | `bwsn2-6h.inp` | Battle of the Water Sensor Networks, network 2 (Ostfeld et al., 2008) | EPANET-Benchmarks, `BWSN_Network_2.inp`, as edited for epanet-performance (`bwsn2-chemical-48h.inp`) | `Duration 48` → `6:00` | As above |
 | `bwsn2-6h-r5.inp` | As above | As above | Also `Report Timestep 0:05` | As above |
+| `bwsn2-48h.inp` | As above | As above | unchanged from the epanet-performance copy (48 h) | As above |
 
 `ltown-24h.inp` and `net6-12h.inp` keep their original Windows line endings; `.gitattributes` stops git from changing them.
 
@@ -70,6 +78,8 @@ Each is a system from the EPANET-MSX 2.0 user's manual, with its sources moved t
 | `net6-chlorine.msx` | Listing 5.2 without the `[DIFFUSIVITY]` section | No dispersion |
 | `bwsn2-twosource.msx` | Listing 5.1 | The tracer at RESERVOIR-12523 |
 | `bwsn2-output.msx` | Written for the output-heavy case | Two first-order decaying species, every node and link reported |
+| `bwsn2-age-tracers.msx` | Written for the water-age stress case | Water age in hours (rate 1) and one tracer per reservoir (rate 0, 1.0 at its reservoir) |
+| `net3-chloramine-full.msx` | `net3-chloramine.msx` | `COUPLING FULL` |
 | `ltown-*.msx`, `nw-*.msx` | `net6-chlorine.msx`, `richmond-bacteria.msx` and `net3-chloramine.msx` | Sources at each network's reservoirs (L-Town R1, R2; NW Model 7384, 311, RES9000); no nodes or links reported |
 
 ## Why the runs are short

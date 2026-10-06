@@ -2,7 +2,7 @@
 
 [All changes](../README.md)
 
-Each of these 17 groups of changes makes EPANET-MSX do the same floating-point operations, in the same order, as EPANET-MSX at [85a303d](https://github.com/USEPA/EPANETMSX/commit/85a303dca05859389eced63fabd5ea145c096333). After every group, on all nine benchmark cases, every concentration of every species at every node and link after every step is the same as before, in step mode at 1 and 8 threads, in read mode, and in solve mode, where the binary output file and the report are also byte-for-byte the same; and so it is built without OpenMP. [verification.md](../verification.md) has the table.
+Each of these 17 groups of changes makes EPANET-MSX do the same floating-point operations, in the same order, as EPANET-MSX at [85a303d](https://github.com/USEPA/EPANETMSX/commit/85a303dca05859389eced63fabd5ea145c096333). After every group, on all nine benchmark cases, every concentration of every species at every node and link after every step is the same as before, in step mode at 1 and 8 threads, in read mode (on the two output-heavy cases), and in solve mode, where the binary output file and the report are also byte-for-byte the same; and so it is built without OpenMP. [verification.md](../verification.md) has the table.
 
 "Bit-identical" means on the same platform and compiler. MSX's results already differ in their last digits between, for example, an arm64 build that uses fused multiply-add and an x86-64 build that does not, and the official Windows build compiles with `/fp:fast`. These changes do not alter that.
 
@@ -12,7 +12,7 @@ The groups form one series, applied in order on top of [FIX-01 and FIX-02](../3-
 
 | ID | Change | Area | Measured, this change alone |
 |---|---|---|---|
-| [BIT-01](BIT-01-build-defaults/) | Build optimised, with OpenMP on macOS, when following the README | Build | <!-- summary:BIT-01 -->no optimisation to `-O3`: 1.84x median; no OpenMP to 8 threads: 3.54x median<!-- /summary --> |
+| [BIT-01](BIT-01-build-defaults/) | Build optimised, with OpenMP on macOS, when following the README | Build | <!-- summary:BIT-01 -->no optimisation to `-O3`: 1.84x median; OpenMP found on macOS: the unpatched code on 8 threads 3.54x faster than without OpenMP (median)<!-- /summary --> |
 | [BIT-02](BIT-02-terms-evaluated-once/) | Evaluate each term and formula once per rate evaluation, from flat expressions | Chemistry | <!-- summary:BIT-02 -->2.50x median, up to 3.00x (Net6, chlorine bulk + wall)<!-- /summary --> |
 | [BIT-03](BIT-03-thread-state-without-tls/) | Read per-thread chemistry and solver state once | Chemistry, threads | <!-- summary:BIT-03 -->within noise on these cases<!-- /summary --> |
 | [BIT-04](BIT-04-pipe-invariant-cache/) | Cache terms that depend only on hydraulics, parameters and constants | Chemistry | <!-- summary:BIT-04 -->up to 3.39x (Net6, chlorine bulk + wall)<!-- /summary --> |
@@ -45,13 +45,13 @@ The README's `cmake -B build .` then `cmake --build build --config Release` comp
 
 ### BIT-02: Evaluate each term and formula once per rate evaluation, from flat expressions
 
-Two-thirds to three-quarters of the unpatched run was the expression interpreter, mostly re-doing work: every reference to a `[TERMS]` entry or a formula species evaluated it again, recursively, and every variable was fetched through a callback. Expressions are now flat blocks, and each set of expressions computes the terms and formulas it needs once, in dependency order, into an array that the expressions read directly. On the way, a cycle of formula species, which crashed MSX with a stack overflow, becomes error 506 at `MSXopen` (interpreted chemistry).
+About two-thirds to three-quarters of the unpatched run was the expression interpreter, mostly re-doing work: every reference to a `[TERMS]` entry or a formula species evaluated it again, recursively, and every variable was fetched through a callback. Expressions are now flat blocks, and each set of expressions computes the terms and formulas it needs once, in dependency order, into an array that the expressions read directly. On the way, a cycle of formula species, which crashed MSX with a stack overflow, becomes error 506 at `MSXopen` (interpreted chemistry).
 
 [Write-up, measurements and patch](BIT-02-terms-evaluated-once/)
 
 ### BIT-03: Read per-thread chemistry and solver state once
 
-The chemistry and its three solvers kept their working state in OpenMP `threadprivate` globals, and in a shared library on macOS every access to one is a function call: 12-18 % of the unpatched run. Each thread's state is now one struct, looked up once per call and passed down to the solvers and their callbacks. With BIT-02, this removes the cost that the OpenMP build had against a build without OpenMP on one thread.
+The chemistry and its three solvers kept their working state in OpenMP `threadprivate` globals, and in a shared library on macOS every access to one is a function call: 12-18 % of the unpatched run. Each thread's state is now one struct, looked up once per call and passed down to the solvers and their callbacks. With BIT-02, this removes most of what the OpenMP build cost against a build without OpenMP on one thread (5-9 % unpatched).
 
 [Write-up, measurements and patch](BIT-03-thread-state-without-tls/)
 

@@ -13,8 +13,8 @@
   tools/bench.py --cases real --reps 0            the larger networks, one checked run each
   tools/bench.py --cases private                  your own models in models/private/
 
---cases takes groups (main, output, real, public = all three, private) and case IDs,
-joined with commas. For each case, mode and thread count, every build is first run once
+--cases takes groups (main, output, real, stress, public = all four, private, private:N for
+your Nth model only) and case IDs, joined with commas. For each case, mode and thread count, every build is first run once
 with -check (a hash of every node and link concentration of every species after every
 step), then --reps times without it, builds interleaved; the fastest of all these runs is
 kept (reading the values for the hash is not timed). With --reps 0 the checked run is the
@@ -30,7 +30,7 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS = os.path.join(HERE, "models")
 PRIVATE = os.path.join(MODELS, "private")
 KINDS = {"chlorine": "chlorine", "bacteria": "bacterial regrowth", "chloramine": "chloramine",
-         "arsenic": "arsenic", "dispersion": "dispersion"}
+         "arsenic": "arsenic", "dispersion": "dispersion", "age": "water age"}
 SOLVERS = {"EUL": "Euler", "RK5": "RK5", "ROS2": "ROS2"}
 
 
@@ -63,7 +63,7 @@ def private_cases(label="Private model", cases_file=None, names=False):
         path = cases_file or os.path.join(PRIVATE, "cases.json")
         base = os.path.dirname(os.path.abspath(path))
         listed = json.load(open(path))["cases"]
-        pairs = [(os.path.join(base, c["inp"]), os.path.join(base, c["msx"]), c) for c in listed]
+        pairs = [(os.path.join(base, c["inp"]), os.path.join(base, c["msx"]), dict(c, listed=True)) for c in listed]
     else:
         pairs = []
         for inp in sorted(glob.glob(os.path.join(PRIVATE, "*.inp"))):
@@ -74,7 +74,8 @@ def private_cases(label="Private model", cases_file=None, names=False):
                 msx = sorted(glob.glob(os.path.join(PRIVATE, glob.escape(first) + "[-_]*.msx")))
             for m in msx:
                 pairs.append((inp, m, {}))
-    inps = sorted({p[0] for p in pairs})
+    # models are numbered in the order of cases.json, or in file-name order without one
+    inps = list(dict.fromkeys(p[0] for p in pairs)) if any(p[2] for p in pairs) else sorted({p[0] for p in pairs})
     count = {}
     for inp, msx, opts in pairs:
         i = inps.index(inp) + 1
@@ -103,12 +104,15 @@ def load_cases(spec, label="Private model", cases_file=None, names=False):
             out += [c for c in allc if c.get("group", "main") == "main"]
         elif s == "public":
             out += allc
-        elif s in ("output", "real"):
+        elif s in ("output", "real", "stress"):
             out += [c for c in allc if c.get("group") == s]
-        elif s == "private":
+        elif s == "private" or s.startswith("private:"):
             pc = private_cases(label, cases_file, names)
             if not pc:
                 raise SystemExit("No models in models/private/ (see models/private/README.md)")
+            if ":" in s:
+                want = {int(x) for x in s.split(":", 1)[1].split("+")}
+                pc = [c for c in pc if c["model"] in want]
             out += pc
         else:
             hit = [c for c in allc if c["id"] == s]

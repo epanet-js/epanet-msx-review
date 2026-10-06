@@ -1,4 +1,4 @@
-Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1); `-O3 -DNDEBUG`, OpenMP; best of 0 interleaved runs (one checked run); 2026-10-05 17:29 to 2026-10-05 17:42, load average 7.66 at the start and 6.28 at the end.
+Apple M1 Pro (macOS, arm64, 10 cores), Apple clang version 15.0.0 (clang-1500.0.40.1); `-O3 -DNDEBUG`, OpenMP; best of 1 runs per build (a checked run and 0 timed); 2026-10-05 17:29 to 2026-10-05 17:42, load average 7.66 at the start and 6.28 at the end.
 
 ### step mode, 1 thread
 

@@ -28,7 +28,7 @@ R5=5; R3=3
 [ "${QUICK:-0}" = 1 ] && { R5=1; R3=1; }
 
 STEPS="builds series yardstick threads near output-groups headline-step headline-solve output-headline
-       flavours scaling verify-solve verify-noomp real yardstick-real private"
+       flavours scaling verify-solve verify-noomp real yardstick-real stress yardstick-stress private"
 
 step() {
     case "$1" in
@@ -79,6 +79,11 @@ step() {
     yardstick-real)
         tools/yardstick.py run --builds "$SAMPLES,bit@conv,only:NEAR-01,only:NEAR-02,only:NEAR-03,near" \
             --cases real --tag yardstick-real --jobs 4 --dumpevery 6 ;;
+    stress)    # water age (segments that never merge) and full coupling: one checked and timed run each
+        tools/bench.py --builds base,bit,near --cases stress --modes step,solve --threads 1,8 --reps 0 --tag stress ;;
+    yardstick-stress)
+        tools/yardstick.py run --builds "$SAMPLES,bit@conv,only:NEAR-01,only:NEAR-02,only:NEAR-03,near" \
+            --cases stress --tag yardstick-stress --jobs 4 ;;
     private)   # your own models in models/private/, if there are any
         if ls models/private/*.inp > /dev/null 2>&1; then
             tools/bench.py --builds base,bit,near --cases private --threads 1,8 --reps 0 \
@@ -134,7 +139,7 @@ done
 # Copy what was measured to results/, and write the tables into the READMEs
 mkdir -p results
 for t in series near-series output-groups headline-step headline-solve output-headline flavours scaling \
-         verify-solve verify-output verify-noomp yardstick threads real yardstick-real; do
+         verify-solve verify-output verify-noomp yardstick threads real yardstick-real stress yardstick-stress; do
     for f in .build/results/$t.json .build/results/$t.md; do [ -f "$f" ] && cp "$f" results/; done
 done
 [ -f .build/results/private-summary.json ] && cp .build/results/private-summary.json results/private.json

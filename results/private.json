@@ -24,11 +24,11 @@
  },
  "end": {
   "load": [
-   7.56,
-   24.5,
-   29.41
+   12.98,
+   17.55,
+   15.79
   ],
-  "time": "2026-10-05 19:13"
+  "time": "2026-10-05 20:02"
  },
  "results": [
   {
@@ -497,6 +497,358 @@
      "speedup": 26.140512698402752,
      "identical": false
     }
+   }
+  },
+  {
+   "case": "private-3-1",
+   "name": "Utility model 3, chlorine (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    8.03,
+    12.24,
+    17.97
+   ],
+   "load_end": [
+    13.65,
+    14.65,
+    15.68
+   ],
+   "builds": {
+    "base": {
+     "best": 517.73888,
+     "best_Q": 495.987449,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 32.488936,
+     "best_Q": 25.353404,
+     "rc": 0,
+     "speedup": 15.93585213132249,
+     "identical": true
+    },
+    "near": {
+     "best": 28.03306,
+     "best_Q": 22.460629,
+     "rc": 0,
+     "speedup": 18.468867829626877,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-3-1",
+   "name": "Utility model 3, chlorine (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    13.65,
+    14.65,
+    15.68
+   ],
+   "load_end": [
+    11.76,
+    12.7,
+    14.56
+   ],
+   "builds": {
+    "base": {
+     "best": 137.606637,
+     "best_Q": 115.908429,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 18.325987,
+     "best_Q": 12.999911,
+     "rc": 0,
+     "speedup": 7.508825418243503,
+     "identical": true
+    },
+    "near": {
+     "best": 18.086316,
+     "best_Q": 12.724922,
+     "rc": 0,
+     "speedup": 7.608328694467132,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-3-2",
+   "name": "Utility model 3, water age (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    11.76,
+    12.7,
+    14.56
+   ],
+   "load_end": [
+    8.95,
+    11.41,
+    13.89
+   ],
+   "builds": {
+    "base": {
+     "best": 41.941655,
+     "best_Q": 20.821054,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 13.311032,
+     "best_Q": 8.116977,
+     "rc": 0,
+     "speedup": 3.150894310824284,
+     "identical": true
+    },
+    "near": {
+     "best": 14.096789,
+     "best_Q": 8.399277,
+     "rc": 0,
+     "speedup": 2.975263019117332,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-3-2",
+   "name": "Utility model 3, water age (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    8.95,
+    11.41,
+    13.89
+   ],
+   "load_end": [
+    6.57,
+    10.27,
+    13.29
+   ],
+   "builds": {
+    "base": {
+     "best": 32.486249,
+     "best_Q": 11.206372,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 11.902899,
+     "best_Q": 6.743864,
+     "rc": 0,
+     "speedup": 2.72927200340018,
+     "identical": true
+    },
+    "near": {
+     "best": 11.877347,
+     "best_Q": 6.829263,
+     "rc": 0,
+     "speedup": 2.7351435467870053,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-4-1",
+   "name": "Utility model 4, chlorine (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    6.57,
+    10.27,
+    13.29
+   ],
+   "load_end": [
+    51.38,
+    22.5,
+    16.95
+   ],
+   "builds": {
+    "base": {
+     "best": 249.989803,
+     "best_Q": 247.10061,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 13.568305,
+     "best_Q": 12.401018,
+     "rc": 0,
+     "speedup": 18.424541827442706,
+     "identical": true
+    },
+    "near": {
+     "best": 13.092259,
+     "best_Q": 12.06605,
+     "rc": 0,
+     "speedup": 19.094474299660586,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-4-1",
+   "name": "Utility model 4, chlorine (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    51.38,
+    22.5,
+    16.95
+   ],
+   "load_end": [
+    17.27,
+    18.77,
+    16.13
+   ],
+   "builds": {
+    "base": {
+     "best": 78.5001,
+     "best_Q": 75.424191,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 5.52605,
+     "best_Q": 4.611856,
+     "rc": 0,
+     "speedup": 14.205463215135586,
+     "identical": true
+    },
+    "near": {
+     "best": 5.2174,
+     "best_Q": 4.345339,
+     "rc": 0,
+     "speedup": 15.045827423620963,
+     "identical": false
+    }
+   }
+  },
+  {
+   "case": "private-4-2",
+   "name": "Utility model 4, water age (Euler)",
+   "mode": "step",
+   "threads": 1,
+   "load_start": [
+    17.27,
+    18.77,
+    16.13
+   ],
+   "load_end": [
+    14.66,
+    18.1,
+    15.95
+   ],
+   "builds": {
+    "base": {
+     "best": 9.979249,
+     "best_Q": 7.105428,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 2.937724,
+     "best_Q": 2.065798,
+     "rc": 0,
+     "speedup": 3.3969321147936293,
+     "identical": true
+    },
+    "near": {
+     "best": 3.033397,
+     "best_Q": 2.084195,
+     "rc": 0,
+     "speedup": 3.28979325818546,
+     "identical": true
+    }
+   }
+  },
+  {
+   "case": "private-4-2",
+   "name": "Utility model 4, water age (Euler)",
+   "mode": "step",
+   "threads": 8,
+   "load_start": [
+    14.66,
+    18.1,
+    15.95
+   ],
+   "load_end": [
+    12.98,
+    17.55,
+    15.79
+   ],
+   "builds": {
+    "base": {
+     "best": 7.105913,
+     "best_Q": 4.248853,
+     "rc": 0,
+     "speedup": 1.0,
+     "identical": true
+    },
+    "bit": {
+     "best": 2.192981,
+     "best_Q": 1.32728,
+     "rc": 0,
+     "speedup": 3.24029847955819,
+     "identical": true
+    },
+    "near": {
+     "best": 2.248459,
+     "best_Q": 1.379197,
+     "rc": 0,
+     "speedup": 3.1603480428151016,
+     "identical": true
+    }
+   }
+  }
+ ],
+ "runs": [
+  {
+   "models": "1, 2",
+   "start": {
+    "load": [
+     25.0,
+     19.63,
+     23.14
+    ],
+    "time": "2026-10-05 18:35"
+   },
+   "end": {
+    "load": [
+     7.56,
+     24.5,
+     29.41
+    ],
+    "time": "2026-10-05 19:13"
+   }
+  },
+  {
+   "models": "3, 4",
+   "start": {
+    "load": [
+     8.03,
+     12.24,
+     17.97
+    ],
+    "time": "2026-10-05 19:39"
+   },
+   "end": {
+    "load": [
+     12.98,
+     17.55,
+     15.79
+    ],
+    "time": "2026-10-05 20:02"
    }
   }
  ]

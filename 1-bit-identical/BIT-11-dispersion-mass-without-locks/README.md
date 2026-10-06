@@ -24,7 +24,7 @@ Each pipe writes its two contributions to its own two slots of a shared array, `
 
 An OpenMP `reduction(+: ...)` would also remove the lock, but it adds per-thread partial sums whose grouping depends on the number of threads, so the total would still change with the thread count.
 
-Measured on its own when it was written, the change took `segqual_update()` on KY8 at 8 threads from 0.83 s to 0.21 s per run, and the whole dispersion code from 1.18 s to 0.66 s. At one thread it makes no difference.
+Measured on its own when it was written, the change took `segqual_update()` on KY8 at 8 threads from 0.83 s to 0.21 s per run, and the whole dispersion code from 1.18 s to 0.66 s. At one thread there is no lock to wait for, so it should make no difference; the table below shows only run-to-run noise there.
 
 ## Why the results are unchanged
 

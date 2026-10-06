@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Category** | [Near-identical](../README.md): results change at the level of rounding, by less than the unpatched code's own results differ between platforms |
+| **Category** | [Near-identical](../README.md): results change at the level of rounding, about as much as the unpatched code's own results differ between platforms |
 | **Area** | Dispersion |
 | **Results** | <!-- results:NEAR-03 -->Differs from 85a303d in 5 of 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP), by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
 | **Files** | `msxdispersion.c` (+165 / -58 lines) |
@@ -87,4 +87,4 @@ tools/try.py only:NEAR-03 --against bit
 
 - *The reciprocal of each pivot* (a Thomas solve with one division per row): 6.4 to 5.8 ns per row, against 3.7 ns for NEAR-03. The divider is pipelined; the chain of dependencies was the cost.
 - *Software prefetch* in the segment walk and in `segqual_update()`, and *local copies of pointers* in the build loop: within noise.
-- *A better fill-reducing ordering for the dispersion node matrix* (EPANET 2.2's `genmmd`): the nodal solve is about 1 % of KY8's run, so it could save at most 0.6 %.
+- *A better fill-reducing ordering for the dispersion node matrix* (EPANET 2.2's `genmmd`): the nodal solve is about 1-2 % of KY8's run, so it could save at most 0.6 %.

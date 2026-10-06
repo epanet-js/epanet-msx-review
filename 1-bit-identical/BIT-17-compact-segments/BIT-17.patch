@@ -14,7 +14,7 @@ Optional: peak memory grows by 30-80 % on the larger cases, while the
 patches before it change peak memory by at most a few megabytes. It is
 last in the series so that it can be left out.
 
-Requires: none
+Requires: BIT-09
 Results: identical (every concentration, the output file and the report are unchanged)
 
 Apply from the root of an EPANET-MSX checkout at 85a303d, after FIX-01, FIX-02 and BIT-01 to BIT-16:

@@ -20,7 +20,8 @@ The tables in this repository's READMEs are generated from the files here by [`t
 | `threads.json` | The near-identical builds at 1, 8 and 10 threads and without OpenMP | `threads` |
 | `real.json` | L-Town and the NW Model, 85a303d, `bit` and `near`, one checked run each at 1 and 8 threads | `real` |
 | `yardstick-real.json`, `yardstick-real.md` | The acceptance check on L-Town and the NW Model, every sixth step | `yardstick-real` |
-| `private.json` | The two utility models: labels, times, return codes, whether results were identical, and the load average; no sizes, memory or results (`tools/private-summary.py`) | `private` |
+| `stress.json`, `yardstick-stress.json`, `yardstick-stress.md` | The stress cases (water age and tracers on BWSN2, full coupling on Net3): 85a303d, `bit` and `near`, one checked run each in step and solve mode at 1 and 8 threads; and the acceptance check on them | `stress`, `yardstick-stress` |
+| `private.json` | The four utility models: labels, times, return codes, whether results were identical, and the load average; no sizes, memory or results (`tools/private-summary.py`) | `private` |
 | `status.json` | The last check against upstream (`tools/check.py`), used to report what changed since | - |
 
 Each run in the timing files records the case, the mode, the thread count, the build, the times of each phase in seconds (`open`, `H` for `MSXsolveH`, `Q` for the water quality, `report`, `close` and `total`), the number of steps, the peak memory (`rss_kb`) and, for the checked run, a hash of every concentration after every step (`hash`) and in solve mode the MD5 of the output file and the report.

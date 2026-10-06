@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Category** | [Near-identical](../README.md): results change at the level of rounding, by less than the unpatched code's own results differ between platforms |
+| **Category** | [Near-identical](../README.md): results change at the level of rounding, about as much as the unpatched code's own results differ between platforms |
 | **Area** | Chemistry (Rosenbrock integrator and equilibrium solver) |
 | **Results** | <!-- results:NEAR-02 -->Differs from 85a303d in 12 of 49 runs (the 7 main cases in step mode at 1 and 8 threads; 9 cases in solve mode at 1 and 8 threads; the 2 output-heavy cases in step and read mode at 1 and 8 threads; 9 cases built without OpenMP), by rounding; every case passes the acceptance rule (see [the acceptance check](../README.md#the-acceptance-table))<!-- /results --> |
 | **Files** | `msxutils.c`, `msxutils.h`, `newton.c`, `ros2.c` (+87 / -8 lines) |
@@ -94,7 +94,7 @@ tools/try.py only:NEAR-02 --against bit
 
 ## Tried and not kept
 
-- *Simplified Newton* (the first iteration's factorised Jacobian kept for the later iterations of a solve): a further 1.13x on the chloramine case, and bit-identical to NEAR-02 on every benchmark case, because their equilibria are linear in the unknowns. On the model with three coupled nonlinear equilibria it moved results by up to 1.9·10<sup>−5</sup> relative, ten times the platforms' spread on that model: still within tier A, but the limit is then Newton's own tolerance, not rounding. A Jacobian kept from an earlier iterate also converges more slowly, and can fail where Newton converges.
+- *Simplified Newton* (the first iteration's factorised Jacobian kept for the later iterations of a solve): a further 1.13x on the chloramine case, and bit-identical to NEAR-02 on every benchmark case, because their equilibria are linear in the unknowns. On the model with three coupled nonlinear equilibria it moved results by up to 1.9·10<sup>−5</sup> relative, two to twenty times the platforms' spread on that model (10<sup>−6</sup> to 9·10<sup>−6</sup>, as above): still within tier A, but the limit is then Newton's own tolerance, not rounding. A Jacobian kept from an earlier iterate also converges more slowly, and can fail where Newton converges.
 - *Forward differences in Newton for a single equation*: nothing to gain over central differences with one unknown, and the last-bit change flipped merges on Net3 arsenic (adsorbed arsenate up to 6.3 µg/ft², 47 nodes and links beyond tier B).
 - *A step relative to each concentration* (√ε<sub>machine</sub>·|y|, as in the forward-difference version left in a comment in `jacobian()`, [msxutils.c:506](https://github.com/USEPA/EPANETMSX/blob/85a303dca05859389eced63fabd5ea145c096333/src/solver/msxutils.c#L506)): no faster than the absolute step, and a larger change on HOCL.
 - *Newton's update from F(x)*: a fix that changes results ([above](#newtons-update-a-bug-kept-on-purpose)).

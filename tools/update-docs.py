@@ -320,7 +320,8 @@ def flavours_block(flav, head):
             "it with the Makefile or Ninja generator; with `-O3`, as a Release build; and without OpenMP, as on macOS "
             f"when CMake does not find Homebrew's libomp, against the OpenMP build at 8 threads. {conditions(flav)}\n\n"
             + "\n".join(L))
-    return body, f"no optimisation to `-O3`: {fsp(median(o))} median; no OpenMP to 8 threads: {fsp(median(t))} median"
+    return body, (f"no optimisation to `-O3`: {fsp(median(o))} median; OpenMP found on macOS: the unpatched code on "
+                  f"8 threads {fsp(median(t))} faster than without OpenMP (median)")
 
 
 # ---------------------------------------------------------------- near-identical
@@ -390,6 +391,34 @@ def near_results_text(build, near, vsolve, vout, vnoomp, ys):
 
 def sample_title(b):
     return SAMPLE_TITLES.get(b[b.index("@"):], b) if "@" in b else b
+
+
+def judged_block(ysr):
+    """the yardstick on an extra group of cases: judgements against the platform samples"""
+    import yardstick as Y
+    m = ysr["meta"]
+    names = {c["id"]: c["name"] for c in m["cases"]}
+    order = {"IDENTICAL": 0, "A": 1, "A~": 2, "B": 3, "B~": 4, "FAIL": 5}
+    allj = [x.get("judgement", ["-"])[0] for rr in ysr["results"].values() for c, x in rr.items() if c in m["candidates"]]
+    worstc = max((rr.get(c, {}).get("vs_ref", {}).get("verdict", "IDENTICAL") for rr in ysr["results"].values()
+                  for c in m["candidates"]), key=lambda v: order.get(v, 9))
+    sfail = sum(1 for rr in ysr["results"].values()
+                if any(rr.get(s, {}).get("vs_ref", {}).get("verdict") == "FAIL" for s in m["samples"]))
+    head = (f"{sum(1 for j in allj if j == 'PASS')} of {len(allj)} judgements pass. The worst verdict of any "
+            f"candidate on these cases is {worstc}, while at least one platform sample goes beyond tier B on "
+            f"{sfail} of the {len(ysr['results'])} cases.")
+    L = [head, "", f"Reference `{m['ref']}`; platform samples " + ", ".join(f"`{s}`" for s in m["samples"]) +
+         f"; converged reference `{m['conv']}`; " + (f"every {m.get('dumpevery')}th step compared" if m.get('dumpevery', 1) > 1 else "every step compared") + f". {m['date']}.", "",
+         "| Case | " + " | ".join(sample_title(s) for s in m["samples"]) + " | " +
+         " | ".join(f"`{c}`" for c in m["candidates"]) + " |",
+         "|" + " --- |" * (len(m["samples"]) + len(m["candidates"]) + 1)]
+    for cid, rr in ysr["results"].items():
+        cells = [Y.cell(rr.get(s, {}).get("vs_ref")) for s in m["samples"]]
+        for c in m["candidates"]:
+            x = rr.get(c, {})
+            cells.append((x.get("judgement") or ["-"])[0] + ": " + Y.cell(x.get("vs_ref")))
+        L.append(f"| {names[cid]} | " + " | ".join(cells) + " |")
+    return "\n".join(L)
 
 
 def near_page(text, near):
@@ -462,30 +491,10 @@ def near_page(text, near):
         text = replace(text, "near-verdicts", "\n".join(V) + "\n\nSpeed-ups are median over the 7 main cases, "
                        "against the bit-identical series.")
     if ysr:
-        import yardstick as Y
-        m = ysr["meta"]
-        names = {c["id"]: c["name"] for c in m["cases"]}
-        order = {"IDENTICAL": 0, "A": 1, "A~": 2, "B": 3, "B~": 4, "FAIL": 5}
-        allj = [x.get("judgement", ["-"])[0] for rr in ysr["results"].values() for c, x in rr.items() if c in m["candidates"]]
-        worstc = max((rr.get(c, {}).get("vs_ref", {}).get("verdict", "IDENTICAL") for rr in ysr["results"].values()
-                      for c in m["candidates"]), key=lambda v: order.get(v, 9))
-        sfail = sum(1 for rr in ysr["results"].values()
-                    if any(rr.get(s, {}).get("vs_ref", {}).get("verdict") == "FAIL" for s in m["samples"]))
-        head = (f"{sum(1 for j in allj if j == 'PASS')} of {len(allj)} judgements pass. The worst verdict of any "
-                f"candidate on these cases is {worstc}, while at least one platform sample goes beyond tier B on "
-                f"{sfail} of the {len(ysr['results'])} cases.")
-        L = [head, "", f"Reference `{m['ref']}`; platform samples " + ", ".join(f"`{s}`" for s in m["samples"]) +
-             f"; converged reference `{m['conv']}`; every {m.get('dumpevery', 1)}th step compared. {m['date']}.", "",
-             "| Case | " + " | ".join(sample_title(s) for s in m["samples"]) + " | " +
-             " | ".join(f"`{c}`" for c in m["candidates"]) + " |",
-             "|" + " --- |" * (len(m["samples"]) + len(m["candidates"]) + 1)]
-        for cid, rr in ysr["results"].items():
-            cells = [Y.cell(rr.get(s, {}).get("vs_ref")) for s in m["samples"]]
-            for c in m["candidates"]:
-                x = rr.get(c, {})
-                cells.append((x.get("judgement") or ["-"])[0] + ": " + Y.cell(x.get("vs_ref")))
-            L.append(f"| {names[cid]} | " + " | ".join(cells) + " |")
-        text = replace(text, "near-real", "\n".join(L))
+        text = replace(text, "near-real", judged_block(ysr))
+    yss = load("yardstick-stress")
+    if yss:
+        text = replace(text, "near-stress", judged_block(yss))
     if th:
         rs = th["rows"]
         builds = th["builds"]
@@ -600,7 +609,10 @@ def index(text):
                        ("The bit-identical builds gave the unpatched results bit for bit in every run. " if same else
                         "**The bit-identical builds did not give the unpatched results in every run.** ") +
                        f"Even on one thread, the code with every change was {a:.1f}x faster than the unpatched code on "
-                       f"eight threads (median over the six cases), and {b:.1f}x faster with both on eight threads.")
+                       f"eight threads (median over the {len(pr)} cases), and {b:.1f}x faster with both on eight threads.")
+    st = load("stress")
+    if st:
+        text = replace(text, "stress", simple_three(st) + f"\n\n{conditions(st)}")
     sc = load("scaling")
     if sc:
         ths = sc["threads"]

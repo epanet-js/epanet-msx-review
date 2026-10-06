@@ -1,0 +1,31 @@
+[TITLE]
+BWSN2: water age and the share of water from each reservoir
+
+[OPTIONS]
+  RATE_UNITS     HR
+  SOLVER         EUL
+  TIMESTEP       300
+
+[SPECIES]
+  BULK  AGE   HR    0.01  0.001     ;water age
+  BULK  TR1   FRAC  0.01  0.001     ;share of water from RESERVOIR-12523
+  BULK  TR2   FRAC  0.01  0.001     ;share of water from RESERVOIR-12524
+
+[PIPES]
+  RATE  AGE   1
+  RATE  TR1   0
+  RATE  TR2   0
+
+[TANKS]
+  RATE  AGE   1
+  RATE  TR1   0
+  RATE  TR2   0
+
+[QUALITY]
+  NODE  RESERVOIR-12523  TR1  1.0
+  NODE  RESERVOIR-12524  TR2  1.0
+
+[REPORT]
+  SPECIES AGE YES
+  SPECIES TR1 YES
+  SPECIES TR2 YES
